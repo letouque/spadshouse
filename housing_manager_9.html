@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Housing Manager — SPADS</title>
+<style>
+  
+
+  :root {
+    --bg: #0f0f11;
+    --bg2: #17171a;
+    --bg3: #1e1e22;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #e8e6e0;
+    --text2: #8a8880;
+    --text3: #55534f;
+    --accent: #c9a84c;
+    --accent2: #8b6e2a;
+    --red: #c0392b;
+    --red-bg: rgba(192,57,43,0.15);
+    --red-border: rgba(192,57,43,0.4);
+    --yellow: #d4a017;
+    --yellow-bg: rgba(212,160,23,0.15);
+    --yellow-border: rgba(212,160,23,0.4);
+    --green: #27ae60;
+    --green-bg: rgba(39,174,96,0.15);
+    --green-border: rgba(39,174,96,0.4);
+    --ss-col: #e74c3c;
+    --rdc-col: #3498db;
+    --etage-col: #2ecc71;
+    --total-max: 600;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+  }
+
+  header {
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .spacer { flex: 1; }
+  .hbtn {
+    padding: 5px 12px;
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    cursor: pointer;
+    background: var(--bg2);
+    color: var(--text2);
+    transition: all 0.15s;
+  }
+  .hbtn:hover { color: var(--accent); border-color: var(--accent2); }
+  .save-dot { width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:5px;vertical-align:middle; }
+  header h1 {
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+  header .sub {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: 'Courier New', monospace;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+  }
+  .tab-btn {
+    padding: 10px 20px;
+    font-size: 12px;
+    font-family: 'Courier New', monospace;
+    color: var(--text2);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .pane { display: none; padding: 16px 24px; }
+  .pane.active { display: block; }
+
+  /* TOOLBAR */
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .toolbar input, .toolbar select {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    outline: none;
+  }
+  .toolbar input { flex: 1; min-width: 150px; }
+  .toolbar input::placeholder { color: var(--text3); }
+  .toolbar input:focus, .toolbar select:focus { border-color: var(--accent2); }
+  .toolbar select option { background: var(--bg2); }
+
+  .view-btns { display: flex; gap: 6px; margin-bottom: 10px; }
+  .vbtn {
+    padding: 5px 12px;
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    cursor: pointer;
+    background: var(--bg2);
+    color: var(--text2);
+    transition: all 0.15s;
+  }
+  .vbtn:hover { color: var(--text); border-color: var(--border2); }
+  .vbtn.active { background: var(--accent2); color: var(--accent); border-color: var(--accent2); }
+
+  /* STAT CARDS */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .scard {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+  .scard .lbl { font-size: 10px; color: var(--text3); font-family: 'Courier New', monospace; letter-spacing: 0.05em; margin-bottom: 4px; text-transform: uppercase; }
+  .scard .val { font-size: 20px; font-weight: 700; font-family: 'Courier New', monospace; }
+  .scard .sub { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+  /* ITEM LIST */
+  .item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    max-height: calc(100vh - 320px);
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .item-list::-webkit-scrollbar { width: 4px; }
+  .item-list::-webkit-scrollbar-track { background: var(--bg); }
+  .item-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* GROUP ROW */
+  .group-row {
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 5px;
+    background: #17171a;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .group-row:hover { border-color: rgba(255,255,255,0.2); }
+  .group-row.prio-red { border-left: 3px solid var(--red); }
+  .group-row.prio-yellow { border-left: 3px solid var(--yellow); }
+  .group-row.prio-green { border-left: 3px solid var(--green); }
+
+  .group-header {
+    display: grid;
+    grid-template-columns: 18px 1fr 70px 120px 80px;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .group-header:hover { background: #1e1e22; }
+  .chevron { color: #8a8880; font-size: 12px; transition: transform 0.15s; }
+  .chevron.open { transform: rotate(90deg); }
+  .gname { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #e8e6e0; }
+  .gmeta { font-size: 12px; color: #8a8880; margin-top: 1px; }
+  .gcnt { font-family: 'Courier New', monospace; font-size: 13px; color: #c9a84c; text-align: right; }
+  .gpct { font-size: 11px; color: #8a8880; text-align: right; }
+  .gzone {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: #1e1e22;
+    color: #c9a84c;
+    border: 1px solid rgba(255,255,255,0.15);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+  }
+  .prio-btns { display: flex; gap: 4px; justify-content: flex-end; }
+  .pb {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border2);
+    cursor: pointer;
+    background: var(--bg3);
+    transition: all 0.1s;
+    flex-shrink: 0;
+  }
+  .pb:hover { transform: scale(1.15); }
+  .pb.red.active { background: var(--red); border-color: var(--red); box-shadow: 0 0 6px rgba(192,57,43,0.5); }
+  .pb.yellow.active { background: var(--yellow); border-color: var(--yellow); box-shadow: 0 0 6px rgba(212,160,23,0.5); }
+  .pb.green.active { background: var(--green); border-color: var(--green); box-shadow: 0 0 6px rgba(39,174,96,0.5); }
+
+  /* INSTANCES */
+  .instances {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 6px 10px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: #0f0f11;
+  }
+  .inst-row {
+    display: grid;
+    grid-template-columns: 28px 1fr 130px 90px 28px;
+    gap: 6px;
+    align-items: center;
+    padding: 5px 8px;
+    border-radius: 4px;
+    background: var(--bg2);
+    border-left: 2px solid transparent;
+    font-size: 11px;
+  }
+  .inst-row.prio-red { border-left-color: var(--red); }
+  .inst-row.prio-yellow { border-left-color: var(--yellow); }
+  .inst-row.prio-green { border-left-color: var(--green); }
+  .inst-num { font-family: 'Courier New', monospace; font-size: 12px; color: var(--text3); }
+
+  /* SELECTS IN ROWS */
+  .mini-sel {
+    font-size: 11px;
+    padding: 3px 5px;
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    background: var(--bg3);
+    color: var(--text);
+    width: 100%;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    outline: none;
+  }
+  .mini-sel:focus { border-color: var(--accent2); }
+  .mini-prio { display: flex; gap: 3px; }
+  .mpb {
+    width: 15px; height: 15px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border2);
+    cursor: pointer;
+    background: var(--bg3);
+    flex-shrink: 0;
+    transition: all 0.1s;
+  }
+  .mpb:hover { transform: scale(1.15); }
+  .mpb.red.active { background: var(--red); border-color: var(--red); }
+  .mpb.yellow.active { background: var(--yellow); border-color: var(--yellow); }
+  .mpb.green.active { background: var(--green); border-color: var(--green); }
+
+  /* DETAIL VIEW */
+  .detail-row {
+    display: grid;
+    grid-template-columns: 1fr 130px 110px 60px 28px;
+    gap: 8px;
+    align-items: center;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--bg2);
+  }
+  .detail-row.prio-red { border-left: 3px solid var(--red); }
+  .detail-row.prio-yellow { border-left: 3px solid var(--yellow); }
+  .detail-row.prio-green { border-left: 3px solid var(--green); }
+  .detail-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #e8e6e0; }
+  .detail-meta { font-size: 12px; color: #8a8880; margin-top: 2px; }
+
+  /* STATS */
+  .stat-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+  .bar-chart { display: flex; flex-direction: column; gap: 4px; max-height: calc(100vh - 320px); overflow-y: auto; padding-right: 4px; }
+  .bar-chart::-webkit-scrollbar { width: 4px; }
+  .bar-chart::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  .bar-row { display: grid; grid-template-columns: 160px 1fr 80px; align-items: center; gap: 10px; }
+  .bar-lbl { font-size: 13px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-track { height: 10px; background: var(--bg3); border-radius: 3px; overflow: hidden; cursor: default; }
+  .bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+  .bar-val { font-family: 'Courier New', monospace; font-size: 12px; color: var(--text2); text-align: right; }
+
+  /* PRIO SUMMARY BELOW BARS */
+  .prio-mini-row { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+  .prio-mini { display: flex; align-items: center; gap: 3px; font-size: 10px; }
+  .prio-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* CONFIG */
+  .mgr-section {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
+    background: var(--bg2);
+  }
+  .mgr-section h3 { font-size: 11px; font-family: 'Courier New', monospace; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
+  .mgr-list { display: flex; flex-direction: column; gap: 3px; max-height: 180px; overflow-y: auto; margin-bottom: 8px; padding-right: 2px; }
+  .mgr-item { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg3); font-size: 12px; }
+  .mgr-item span { flex: 1; }
+  .fdot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .fss { background: var(--ss-col); }
+  .frdc { background: var(--rdc-col); }
+  .fetage { background: var(--etage-col); }
+  .del-inst {
+    width: 22px; height: 22px;
+    border-radius: 3px;
+    border: 1px solid var(--red-border);
+    background: var(--red-bg);
+    color: var(--red);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.12s;
+  }
+  .del-inst:hover { background: var(--red); color: #fff; }
+
+  .del-btn { padding: 1px 7px; font-size: 11px; border: 1px solid var(--red-border); border-radius: 3px; background: var(--red-bg); color: var(--red); cursor: pointer; }
+  .del-btn:hover { background: var(--red); color: #fff; }
+  .add-row { display: flex; gap: 6px; }
+  .add-row input, .add-row select {
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    outline: none;
+    flex: 1;
+  }
+  .add-btn {
+    padding: 6px 14px;
+    font-size: 12px;
+    border: 1px solid var(--accent2);
+    border-radius: 4px;
+    background: var(--accent2);
+    color: var(--accent);
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .add-btn:hover { background: var(--accent); color: var(--bg); }
+  .cat-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .cat-pill { display: flex; align-items: center; gap: 5px; padding: 3px 10px; border: 1px solid var(--border2); border-radius: 12px; font-size: 11px; background: var(--bg3); color: var(--text2); }
+  .cat-pill .x { cursor: pointer; color: var(--red); font-size: 14px; line-height: 1; }
+  .cat-pill .x:hover { color: #fff; }
+
+  /* LEGEND */
+  .prio-legend { display: flex; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+  .pl-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
+  .pl-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .floor-legend { display: flex; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+  .fl-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
+
+  /* scrollbar global */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>HOUSING MANAGER</h1>
+  <span class="sub">SPADS · Shirogane · Grande maison</span>
+  <div class="spacer"></div>
+  <span id="save-status" style="font-size:11px;color:#55534f;font-family:'Space Mono',monospace"></span>
+  <button class="hbtn" onclick="exportJSON()">⬇ Exporter JSON</button>
+  <button class="hbtn" onclick="importJSON()">⬆ Importer JSON</button>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="setTab('items',this)">Objets</button>
+  <button class="tab-btn" onclick="setTab('stats',this)">Statistiques</button>
+  <button class="tab-btn" onclick="setTab('config',this)">Lieux &amp; Catégories</button>
+</div>
+
+<!-- OBJETS -->
+<div id="pane-items" class="pane active">
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="Rechercher un objet..." oninput="renderItems()">
+    <select id="flt-floor" onchange="renderItems()">
+      <option value="">Tous étages</option>
+      <option value="Sous-sol">Sous-sol</option>
+      <option value="RDC">RDC</option>
+      <option value="Étage">Étage</option>
+    </select>
+    <select id="flt-zone" onchange="renderItems()">
+      <option value="">Tous lieux</option>
+      <option value="__none__">Non assigné</option>
+    </select>
+    <select id="flt-cat" onchange="renderItems()">
+      <option value="">Toutes catégories</option>
+    </select>
+    <select id="flt-prio" onchange="renderItems()">
+      <option value="">Toutes priorités</option>
+      <option value="red">Rouge — important</option>
+      <option value="yellow">Jaune — moyen</option>
+      <option value="green">Vert — faible</option>
+      <option value="none">Non défini</option>
+    </select>
+  </div>
+
+  <div class="view-btns">
+    <button class="vbtn active" onclick="setView('group',this)">▤ Groupé</button>
+    <button class="vbtn" onclick="setView('detail',this)">≡ Détaillé</button>
+  </div>
+
+  <div class="prio-legend">
+    <div class="pl-item"><div class="pl-dot" style="background:var(--red)"></div>Important</div>
+    <div class="pl-item"><div class="pl-dot" style="background:var(--yellow)"></div>Moyen</div>
+    <div class="pl-item"><div class="pl-dot" style="background:var(--green)"></div>Faible</div>
+    <div class="pl-item" style="font-size:10px;color:var(--text3)">Cliquer sur un groupe pour voir les instances · Cliquer une pastille = priorité</div>
+  </div>
+
+  <div class="stat-row">
+    <div class="scard"><div class="lbl">Groupes</div><div class="val" id="s-groups">—</div></div>
+    <div class="scard"><div class="lbl">Objets</div><div class="val" id="s-count">—</div><div class="sub" id="s-pct">—</div></div>
+    <div class="scard"><div class="lbl">Non assignés</div><div class="val" id="s-nozone">—</div></div>
+    <div class="scard"><div class="lbl">Priorité rouge</div><div class="val" id="s-red" style="color:var(--red)">—</div></div>
+  </div>
+
+  <div style="display:flex;gap:8px;margin-bottom:8px">
+    <button class="vbtn" id="toggle-add-btn" onclick="toggleAddForm()">+ Ajouter un objet</button>
+  </div>
+  <div class="item-list" id="item-list"></div>
+
+  <!-- ADD OBJECT FORM -->
+  <div id="add-obj-panel" style="display:none;margin-top:12px;border:1px solid var(--accent2);border-radius:6px;padding:14px;background:var(--bg2)">
+    <div style="font-family:'Courier New',monospace;font-size:11px;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">Ajouter un objet</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 100px;gap:8px;align-items:end">
+      <div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Nom</div>
+        <input type="text" id="add-name" placeholder="Nom de l'objet..." style="width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:6px 10px;border-radius:4px;font-size:13px;font-family:'Segoe UI',Arial,sans-serif;outline:none">
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Étage</div>
+        <select id="add-floor" style="width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:6px 10px;border-radius:4px;font-size:13px;font-family:'Segoe UI',Arial,sans-serif;outline:none">
+          <option value="Sous-sol">Sous-sol</option>
+          <option value="RDC" selected>RDC</option>
+          <option value="Étage">Étage</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Lieu</div>
+        <select id="add-zone" style="width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:6px 10px;border-radius:4px;font-size:13px;font-family:'Segoe UI',Arial,sans-serif;outline:none">
+          <option value="">— Aucun —</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Catégorie</div>
+        <select id="add-cat" style="width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:6px 10px;border-radius:4px;font-size:13px;font-family:'Segoe UI',Arial,sans-serif;outline:none"></select>
+      </div>
+      <button class="add-btn" onclick="addObject()">+ Ajouter</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- STATS -->
+<div id="pane-stats" class="pane">
+  <div class="stat-tabs">
+    <button class="vbtn active" onclick="setStatTab('zones',this)">Par lieu</button>
+    <button class="vbtn" onclick="setStatTab('floor',this)">Par étage</button>
+    <button class="vbtn" onclick="setStatTab('cat',this)">Par catégorie</button>
+    <button class="vbtn" onclick="setStatTab('prio',this)">Par priorité</button>
+  </div>
+  <div class="stat-row">
+    <div class="scard"><div class="lbl">Total objets</div><div class="val" id="ss-total">—</div><div class="sub" id="ss-pct">—</div></div>
+    <div class="scard"><div class="lbl">Rouge</div><div class="val" id="ss-red" style="color:var(--red)">—</div></div>
+    <div class="scard"><div class="lbl">Jaune</div><div class="val" id="ss-yel" style="color:var(--yellow)">—</div></div>
+    <div class="scard"><div class="lbl">Vert</div><div class="val" id="ss-grn" style="color:var(--green)">—</div></div>
+  </div>
+  <div class="floor-legend" id="stat-legend"></div>
+  <div class="bar-chart" id="bar-chart"></div>
+</div>
+
+<!-- CONFIG -->
+<div id="pane-config" class="pane">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="mgr-section">
+      <h3>Lieux</h3>
+      <div class="mgr-list" id="zone-list"></div>
+      <div class="add-row">
+        <input type="text" id="new-zone" placeholder="Nom du lieu...">
+        <select id="new-zone-floor">
+          <option value="Sous-sol">Sous-sol</option>
+          <option value="RDC" selected>RDC</option>
+          <option value="Étage">Étage</option>
+        </select>
+        <button class="add-btn" onclick="addZone()">+ Ajouter</button>
+      </div>
+    </div>
+    <div class="mgr-section">
+      <h3>Catégories</h3>
+      <div class="cat-pills" id="cat-list"></div>
+      <div class="add-row">
+        <input type="text" id="new-cat" placeholder="Nouvelle catégorie...">
+        <button class="add-btn" onclick="addCat()">+ Ajouter</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TOTAL_MAX = 600;
+const FLOOR_COL = {'Sous-sol':'#e74c3c','RDC':'#3498db','Étage':'#2ecc71'};
+const CAT_COL = {'Cloison / partition':'#8e44ad','Structure':'#7f8c8d','Siège':'#c0392b','Table':'#d35400','Rangement':'#27ae60','Déco murale':'#2980b9','Déco de table':'#e67e22','Plante / nature':'#16a085','Éclairage':'#f39c12','Tapis / sol':'#95a5a6','Eau / fontaine':'#1abc9c','Cuisine / bar':'#e74c3c','Jeu / loisir':'#9b59b6','Licence / NPC':'#e91e8c','Divers':'#7f8c8d'};
+
+let zones = [
+  {name:'Gold Saucer',floor:'Sous-sol'},{name:'Boîte de nuit',floor:'Sous-sol'},
+  {name:'Porte tori 1',floor:'RDC'},{name:'Porte tori 2',floor:'RDC'},{name:'Stand de cartes',floor:'RDC'},
+  {name:'Stand de sushi',floor:'RDC'},{name:'Fumoir',floor:'RDC'},{name:'Boutique de fleurs',floor:'RDC'},
+  {name:'Ramens',floor:'RDC'},{name:'Boutique des lopporites',floor:'RDC'},{name:'Passage vert',floor:'RDC'},
+  {name:'Bar secret',floor:'RDC'},{name:'Objets de couloir',floor:'RDC'},{name:"Boutique de l'entrée",floor:'RDC'},
+  {name:'Déco centrale',floor:'Étage'},{name:'Bains de Yuinata',floor:'Étage'},{name:'Salon de thé',floor:'Étage'},
+  {name:'Cloison décorative',floor:'Étage'},{name:'Salle de sport',floor:'Étage'}
+];
+let cats = ['Cloison / partition','Structure','Siège','Table','Rangement','Déco murale','Déco de table','Plante / nature','Éclairage','Tapis / sol','Eau / fontaine','Cuisine / bar','Jeu / loisir','Licence / NPC','Divers'];
+
+const RAW = [{"n":"Affiches de la guilde des aventuriers","f":"RDC","sz":"Objets de couloir","sc":"Déco murale","c":2},{"n":"Amas de peluches","f":"Sous-sol","sz":null,"sc":"Jeu / loisir","c":1},{"n":"Aquarium de petite taille","f":"RDC","sz":null,"sc":"Eau / fontaine","c":1},{"n":"Aquarium de taille moyenne","f":"RDC","sz":null,"sc":"Eau / fontaine","c":1},{"n":"Aquarium en métal de taille moyenne","f":"RDC","sz":null,"sc":"Eau / fontaine","c":1},{"n":"Armoire sharlayanaise","f":"Sous-sol","sz":null,"sc":"Rangement","c":1},{"n":"Armoire à fléchettes","f":"Étage","sz":null,"sc":"Rangement","c":2},{"n":"Assortiment de liqueurs","f":"Sous-sol","sz":"Boîte de nuit","sc":"Déco de table","c":1},{"n":"Attrap'Mog","f":"Sous-sol","sz":"Gold Saucer","sc":"Jeu / loisir","c":1},{"n":"Baignoire orientale","f":"Étage","sz":"Bains de Yuinata","sc":"Eau / fontaine","c":1},{"n":"Balance","f":"RDC","sz":"Boutique des lopporites","sc":"Divers","c":1},{"n":"Ballon du Ludodrome","f":"RDC","sz":null,"sc":"Jeu / loisir","c":1},{"n":"Banc confortable","f":"Étage","sz":null,"sc":"Siège","c":2},{"n":"Banc cosmique","f":"Sous-sol","sz":"Boîte de nuit","sc":"Siège","c":3},{"n":"Banc de musculation","f":"Étage","sz":"Salle de sport","sc":"Siège","c":2},{"n":"Banc hingashien","f":"RDC","sz":"Stand de sushi","sc":"Siège","c":6},{"n":"Bar sombrelinçois","f":"Étage","sz":null,"sc":"Table","c":1},{"n":"Bassin d'intérieur","f":"RDC","sz":"Passage vert","sc":"Eau / fontaine","c":1},{"n":"Bassin d'intérieur oriental","f":"RDC","sz":"Passage vert","sc":"Eau / fontaine","c":1},{"n":"Bibliothèque hingashienne","f":"RDC","sz":null,"sc":"Rangement","c":1},{"n":"Boissons festives","f":"Sous-sol","sz":"Boîte de nuit","sc":"Déco de table","c":1},{"n":"Bol de ragoût","f":"RDC","sz":"Stand de sushi","sc":"Déco de table","c":1},{"n":"Bouteille d'élixir","f":"Sous-sol","sz":null,"sc":"Déco de table","c":3},{"n":"Bouteilles en vrac","f":"RDC","sz":"Bar secret","sc":"Déco de table","c":1},{"n":"Boîte de rangement","f":"Étage","sz":null,"sc":"Rangement","c":4},{"n":"Branche à jardinières","f":"Étage","sz":null,"sc":"Plante / nature","c":1},{"n":"Broche BBQ d'intérieur","f":"RDC","sz":"Ramens","sc":"Cuisine / bar","c":1},{"n":"Bureau hingashien","f":"RDC","sz":null,"sc":"Table","c":2},{"n":"Cabinet mural","f":"RDC","sz":null,"sc":"Rangement","c":1},{"n":"Cabinet à rouleaux","f":"RDC","sz":null,"sc":"Rangement","c":1},{"n":"Caisse de transport maritime","f":"RDC","sz":null,"sc":"Divers","c":1},{"n":"Caisse mécanique de Cristarium","f":"Sous-sol","sz":null,"sc":"Divers","c":2},{"n":"Canapé de la Gardienne","f":"Sous-sol","sz":null,"sc":"Siège","c":2},{"n":"Canapé en cuir","f":"Sous-sol","sz":"Boîte de nuit","sc":"Siège","c":9},{"n":"Canapé demi-cercle Gardienne","f":"Sous-sol","sz":null,"sc":"Siège","c":1},{"n":"Carnet de voyage","f":"RDC","sz":"Stand de cartes","sc":"Divers","c":1},{"n":"Carte astrale du collège","f":"RDC","sz":"Stand de cartes","sc":"Déco murale","c":1},{"n":"Carte de la Trigée","f":"Étage","sz":null,"sc":"Déco murale","c":1},{"n":"Cartonnier","f":"Sous-sol","sz":null,"sc":"Rangement","c":4},{"n":"Cascade d'intérieur orientale","f":"RDC","sz":"Passage vert","sc":"Eau / fontaine","c":1},{"n":"Casier métallique","f":"Étage","sz":"Salle de sport","sc":"Rangement","c":2},{"n":"Cendrier","f":"RDC","sz":"Fumoir","sc":"Divers","c":1},{"n":"Chaise en bois ishgardaise","f":"Sous-sol","sz":null,"sc":"Siège","c":2},{"n":"Cheminée du Manoir","f":"Sous-sol","sz":null,"sc":"Divers","c":3},{"n":"Chocobo en peluche","f":"Sous-sol","sz":null,"sc":"Jeu / loisir","c":1},{"n":"Cloison champ de fleurs","f":"RDC","sz":"Boutique de fleurs","sc":"Cloison / partition","c":3},{"n":"Cloison de la Gardienne","f":"RDC","sz":null,"sc":"Cloison / partition","c":3},{"n":"Cloison de papier hingashienne","f":"Étage","sz":"Salon de thé","sc":"Cloison / partition","c":3},{"n":"Cloison en lattes de bois","f":"Sous-sol","sz":null,"sc":"Cloison / partition","c":5},{"n":"Cloison fausse porte condamnée","f":"Sous-sol","sz":null,"sc":"Cloison / partition","c":1},{"n":"Cloison hingashienne","f":"Étage","sz":"Déco centrale","sc":"Cloison / partition","c":10},{"n":"Cloison jardinière à treillage","f":"RDC","sz":"Boutique de fleurs","sc":"Cloison / partition","c":2},{"n":"Cloison ouverte","f":"RDC","sz":null,"sc":"Cloison / partition","c":3},{"n":"Cloison ruisselante","f":"Étage","sz":null,"sc":"Cloison / partition","c":4},{"n":"Cloison tropicale","f":"Étage","sz":"Cloison décorative","sc":"Cloison / partition","c":5},{"n":"Cloison verdoyante","f":"Sous-sol","sz":null,"sc":"Cloison / partition","c":3},{"n":"Cloison vierge porte hingashienne","f":"RDC","sz":null,"sc":"Cloison / partition","c":2},{"n":"Cloison vierge porte sombre","f":"Sous-sol","sz":null,"sc":"Cloison / partition","c":3},{"n":"Cloison vierge de style sombre","f":"Sous-sol","sz":null,"sc":"Cloison / partition","c":33},{"n":"Cloison vierge hingashienne","f":"Étage","sz":"Cloison décorative","sc":"Cloison / partition","c":22},{"n":"Cloison vierge sombrelinçoise","f":"RDC","sz":null,"sc":"Cloison / partition","c":1},{"n":"Cloison à fenêtre ronde","f":"RDC","sz":null,"sc":"Cloison / partition","c":4},{"n":"Coffre de compagnie libre","f":"RDC","sz":"Boutique des lopporites","sc":"Rangement","c":1},{"n":"Coffre du mort","f":"RDC","sz":"Boutique des lopporites","sc":"Rangement","c":1},{"n":"Colonne de douche","f":"Étage","sz":"Bains de Yuinata","sc":"Structure","c":1},{"n":"Colonne hingashienne","f":"RDC","sz":"Porte tori 1","sc":"Structure","c":8},{"n":"Colonne ishgardaise","f":"RDC","sz":null,"sc":"Structure","c":2},{"n":"Comptoir d'angle","f":"RDC","sz":null,"sc":"Table","c":2},{"n":"Comptoir de bar","f":"RDC","sz":"Bar secret","sc":"Table","c":6},{"n":"Comptoir cuisine Gardienne","f":"Sous-sol","sz":null,"sc":"Table","c":1},{"n":"Comptoir en coin du Gold Saucer","f":"Sous-sol","sz":"Gold Saucer","sc":"Table","c":1},{"n":"Comptoir sur roues","f":"RDC","sz":"Boutique de l'entrée","sc":"Table","c":1},{"n":"Cordon de séparation","f":"Sous-sol","sz":"Gold Saucer","sc":"Divers","c":2},{"n":"Cornouiller domien","f":"Étage","sz":null,"sc":"Plante / nature","c":7},{"n":"Coussin zabuton","f":"Étage","sz":"Salon de thé","sc":"Siège","c":9},{"n":"Cuisine des mers du sud","f":"RDC","sz":"Ramens","sc":"Cuisine / bar","c":1},{"n":"Dalle cosmique","f":"RDC","sz":null,"sc":"Tapis / sol","c":2},{"n":"Demi-cloison blanche","f":"Étage","sz":"Cloison décorative","sc":"Cloison / partition","c":3},{"n":"Distributeur de Solution Neuf","f":"Sous-sol","sz":null,"sc":"Divers","c":1},{"n":"Documents d'investigation","f":"RDC","sz":"Boutique de l'entrée","sc":"Divers","c":1},{"n":"Documents épars","f":"RDC","sz":"Boutique de l'entrée","sc":"Divers","c":1},{"n":"Drapeau du Blunderville","f":"Sous-sol","sz":null,"sc":"Divers","c":1},{"n":"Dressoir de la Gardienne","f":"Sous-sol","sz":null,"sc":"Rangement","c":1},{"n":"Dressoir hingashien","f":"RDC","sz":null,"sc":"Rangement","c":4},{"n":"Dáinsleif DS","f":"Sous-sol","sz":"Gold Saucer","sc":"Jeu / loisir","c":1},{"n":"Déjeuner oriental : udon","f":"RDC","sz":"Stand de sushi","sc":"Déco de table","c":1},{"n":"Déjeuner oriental : sushi","f":"RDC","sz":"Stand de sushi","sc":"Déco de table","c":1},{"n":"Escabeau d'intérieur","f":"RDC","sz":"Ramens","sc":"Divers","c":1},{"n":"Escalier en bois","f":"Étage","sz":null,"sc":"Structure","c":15},{"n":"Escalier en pierre","f":"RDC","sz":null,"sc":"Structure","c":4},{"n":"Estrade de luxe","f":"Sous-sol","sz":"Gold Saucer","sc":"Divers","c":1},{"n":"Fausse fenêtre hingashienne","f":"RDC","sz":null,"sc":"Déco murale","c":2},{"n":"Fauteuil noscéen","f":"Étage","sz":null,"sc":"Siège","c":1},{"n":"Fenêtre cintre fissurée","f":"Étage","sz":null,"sc":"Déco murale","c":1},{"n":"Fenêtre hingashienne trompe-l'œil","f":"Étage","sz":"Déco centrale","sc":"Déco murale","c":2},{"n":"Figurine magitek Guerrier-G","f":"Sous-sol","sz":null,"sc":"Jeu / loisir","c":1},{"n":"Figurine magitek Zurvan","f":"Sous-sol","sz":null,"sc":"Jeu / loisir","c":1},{"n":"Fontaine d'intérieur en marbre","f":"Étage","sz":"Déco centrale","sc":"Eau / fontaine","c":1},{"n":"Fontaine d'intérieur orientale","f":"RDC","sz":"Passage vert","sc":"Eau / fontaine","c":1},{"n":"Fontaine murale thanalanaise","f":"RDC","sz":"Passage vert","sc":"Eau / fontaine","c":2},{"n":"Four hingashien","f":"RDC","sz":"Stand de sushi","sc":"Cuisine / bar","c":1},{"n":"Foyer hingashien","f":"RDC","sz":"Stand de sushi","sc":"Cuisine / bar","c":2},{"n":"Fût de saké","f":"Étage","sz":"Bains de Yuinata","sc":"Déco de table","c":1},{"n":"Gilg-a-Moche","f":"Sous-sol","sz":null,"sc":"Divers","c":1},{"n":"Gold Saucer miniature","f":"Sous-sol","sz":"Gold Saucer","sc":"Jeu / loisir","c":1},{"n":"Grande bibliothèque","f":"Étage","sz":null,"sc":"Rangement","c":3},{"n":"Guirlande de cristaux","f":"Étage","sz":null,"sc":"Déco murale","c":1},{"n":"Guirlande étoilée","f":"Sous-sol","sz":"Gold Saucer","sc":"Déco murale","c":4},{"n":"Guitare électrique magitek","f":"Sous-sol","sz":"Boîte de nuit","sc":"Jeu / loisir","c":2},{"n":"Harpe du Manoir","f":"Étage","sz":"Salon de thé","sc":"Jeu / loisir","c":2},{"n":"Horloge de table noscéenne","f":"Étage","sz":"Salon de thé","sc":"Table","c":1},{"n":"Imitation de coffre fort","f":"RDC","sz":"Boutique des lopporites","sc":"Rangement","c":1},{"n":"Imitation fenêtre clair de lune","f":"Sous-sol","sz":null,"sc":"Déco murale","c":5},{"n":"Imitation de narguilé corvosien","f":"RDC","sz":"Fumoir","sc":"Divers","c":1},{"n":"Imitation de trappe","f":"Sous-sol","sz":null,"sc":"Divers","c":1},{"n":"Jardinière bas-tonneau en chêne","f":"RDC","sz":"Boutique de fleurs","sc":"Plante / nature","c":1},{"n":"Jardinière des Cieldalaes","f":"RDC","sz":"Boutique de fleurs","sc":"Plante / nature","c":1},{"n":"Jardinière murale","f":"Étage","sz":null,"sc":"Plante / nature","c":8},{"n":"Jardinière murale de roses","f":"RDC","sz":"Boutique de fleurs","sc":"Plante / nature","c":2},{"n":"La Grande Histoire naturelle","f":"RDC","sz":null,"sc":"Divers","c":1},{"n":"Lampadaire de la Gardienne","f":"Sous-sol","sz":null,"sc":"Éclairage","c":2},{"n":"Lampe Canne des soins","f":"RDC","sz":null,"sc":"Éclairage","c":1},{"n":"Lampe hingashienne (andon)","f":"RDC","sz":null,"sc":"Éclairage","c":2},{"n":"Lampe murale hannoise","f":"RDC","sz":null,"sc":"Éclairage","c":1},{"n":"Lampe-fleur d'Il Mheg","f":"RDC","sz":"Boutique de fleurs","sc":"Plante / nature","c":1},{"n":"Lance-bombo","f":"Sous-sol","sz":"Gold Saucer","sc":"Divers","c":1},{"n":"Lanterne hingashienne","f":"RDC","sz":"Porte tori 1","sc":"Éclairage","c":11},{"n":"Lanterne à vitrail érazoéenne","f":"RDC","sz":null,"sc":"Éclairage","c":1},{"n":"Licence : employé felyne","f":"RDC","sz":"Boutique des lopporites","sc":"Licence / NPC","c":1},{"n":"Licence : employé namazu","f":"RDC","sz":"Boutique des lopporites","sc":"Licence / NPC","c":1},{"n":"Licence : hôkônin","f":"RDC","sz":"Boutique des lopporites","sc":"Licence / NPC","c":1},{"n":"Licence : magasinier","f":"Étage","sz":null,"sc":"Licence / NPC","c":1},{"n":"Licence : quincaillier loporrite","f":"RDC","sz":"Boutique des lopporites","sc":"Licence / NPC","c":1},{"n":"Licence : réparateur 3","f":"RDC","sz":"Boutique des lopporites","sc":"Licence / NPC","c":1},{"n":"Licence : réparateur felyne","f":"RDC","sz":"Boutique des lopporites","sc":"Licence / NPC","c":1},{"n":"Licence : vendeur matériaux","f":"RDC","sz":"Boutique des lopporites","sc":"Licence / NPC","c":1},{"n":"Licence : vendeur loporrite","f":"RDC","sz":"Boutique des lopporites","sc":"Licence / NPC","c":1},{"n":"Lit hannois","f":"RDC","sz":null,"sc":"Divers","c":3},{"n":"Mappemonde d'Éorzéa","f":"Étage","sz":null,"sc":"Divers","c":1},{"n":"Marchepied lalafell","f":"RDC","sz":"Objets de couloir","sc":"Divers","c":1},{"n":"Matsu-bonsaï","f":"RDC","sz":"Boutique de fleurs","sc":"Plante / nature","c":2},{"n":"Mezzanine en bois","f":"Sous-sol","sz":null,"sc":"Structure","c":13},{"n":"Mezzanine en bois éclairée","f":"Sous-sol","sz":null,"sc":"Structure","c":5},{"n":"Mezzanine en pierre","f":"RDC","sz":null,"sc":"Structure","c":3},{"n":"Mezzanine en tatami","f":"RDC","sz":"Stand de sushi","sc":"Structure","c":1},{"n":"Mini-bibliothèque","f":"RDC","sz":null,"sc":"Rangement","c":1},{"n":"Mini-jardin oriental","f":"RDC","sz":"Passage vert","sc":"Plante / nature","c":2},{"n":"Moniteur de la Gardienne","f":"Sous-sol","sz":null,"sc":"Divers","c":1},{"n":"Nécessaire à pipe oriental","f":"RDC","sz":"Fumoir","sc":"Divers","c":1},{"n":"Néon mural belhamel","f":"Sous-sol","sz":"Boîte de nuit","sc":"Déco murale","c":2},{"n":"Néon mural ludique","f":"RDC","sz":null,"sc":"Déco murale","c":2},{"n":"Néon mural vertical","f":"Sous-sol","sz":"Boîte de nuit","sc":"Déco murale","c":2},{"n":"Orchestrion de table","f":"RDC","sz":null,"sc":"Table","c":1},{"n":"Panier de chandelles","f":"RDC","sz":"Ramens","sc":"Divers","c":1},{"n":"Panier de fleurs","f":"RDC","sz":"Boutique de fleurs","sc":"Plante / nature","c":1},{"n":"Panier à linge","f":"Étage","sz":"Bains de Yuinata","sc":"Divers","c":1},{"n":"Paravent domien","f":"Étage","sz":null,"sc":"Cloison / partition","c":1},{"n":"Paravent hingashien rouge et blanc","f":"Étage","sz":"Déco centrale","sc":"Cloison / partition","c":2},{"n":"Paravent médical","f":"Étage","sz":null,"sc":"Cloison / partition","c":3},{"n":"Paravent pelupelu","f":"RDC","sz":"Fumoir","sc":"Cloison / partition","c":2},{"n":"Partition en marbre","f":"Étage","sz":"Cloison décorative","sc":"Cloison / partition","c":2},{"n":"Partition rectangulaire blanche","f":"Sous-sol","sz":null,"sc":"Cloison / partition","c":9},{"n":"Partition verdoyante","f":"RDC","sz":"Passage vert","sc":"Cloison / partition","c":7},{"n":"Patère de cuisine","f":"Étage","sz":null,"sc":"Cuisine / bar","c":1},{"n":"Paysage magique : Kugane","f":"Étage","sz":"Déco centrale","sc":"Déco murale","c":2},{"n":"Paysage magique : Steppe d'Azim","f":"RDC","sz":null,"sc":"Déco murale","c":1},{"n":"Paysage magique : aurore polaire","f":"Sous-sol","sz":null,"sc":"Déco murale","c":1},{"n":"Paysage maritime","f":"Étage","sz":null,"sc":"Déco murale","c":1},{"n":"Peluche d'Alpha","f":"Sous-sol","sz":null,"sc":"Jeu / loisir","c":1},{"n":"Penderie noscéenne","f":"Étage","sz":null,"sc":"Rangement","c":1},{"n":"Petite commode sombrelinçoise","f":"Étage","sz":null,"sc":"Rangement","c":1},{"n":"Piste de danse arc-en-ciel","f":"Sous-sol","sz":"Gold Saucer","sc":"Tapis / sol","c":2},{"n":"Plan de travail du Manoir","f":"RDC","sz":"Ramens","sc":"Table","c":1},{"n":"Plateau de Triple Triade","f":"RDC","sz":"Stand de cartes","sc":"Jeu / loisir","c":1},{"n":"Poisson-sucre grillé et salé","f":"RDC","sz":"Stand de sushi","sc":"Déco de table","c":1},{"n":"Porte-chapeau","f":"Étage","sz":null,"sc":"Divers","c":2},{"n":"Porte-haltères","f":"Étage","sz":"Salle de sport","sc":"Divers","c":2},{"n":"Porte-serviette","f":"Étage","sz":"Bains de Yuinata","sc":"Divers","c":2},{"n":"Porte-verres","f":"Sous-sol","sz":"Boîte de nuit","sc":"Déco de table","c":1},{"n":"Portemanteau","f":"Sous-sol","sz":null,"sc":"Divers","c":1},{"n":"Pot d'alocasias","f":"Sous-sol","sz":null,"sc":"Plante / nature","c":2},{"n":"Pot d'oranger","f":"RDC","sz":null,"sc":"Plante / nature","c":1},{"n":"Pot de bambous","f":"Étage","sz":null,"sc":"Plante / nature","c":1},{"n":"Pot de dragonnier","f":"Sous-sol","sz":null,"sc":"Plante / nature","c":1},{"n":"Pot de fleurs noscéen","f":"RDC","sz":"Boutique de fleurs","sc":"Plante / nature","c":1},{"n":"Pot de fleurs thanalanais","f":"RDC","sz":"Boutique de fleurs","sc":"Plante / nature","c":3},{"n":"Pot de maguey","f":"Sous-sol","sz":null,"sc":"Plante / nature","c":1},{"n":"Poteau de danse","f":"Sous-sol","sz":"Boîte de nuit","sc":"Structure","c":1},{"n":"Poteau en bois hingashien","f":"RDC","sz":"Porte tori 1","sc":"Structure","c":2},{"n":"Poutre en bois","f":"Étage","sz":null,"sc":"Structure","c":5},{"n":"Poutre en bois naturel","f":"Étage","sz":null,"sc":"Structure","c":2},{"n":"Prosciutto crudo","f":"Sous-sol","sz":null,"sc":"Divers","c":1},{"n":"Présentoir de fleuriste","f":"RDC","sz":"Boutique de fleurs","sc":"Plante / nature","c":2},{"n":"Présentoir à magazines","f":"RDC","sz":null,"sc":"Divers","c":1},{"n":"Pupitre du Manoir","f":"Étage","sz":"Salon de thé","sc":"Divers","c":1},{"n":"Rampe en bois","f":"Sous-sol","sz":null,"sc":"Structure","c":13},{"n":"Rideau de lierre","f":"Étage","sz":"Cloison décorative","sc":"Déco murale","c":4},{"n":"Rideau de scène","f":"RDC","sz":"Bar secret","sc":"Déco murale","c":2},{"n":"Rideau simple","f":"Sous-sol","sz":null,"sc":"Déco murale","c":2},{"n":"Rouleau suspendu hingashien","f":"Étage","sz":"Déco centrale","sc":"Déco murale","c":2},{"n":"Sac de pièces","f":"RDC","sz":"Boutique de l'entrée","sc":"Déco de table","c":1},{"n":"Service dégustation de saké","f":"RDC","sz":"Stand de sushi","sc":"Déco de table","c":1},{"n":"Service de table","f":"Sous-sol","sz":null,"sc":"Table","c":1},{"n":"Serviettes de bain","f":"Étage","sz":"Bains de Yuinata","sc":"Divers","c":5},{"n":"Set de table","f":"Sous-sol","sz":null,"sc":"Table","c":1},{"n":"Sonnette","f":"RDC","sz":"Objets de couloir","sc":"Divers","c":1},{"n":"Spiritueux","f":"Étage","sz":null,"sc":"Déco de table","c":1},{"n":"Stand pour DJ","f":"Sous-sol","sz":"Boîte de nuit","sc":"Divers","c":1},{"n":"Statue de dragon mystique","f":"Sous-sol","sz":null,"sc":"Divers","c":1},{"n":"Store d'intérieur","f":"RDC","sz":null,"sc":"Déco murale","c":7},{"n":"Store en bois","f":"Étage","sz":"Cloison décorative","sc":"Déco murale","c":4},{"n":"Support à livre","f":"RDC","sz":null,"sc":"Divers","c":1},{"n":"Table de billard","f":"Sous-sol","sz":null,"sc":"Table","c":1},{"n":"Table ronde Gardienne","f":"Sous-sol","sz":null,"sc":"Table","c":2},{"n":"Table à manger Gardienne","f":"Sous-sol","sz":null,"sc":"Table","c":3},{"n":"Table à manger tuliyolloise","f":"Étage","sz":null,"sc":"Table","c":1},{"n":"Table à tiroirs sombrelinçoise","f":"Étage","sz":"Salon de thé","sc":"Table","c":2},{"n":"Tableau d'informations : taverne","f":"RDC","sz":null,"sc":"Déco murale","c":1},{"n":"Tableau mural Suzaku","f":"Sous-sol","sz":null,"sc":"Déco murale","c":1},{"n":"Tabouret de bar","f":"RDC","sz":null,"sc":"Siège","c":4},{"n":"Tabouret fungus","f":"Sous-sol","sz":null,"sc":"Siège","c":2},{"n":"Tabouret noscéen","f":"Sous-sol","sz":"Boîte de nuit","sc":"Siège","c":5},{"n":"Tabouret sombrelinçois","f":"RDC","sz":"Bar secret","sc":"Siège","c":4},{"n":"Tabouret thanalanais","f":"Étage","sz":null,"sc":"Siège","c":3},{"n":"Tapis de la Gardienne","f":"Sous-sol","sz":null,"sc":"Tapis / sol","c":2},{"n":"Tapis de laine peignée","f":"Sous-sol","sz":null,"sc":"Tapis / sol","c":3},{"n":"Tapis de sport","f":"Étage","sz":"Salle de sport","sc":"Tapis / sol","c":2},{"n":"Tapis en céramique","f":"Étage","sz":"Bains de Yuinata","sc":"Tapis / sol","c":1},{"n":"Tapis rouge","f":"Étage","sz":null,"sc":"Tapis / sol","c":2},{"n":"Tapisserie murale orientale","f":"Étage","sz":"Déco centrale","sc":"Déco murale","c":1},{"n":"Tas de livres","f":"Étage","sz":null,"sc":"Divers","c":1},{"n":"Tatami","f":"RDC","sz":"Stand de sushi","sc":"Tapis / sol","c":5},{"n":"Tirelire gros minou","f":"RDC","sz":null,"sc":"Déco de table","c":1},{"n":"Tireuse à bière","f":"Étage","sz":null,"sc":"Déco de table","c":4},{"n":"Treillis à roses","f":"RDC","sz":"Boutique de fleurs","sc":"Plante / nature","c":3},{"n":"Trésor des abysses","f":"RDC","sz":"Boutique de l'entrée","sc":"Divers","c":1},{"n":"Trésors des Anantas","f":"RDC","sz":"Boutique de l'entrée","sc":"Divers","c":1},{"n":"Vasque sur pied","f":"Sous-sol","sz":null,"sc":"Eau / fontaine","c":2},{"n":"Verre à vin","f":"Étage","sz":null,"sc":"Déco de table","c":6},{"n":"Vitrail oriental","f":"RDC","sz":null,"sc":"Déco murale","c":3},{"n":"Vitrine de viennoiseries","f":"Étage","sz":null,"sc":"Divers","c":1},{"n":"Éclairage indirect mural","f":"RDC","sz":null,"sc":"Éclairage","c":1},{"n":"Éclairage mural Cannes des soins","f":"RDC","sz":null,"sc":"Éclairage","c":2},{"n":"Établi de tannerie","f":"RDC","sz":"Boutique de l'entrée","sc":"Divers","c":1},{"n":"Étagère de bar","f":"Sous-sol","sz":"Boîte de nuit","sc":"Rangement","c":2},{"n":"Étagère de marchand","f":"Étage","sz":null,"sc":"Rangement","c":3},{"n":"Étagère murale en bois","f":"Étage","sz":null,"sc":"Rangement","c":2},{"n":"Étagère murale hingashienne","f":"Étage","sz":null,"sc":"Rangement","c":2},{"n":"Étagère à gourmandises","f":"Sous-sol","sz":null,"sc":"Rangement","c":1},{"n":"Étagère à livres hingashienne","f":"RDC","sz":null,"sc":"Rangement","c":1},{"n":"Étagère à potions","f":"RDC","sz":"Boutique de l'entrée","sc":"Rangement","c":1},{"n":"Étagère à thé","f":"Étage","sz":"Salon de thé","sc":"Rangement","c":1},{"n":"Évier antique","f":"RDC","sz":null,"sc":"Eau / fontaine","c":1}];
+
+// Build instances
+let instances = [];
+let gid = 0;
+RAW.forEach(item => {
+  for(let i = 0; i < item.c; i++){
+    instances.push({ id: gid++, name: item.n, floor: item.f, zone: item.sz || null, category: item.sc || 'Divers', prio: null });
+  }
+});
+
+let viewMode = 'group';
+let statTab = 'zones';
+let openGroups = new Set();
+
+function setTab(t, el){
+  document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pane-'+t).classList.add('active');
+  if(t==='stats') renderStats();
+  if(t==='config') renderConfig();
+}
+
+function setView(v, el){
+  viewMode = v;
+  document.querySelectorAll('.view-btns .vbtn').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  renderItems();
+}
+
+function setStatTab(v, el){
+  statTab = v;
+  document.querySelectorAll('.stat-tabs .vbtn').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  renderStats();
+}
+
+function getFiltered(){
+  const q = document.getElementById('search').value.toLowerCase();
+  const flr = document.getElementById('flt-floor').value;
+  const zone = document.getElementById('flt-zone').value;
+  const cat = document.getElementById('flt-cat').value;
+  const prio = document.getElementById('flt-prio').value;
+  return instances.filter(i => {
+    if(q && !i.name.toLowerCase().includes(q)) return false;
+    if(flr && i.floor !== flr) return false;
+    if(zone === '__none__' && i.zone) return false;
+    if(zone && zone !== '__none__' && i.zone !== zone) return false;
+    if(cat && i.category !== cat) return false;
+    if(prio === 'none' && i.prio) return false;
+    if(prio && prio !== 'none' && i.prio !== prio) return false;
+    return true;
+  });
+}
+
+function buildGroups(list){
+  const map = {};
+  list.forEach(inst => {
+    const key = inst.name + '|||' + (inst.zone || '__none__');
+    if(!map[key]) map[key] = { key, name: inst.name, zone: inst.zone, floor: inst.floor, category: inst.category, instances: [] };
+    map[key].instances.push(inst);
+  });
+  Object.values(map).forEach(g => {
+    const ps = g.instances.map(i=>i.prio).filter(Boolean);
+    g.prio = ps.includes('red') ? 'red' : ps.includes('yellow') ? 'yellow' : ps.includes('green') ? 'green' : null;
+  });
+  return Object.values(map).sort((a,b) => a.name.localeCompare(b.name, 'fr'));
+}
+
+function zoneOpts(sel){ return '<option value="">—</option>' + zones.map(z=>`<option value="${z.name}"${z.name===sel?' selected':''}>${z.name}</option>`).join(''); }
+function catOpts(sel){ return cats.map(c=>`<option value="${c}"${c===sel?' selected':''}>${c}</option>`).join(''); }
+
+function prioBtns(id, p, isGroup){
+  const cls = isGroup ? 'pb' : 'mpb';
+  const attr = isGroup ? 'data-gkey' : 'data-iid';
+  return `<div class="${isGroup?'prio-btns':'mini-prio'}">
+    <button class="${cls} red${p==='red'?' active':''}" ${attr}="${id}" data-prio="red" title="Important"></button>
+    <button class="${cls} yellow${p==='yellow'?' active':''}" ${attr}="${id}" data-prio="yellow" title="Moyen"></button>
+    <button class="${cls} green${p==='green'?' active':''}" ${attr}="${id}" data-prio="green" title="Faible"></button>
+  </div>`;
+}
+
+function renderItems(){
+  const list = getFiltered();
+  const nozone = list.filter(i=>!i.zone).length;
+  const redC = list.filter(i=>i.prio==='red').length;
+  document.getElementById('s-count').textContent = list.length;
+  document.getElementById('s-pct').textContent = Math.round(list.length/TOTAL_MAX*100) + '% du total ('+TOTAL_MAX+')';
+  document.getElementById('s-nozone').textContent = nozone;
+  document.getElementById('s-red').textContent = redC;
+
+  const el = document.getElementById('item-list');
+
+  if(viewMode === 'detail'){
+    document.getElementById('s-groups').textContent = list.length;
+    el.innerHTML = list.map(inst => {
+      const pc = inst.prio ? 'prio-'+inst.prio : '';
+      return `<div class="detail-row ${pc}" style="grid-template-columns:1fr 100px 130px 110px 60px 28px">
+        <div>
+          <div class="detail-name" title="${inst.name}">${inst.name}</div>
+          <div class="detail-meta">#${inst.id}</div>
+        </div>
+        <select class="mini-sel" onchange="setIFloor(${inst.id},this.value)">
+          <option value="Sous-sol"${inst.floor==='Sous-sol'?' selected':''}>Sous-sol</option>
+          <option value="RDC"${inst.floor==='RDC'?' selected':''}>RDC</option>
+          <option value="Étage"${inst.floor==='Étage'?' selected':''}>Étage</option>
+        </select>
+        <select class="mini-sel" onchange="setIZone(${inst.id},this.value)">${zoneOpts(inst.zone)}</select>
+        <select class="mini-sel" onchange="setICat(${inst.id},this.value)">${catOpts(inst.category)}</select>
+        ${prioBtns(inst.id, inst.prio, false)}
+        <button class="del-inst" data-iid="${inst.id}" title="Supprimer cette instance">×</button>
+      </div>`;
+    }).join('');
+    return;
+  }
+
+  // GROUP VIEW
+  const groups = buildGroups(list);
+  document.getElementById('s-groups').textContent = groups.length;
+
+  el.innerHTML = groups.map(g => {
+    const open = openGroups.has(g.key);
+    const pc = g.prio ? 'prio-'+g.prio : '';
+    const instRows = open ? g.instances.map(inst => {
+      const ipc = inst.prio ? 'prio-'+inst.prio : '';
+      return `<div class="inst-row ${ipc}" style="grid-template-columns:28px 100px 130px 130px 90px 28px">
+        <span class="inst-num">#${inst.id}</span>
+        <select class="mini-sel" onchange="setIFloor(${inst.id},this.value)">
+          <option value="Sous-sol"${inst.floor==='Sous-sol'?' selected':''}>Sous-sol</option>
+          <option value="RDC"${inst.floor==='RDC'?' selected':''}>RDC</option>
+          <option value="Étage"${inst.floor==='Étage'?' selected':''}>Étage</option>
+        </select>
+        <select class="mini-sel" onchange="setIZone(${inst.id},this.value)">${zoneOpts(inst.zone)}</select>
+        <select class="mini-sel" onchange="setICat(${inst.id},this.value)">${catOpts(inst.category)}</select>
+        ${prioBtns(inst.id, inst.prio, false)}
+        <button class="del-inst" data-iid="${inst.id}" title="Supprimer cette instance">×</button>
+      </div>`;
+    }).join('') : '';
+
+    const gidx = groups.indexOf(g);
+    return `<div class="group-row ${pc}" data-gidx="${gidx}">
+      <div class="group-header" data-toggle="${gidx}">
+        <span class="chevron${open?' open':''}">›</span>
+        <div>
+          <div class="gname" title="${g.name}">${g.name}</div>
+          <div class="gmeta">${g.floor} · ${g.category}</div>
+        </div>
+        <div>
+          <div class="gcnt">×${g.instances.length}</div>
+          <div class="gpct">${Math.round(g.instances.length/TOTAL_MAX*100)}%</div>
+        </div>
+        <div class="gzone">${g.zone || '—'}</div>
+        ${prioBtns(g.key, g.prio, true)}
+      </div>
+      ${open ? `<div class="instances">${instRows}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// Event delegation for item-list
+document.addEventListener('click', function(e){
+  // Toggle group
+  const header = e.target.closest('[data-toggle]');
+  if(header && e.target.closest('.item-list')){
+    const gidx = parseInt(header.getAttribute('data-toggle'));
+    const list = getFiltered();
+    const groups = buildGroups(list);
+    if(groups[gidx]){
+      const key = groups[gidx].key;
+      openGroups.has(key) ? openGroups.delete(key) : openGroups.add(key);
+      renderItems();
+    }
+    return;
+  }
+  // Prio button instance
+  const mpb = e.target.closest('.mpb[data-iid]');
+  if(mpb){
+    e.stopPropagation();
+    const id = parseInt(mpb.getAttribute('data-iid'));
+    const p = mpb.getAttribute('data-prio');
+    setIPrio(id, p);
+    return;
+  }
+  // Prio button group
+  const pb = e.target.closest('.pb[data-gkey]');
+  if(pb){
+    e.stopPropagation();
+    const key = pb.getAttribute('data-gkey');
+    const p = pb.getAttribute('data-prio');
+    _setGPrio(key, p);
+    return;
+  }
+  // Delete instance
+  const del = e.target.closest('.del-inst[data-iid]');
+  if(del){
+    e.stopPropagation();
+    const id = parseInt(del.getAttribute('data-iid'));
+    deleteInst(id);
+    return;
+  }
+});
+
+function toggleGroup(key){
+  openGroups.has(key) ? openGroups.delete(key) : openGroups.add(key);
+  renderItems();
+}
+
+function _setGPrio(key, p){
+  const groups = buildGroups(getFiltered());
+  const g = groups.find(x=>x.key===key);
+  if(!g) return;
+  const newP = g.prio === p ? null : p;
+  g.instances.forEach(inst => { const i = instances.find(x=>x.id===inst.id); if(i) i.prio = newP; });
+  renderItems();
+}
+function setIPrio(id, p){
+  const i = instances.find(x=>x.id===id);
+  if(i) i.prio = (i.prio===p) ? null : p;
+  renderItems();
+}
+function setIFloor(id, val){
+  const i = instances.find(x=>x.id===id);
+  if(i) i.floor = val;
+}
+function setIZone(id, val){
+  const i = instances.find(x=>x.id===id);
+  if(i) i.zone = val||null;
+}
+function setICat(id, val){
+  const i = instances.find(x=>x.id===id);
+  if(i) i.category = val;
+}
+
+function renderStats(){
+  const total = instances.length;
+  const r = instances.filter(i=>i.prio==='red').length;
+  const y = instances.filter(i=>i.prio==='yellow').length;
+  const g = instances.filter(i=>i.prio==='green').length;
+  document.getElementById('ss-total').textContent = total;
+  document.getElementById('ss-pct').textContent = Math.round(total/TOTAL_MAX*100)+'% des '+TOTAL_MAX+' slots';
+  document.getElementById('ss-red').textContent = r;
+  document.getElementById('ss-yel').textContent = y;
+  document.getElementById('ss-grn').textContent = g;
+
+  let entries = [];
+  const legend = document.getElementById('stat-legend');
+
+  if(statTab === 'zones'){
+    legend.innerHTML = ['Sous-sol','RDC','Étage'].map(f=>`<div class="fl-item"><div style="width:10px;height:10px;border-radius:50%;background:${FLOOR_COL[f]}"></div>${f}</div>`).join('');
+    const map = {};
+    zones.forEach(z=>map[z.name]={label:z.name,count:0,floor:z.floor});
+    map['Non assigné']={label:'Non assigné',count:0,floor:''};
+    instances.forEach(i=>{ const k=i.zone||'Non assigné'; if(!map[k])map[k]={label:k,count:0,floor:i.floor}; map[k].count++; });
+    entries = Object.values(map).filter(e=>e.count>0).sort((a,b)=>b.count-a.count).map(e=>({...e,col:FLOOR_COL[e.floor]||'#55534f'}));
+  } else if(statTab === 'floor'){
+    legend.innerHTML = '';
+    const map = {'Sous-sol':{label:'Sous-sol',count:0,col:'#e74c3c'},'RDC':{label:'RDC',count:0,col:'#3498db'},'Étage':{label:'Étage',count:0,col:'#2ecc71'}};
+    instances.forEach(i=>map[i.floor].count++);
+    entries = Object.values(map);
+  } else if(statTab === 'cat'){
+    legend.innerHTML = '';
+    const map = {};
+    cats.forEach(c=>map[c]={label:c,count:0,col:CAT_COL[c]||'#7f8c8d'});
+    instances.forEach(i=>{ const k=i.category||'Divers'; if(!map[k])map[k]={label:k,count:0,col:CAT_COL[k]||'#7f8c8d'}; map[k].count++; });
+    entries = Object.values(map).filter(e=>e.count>0).sort((a,b)=>b.count-a.count);
+  } else {
+    legend.innerHTML = '';
+    entries = [
+      {label:'Important (rouge)',count:r,col:'#c0392b'},
+      {label:'Moyen (jaune)',count:y,col:'#d4a017'},
+      {label:'Faible (vert)',count:g,col:'#27ae60'},
+      {label:'Non défini',count:total-r-y-g,col:'#55534f'}
+    ].filter(e=>e.count>0);
+  }
+
+  const maxC = Math.max(...entries.map(e=>e.count), 1);
+  document.getElementById('bar-chart').innerHTML = entries.map(e=>{
+    const pct = Math.round(e.count/TOTAL_MAX*100);
+    const w = Math.round(e.count/maxC*100);
+    const prioBreak = statTab !== 'prio' ? (() => {
+      let red=0,yel=0,grn=0;
+      if(statTab==='zones') instances.filter(i=>(i.zone||'Non assigné')===e.label).forEach(i=>{if(i.prio==='red')red++;else if(i.prio==='yellow')yel++;else if(i.prio==='green')grn++;});
+      else if(statTab==='floor') instances.filter(i=>i.floor===e.label).forEach(i=>{if(i.prio==='red')red++;else if(i.prio==='yellow')yel++;else if(i.prio==='green')grn++;});
+      else if(statTab==='cat') instances.filter(i=>(i.category||'Divers')===e.label).forEach(i=>{if(i.prio==='red')red++;else if(i.prio==='yellow')yel++;else if(i.prio==='green')grn++;});
+      if(red+yel+grn===0) return '';
+      return `<div class="prio-mini-row">
+        ${red?`<div class="prio-mini"><div class="prio-dot" style="background:#c0392b"></div>${red} rouge</div>`:''}
+        ${yel?`<div class="prio-mini"><div class="prio-dot" style="background:#d4a017"></div>${yel} jaune</div>`:''}
+        ${grn?`<div class="prio-mini"><div class="prio-dot" style="background:#27ae60"></div>${grn} vert</div>`:''}
+      </div>`;
+    })() : '';
+    return `<div style="margin-bottom:8px">
+      <div class="bar-row">
+        <div class="bar-lbl" title="${e.label}">${e.label}</div>
+        <div class="bar-track" title="${e.count} objets · ${pct}% des ${TOTAL_MAX} slots">
+          <div class="bar-fill" style="width:${w}%;background:${e.col}"></div>
+        </div>
+        <div class="bar-val">${e.count} · ${pct}%</div>
+      </div>
+      ${prioBreak}
+    </div>`;
+  }).join('');
+}
+
+function renderConfig(){
+  document.getElementById('zone-list').innerHTML = zones.map((z,i)=>`
+    <div class="mgr-item">
+      <div class="fdot ${z.floor==='Sous-sol'?'fss':z.floor==='RDC'?'frdc':'fetage'}"></div>
+      <span>${z.name}</span>
+      <span style="font-size:10px;color:#55534f">${z.floor}</span>
+      <button class="del-btn" onclick="removeZone(${i})">×</button>
+    </div>`).join('');
+  document.getElementById('cat-list').innerHTML = cats.map((c,i)=>`
+    <div class="cat-pill"><span style="width:8px;height:8px;border-radius:50%;background:${CAT_COL[c]||'#7f8c8d'};display:inline-block;margin-right:4px;flex-shrink:0"></span>${c}<span class="x" onclick="removeCat(${i})">×</span></div>`).join('');
+}
+
+function addZone(){
+  const n = document.getElementById('new-zone').value.trim();
+  const f = document.getElementById('new-zone-floor').value;
+  if(!n) return;
+  zones.push({name:n,floor:f});
+  document.getElementById('new-zone').value='';
+  populateSelects(); renderConfig();
+}
+function removeZone(i){
+  const name = zones[i].name;
+  zones.splice(i,1);
+  instances.forEach(inst=>{if(inst.zone===name) inst.zone=null});
+  populateSelects(); renderConfig(); renderItems();
+}
+function addCat(){
+  const n = document.getElementById('new-cat').value.trim();
+  if(!n||cats.includes(n)) return;
+  cats.push(n);
+  document.getElementById('new-cat').value='';
+  populateSelects(); renderConfig();
+}
+function removeCat(i){
+  const name = cats[i];
+  cats.splice(i,1);
+  instances.forEach(inst=>{if(inst.category===name) inst.category='Divers'});
+  populateSelects(); renderConfig(); renderItems();
+}
+
+function populateSelects(){
+  const fz = document.getElementById('flt-zone');
+  const fc = document.getElementById('flt-cat');
+  const zv = fz.value, cv = fc.value;
+  fz.innerHTML = '<option value="">Tous lieux</option><option value="__none__">Non assigné</option>' + zones.map(z=>`<option value="${z.name}">${z.name}</option>`).join('');
+  fc.innerHTML = '<option value="">Toutes catégories</option>' + cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+  fz.value = zv; fc.value = cv;
+}
+
+
+function deleteInst(id, e){
+  if(e) e.stopPropagation();
+  instances = instances.filter(x=>x.id!==id);
+  renderItems();
+}
+
+let addFormOpen = false;
+function toggleAddForm(){
+  addFormOpen = !addFormOpen;
+  document.getElementById('add-obj-panel').style.display = addFormOpen ? 'block' : 'none';
+  document.getElementById('toggle-add-btn').textContent = addFormOpen ? '✕ Fermer' : '+ Ajouter un objet';
+  if(addFormOpen) populateAddForm();
+}
+
+function populateAddForm(){
+  const az = document.getElementById('add-zone');
+  const ac = document.getElementById('add-cat');
+  az.innerHTML = '<option value="">— Aucun —</option>' + zones.map(z=>`<option value="${z.name}">${z.name}</option>`).join('');
+  ac.innerHTML = cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+}
+
+function addObject(){
+  const name = document.getElementById('add-name').value.trim();
+  if(!name){ document.getElementById('add-name').focus(); return; }
+  const floor = document.getElementById('add-floor').value;
+  const zone = document.getElementById('add-zone').value || null;
+  const category = document.getElementById('add-cat').value || 'Divers';
+  instances.push({ id: gid++, name, floor, zone, category, prio: null });
+  document.getElementById('add-name').value = '';
+  renderItems();
+}
+
+// SAVE / LOAD
+const STORAGE_KEY = 'housing_manager_spads';
+
+function saveData(){
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({instances,zones,cats}));
+    const el = document.getElementById('save-status');
+    if(el){ el.innerHTML='<span class="save-dot"></span>Sauvegardé'; clearTimeout(el._to); el._to=setTimeout(()=>el.innerHTML='',2000); }
+  } catch(e){}
+}
+
+function loadData(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return false;
+    const data = JSON.parse(raw);
+    if(data.instances) instances = data.instances;
+    if(data.zones) zones = data.zones;
+    if(data.cats) cats = data.cats;
+    gid = instances.length ? Math.max(...instances.map(i=>i.id))+1 : gid;
+    return true;
+  } catch(e){ return false; }
+}
+
+function exportJSON(){
+  const blob = new Blob([JSON.stringify({instances,zones,cats},null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'housing_spads_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+}
+
+function importJSON(){
+  const input = document.createElement('input');
+  input.type='file'; input.accept='.json';
+  input.onchange = e => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if(data.instances) instances = data.instances;
+        if(data.zones) zones = data.zones;
+        if(data.cats) cats = data.cats;
+        gid = instances.length ? Math.max(...instances.map(i=>i.id))+1 : gid;
+        saveData(); populateSelects(); renderItems();
+        showToast('Données importées ✓');
+      } catch(err){ showToast('Fichier invalide ✗', true); }
+    };
+    reader.readAsText(e.target.files[0]);
+  };
+  input.click();
+}
+
+function showToast(msg, err){
+  let t = document.getElementById('toast');
+  if(!t){
+    t = document.createElement('div'); t.id='toast';
+    t.style.cssText='position:fixed;bottom:24px;right:24px;padding:10px 18px;border-radius:5px;font-family:"Courier New",monospace;font-size:13px;z-index:999;opacity:0;transition:opacity .3s';
+    document.body.appendChild(t);
+  }
+  t.textContent=msg; t.style.background=err?'#c0392b':'#27ae60'; t.style.color='#fff'; t.style.opacity='1';
+  clearTimeout(t._to); t._to=setTimeout(()=>t.style.opacity='0',2500);
+}
+
+// Wrap all mutating functions to auto-save
+function wrapSave(fn){ return function(){ fn.apply(this,arguments); saveData(); }; }
+const _si=setIFloor,_sz=setIZone,_sc=setICat,_sp=setIPrio,_di=deleteInst,_ao=addObject,_az=addZone,_rz=removeZone,_ac=addCat,_rc=removeCat;
+setIFloor=wrapSave(_si); setIZone=wrapSave(_sz); setICat=wrapSave(_sc); setIPrio=wrapSave(_sp);
+deleteInst=wrapSave(_di); addObject=wrapSave(_ao); addZone=wrapSave(_az); removeZone=wrapSave(_rz);
+addCat=wrapSave(_ac); removeCat=wrapSave(_rc);
+function setGPrio(key,p){ _setGPrio(key,p); saveData(); }
+
+// Init
+const _loaded = loadData();
+populateSelects();
+renderItems();
+if(_loaded) showToast('Données restaurées ✓');
+</script>
+</body>
+</html>
