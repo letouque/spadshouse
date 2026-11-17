@@ -1,0 +1,134 @@
+{
+  "annee": 2026,
+  "graine": "spads-1fe64a87",
+  "messageInscription": "Pour participer, inscris-toi sur le Discord des SPADS ! Ton pseudo apparaîtra ici dès qu'il aura été ajouté.",
+  "lots": [
+    {
+      "nom": "Lot 1",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 2",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 3",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 4",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 5",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 6",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 7",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 8",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 9",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 10",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 11",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 12",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 13",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 14",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 15",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 16",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 17",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 18",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 19",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 20",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 21",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 22",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 23",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 24",
+      "desc": "",
+      "image": ""
+    },
+    {
+      "nom": "Lot 25",
+      "desc": "",
+      "image": ""
+    }
+  ],
+  "inscrits": [],
+  "figes": {}
+}

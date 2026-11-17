@@ -17,84 +17,65 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%}
+html{background:#2c1a10}
 body{
   font-family:"Nunito Sans",system-ui,sans-serif;color:var(--cream);
   background:
     radial-gradient(ellipse at 50% 0%,rgba(255,180,90,.18),transparent 60%),
     radial-gradient(ellipse at 50% 120%,rgba(0,0,0,.6),transparent 60%),
     repeating-linear-gradient(90deg,var(--wood1) 0 118px,var(--wood2) 118px 121px,var(--wood3) 121px 240px,var(--wood2) 240px 243px);
-  background-attachment:fixed;
-  overflow-x:hidden;
+  background-attachment:fixed;overflow-x:hidden;
 }
-body::before{ /* grain du bois */
-  content:"";position:fixed;inset:0;pointer-events:none;opacity:.25;
-  background:repeating-linear-gradient(0deg,rgba(0,0,0,.08) 0 2px,transparent 2px 7px),
-             repeating-linear-gradient(0deg,rgba(255,220,180,.04) 0 1px,transparent 1px 13px);
-}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.25;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.08) 0 2px,transparent 2px 7px),repeating-linear-gradient(0deg,rgba(255,220,180,.04) 0 1px,transparent 1px 13px)}
 #snow{position:fixed;inset:0;pointer-events:none;z-index:1}
 main{position:relative;z-index:2;max-width:1060px;margin:0 auto;padding:0 18px 60px}
 
-/* Guirlande */
 .garland{position:relative;z-index:3;height:70px;overflow:hidden}
 .garland svg{width:100%;height:70px;display:block}
 .bulb{animation:blink 2.4s infinite ease-in-out}
 @keyframes blink{0%,100%{opacity:1;filter:drop-shadow(0 0 6px currentColor)}50%{opacity:.35;filter:none}}
 
-header{text-align:center;padding:6px 0 22px}
-header .kicker{letter-spacing:.3em;text-transform:uppercase;font-size:.78rem;color:var(--gold-l);font-weight:800}
-header h1{font-family:"Playfair Display",serif;font-weight:800;font-size:clamp(2rem,5.5vw,3.6rem);margin:.2em 0 .1em;
-  color:var(--cream);text-shadow:0 2px 0 var(--red-d),0 6px 24px rgba(0,0,0,.5)}
-header h1 em{color:var(--gold-l);font-style:italic}
-.status{display:inline-block;margin-top:10px;padding:8px 18px;border-radius:999px;background:rgba(0,0,0,.35);
-  border:1px solid rgba(243,207,122,.35);font-weight:600}
+header.top{text-align:center;padding:6px 0 22px}
+.kicker{letter-spacing:.3em;text-transform:uppercase;font-size:.78rem;color:var(--gold-l);font-weight:800}
+h1{font-family:"Playfair Display",serif;font-weight:800;font-size:clamp(2rem,5.5vw,3.6rem);margin:.2em 0 .1em;color:var(--cream);text-shadow:0 2px 0 var(--red-d),0 6px 24px rgba(0,0,0,.5)}
+h1 em{color:var(--gold-l);font-style:italic}
+.status{display:inline-block;margin-top:10px;padding:8px 18px;border-radius:999px;background:rgba(0,0,0,.35);border:1px solid rgba(243,207,122,.35);font-weight:600}
 .status b{color:var(--gold-l)}
 
-/* Grille */
-.board{
-  display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:minmax(110px,auto);grid-auto-flow:dense;gap:14px;
-  padding:22px;border-radius:18px;
-  background:linear-gradient(160deg,rgba(255,240,210,.07),rgba(0,0,0,.25));
-  border:2px solid rgba(217,164,65,.45);box-shadow:inset 0 0 0 6px rgba(0,0,0,.18),0 20px 50px rgba(0,0,0,.45);
-}
+/* Barre admin */
+.adminbar{position:sticky;top:0;z-index:30;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;
+  margin:0 auto 14px;max-width:1060px;padding:8px 12px;background:rgba(20,61,39,.95);border-bottom:2px solid var(--gold);border-radius:0 0 12px 12px;font-size:.9rem;box-shadow:0 8px 20px rgba(0,0,0,.4)}
+.adminbar .lbl{font-weight:800;color:var(--gold-l)}
+.adminbar select{padding:5px 8px}
+.adminbar label{display:flex;gap:5px;align-items:center;cursor:pointer}
+.save{font-weight:700;padding:3px 10px;border-radius:99px;background:rgba(0,0,0,.3)}
+.save.err{background:var(--red)}
+.simbanner{background:var(--gold);color:var(--ink);font-weight:800;text-align:center;padding:4px;border-radius:8px;margin:-6px auto 12px;max-width:600px}
+
+.board{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:minmax(110px,auto);grid-auto-flow:dense;gap:14px;padding:22px;border-radius:18px;
+  background:linear-gradient(160deg,rgba(255,240,210,.07),rgba(0,0,0,.25));border:2px solid rgba(217,164,65,.45);box-shadow:inset 0 0 0 6px rgba(0,0,0,.18),0 20px 50px rgba(0,0,0,.45)}
 .cell{position:relative;perspective:900px;min-height:110px}
-.cell.wide{grid-column:span 2}
-.cell.tall{grid-row:span 2}
-.cell.big{grid-column:span 2;grid-row:span 2}
-.inside{
-  position:absolute;inset:0;border-radius:var(--radius);
-  background:radial-gradient(circle at 50% 40%,#5b3a24,#24140b);
-  box-shadow:inset 0 4px 14px rgba(0,0,0,.7);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8px;gap:4px;
-  color:var(--cream);font-size:.8rem;
-}
-.inside .gift{width:34px;height:34px}
+.cell.wide{grid-column:span 2}.cell.tall{grid-row:span 2}.cell.big{grid-column:span 2;grid-row:span 2}
+.inside{position:absolute;inset:0;border-radius:var(--radius);overflow:hidden;background:radial-gradient(circle at 50% 40%,#5b3a24,#24140b);box-shadow:inset 0 4px 14px rgba(0,0,0,.7);
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;text-align:center;padding:8px;gap:2px;color:var(--cream);font-size:.8rem}
+.inside .img{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.9}
+.inside .img::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 35%,rgba(20,10,4,.9))}
+.inside .gift{width:34px;height:34px;margin:auto 0 4px}
+.inside .who,.inside .lotname{position:relative}
 .inside .who{font-weight:800;color:var(--gold-l);font-size:.95rem;word-break:break-word}
-.inside .lotname{opacity:.85;font-size:.75rem}
-.door{
-  position:absolute;inset:0;border-radius:var(--radius);cursor:pointer;border:0;padding:0;font:inherit;color:inherit;
-  transform-origin:left center;transition:transform .9s cubic-bezier(.3,.7,.2,1),box-shadow .3s;
-  transform-style:preserve-3d;
-  box-shadow:0 6px 14px rgba(0,0,0,.45);
-  display:flex;align-items:center;justify-content:center;
-}
-.door .face{
-  position:absolute;inset:0;border-radius:var(--radius);backface-visibility:hidden;overflow:hidden;
-  display:flex;align-items:center;justify-content:center;
-}
-.door .face::before{ /* papier */
-  content:"";position:absolute;inset:0;
-  background:repeating-linear-gradient(45deg,rgba(255,255,255,.04) 0 3px,transparent 3px 9px);
-}
-.door .face::after{ /* cadre */
-  content:"";position:absolute;inset:6px;border-radius:6px;border:1.5px dashed rgba(255,255,255,.35);
-}
+.inside .lotname{opacity:.9;font-size:.75rem}
+.door{position:absolute;inset:0;border-radius:var(--radius);cursor:pointer;border:0;padding:0;font:inherit;color:inherit;transform-origin:left center;
+  transition:transform .9s cubic-bezier(.3,.7,.2,1),box-shadow .3s;transform-style:preserve-3d;box-shadow:0 6px 14px rgba(0,0,0,.45);background:none}
+.door .face{position:absolute;inset:0;border-radius:var(--radius);backface-visibility:hidden;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.door .face::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,.04) 0 3px,transparent 3px 9px)}
+.door .face::after{content:"";position:absolute;inset:6px;border-radius:6px;border:1.5px dashed rgba(255,255,255,.35)}
 .door .back{transform:rotateY(180deg);background:#d8c6a2}
-.door .num{position:relative;z-index:1;font-family:"Playfair Display",serif;font-weight:800;font-size:clamp(1.8rem,4vw,2.6rem);line-height:1;
-  text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.door .num{position:relative;z-index:1;font-family:"Playfair Display",serif;font-weight:800;font-size:clamp(1.8rem,4vw,2.6rem);line-height:1;text-shadow:0 2px 0 rgba(0,0,0,.25)}
 .cell.big .door .num{font-size:clamp(3rem,8vw,5rem)}
 .door .orn{position:absolute;z-index:1;width:26px;height:26px;opacity:.9}
 .door .orn.tl{top:10px;left:10px}.door .orn.br{bottom:10px;right:10px}
-.door .lock{position:absolute;z-index:2;bottom:8px;left:10px;font-size:.75rem;white-space:nowrap;background:rgba(0,0,0,.3);padding:2px 6px;border-radius:99px}
+.door .lock{position:absolute;z-index:2;bottom:8px;left:10px;font-size:.75rem;background:rgba(0,0,0,.3);padding:2px 6px;border-radius:99px}
 .c-red .face.front{background:linear-gradient(150deg,#b8303a,var(--red-d));color:var(--cream)}
 .c-green .face.front{background:linear-gradient(150deg,#2a7049,var(--green-d));color:var(--cream)}
 .c-cream .face.front{background:linear-gradient(150deg,#fbf2df,#e4d0a8);color:var(--red-d)}
@@ -104,19 +85,18 @@ header h1 em{color:var(--gold-l);font-style:italic}
 .cell.ready .door{animation:wiggle 3.5s infinite}
 .cell.ready .door:hover{box-shadow:0 0 0 3px var(--gold-l),0 10px 24px rgba(0,0,0,.5)}
 @keyframes wiggle{0%,88%,100%{transform:rotateY(0)}91%{transform:rotateY(-8deg)}94%{transform:rotateY(-3deg)}97%{transform:rotateY(-6deg)}}
-.cell.open .door{transform:rotateY(-108deg);animation:none;box-shadow:none}
+.cell.open .door{transform:rotateY(-108deg);animation:none;box-shadow:none;pointer-events:none}
 .cell.open .inside{cursor:pointer}
 .door:focus-visible,.inside:focus-visible{outline:3px solid var(--gold-l);outline-offset:3px}
 
-/* Sections bas */
 .panels{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:26px}
-.card{background:linear-gradient(170deg,var(--paper),#e2cfa8);color:var(--ink);border-radius:14px;padding:18px 20px;
-  box-shadow:0 10px 30px rgba(0,0,0,.4);position:relative}
+.card{background:linear-gradient(170deg,var(--paper),#e2cfa8);color:var(--ink);border-radius:14px;padding:18px 20px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
 .card h2{font-family:"Playfair Display",serif;margin:0 0 10px;color:var(--red-d);font-size:1.35rem}
 .card p{margin:.4em 0;line-height:1.5}
-.palmares{list-style:none;margin:0;padding:0;max-height:300px;overflow:auto}
-.palmares li{display:flex;gap:10px;align-items:baseline;padding:6px 0;border-bottom:1px dashed rgba(43,26,16,.2)}
-.palmares .d{font-family:"Playfair Display",serif;font-weight:800;color:var(--red);min-width:2.2em}
+.palmares{list-style:none;margin:0;padding:0;max-height:360px;overflow:auto}
+.palmares li{display:flex;gap:10px;align-items:center;padding:6px 0;border-bottom:1px dashed rgba(43,26,16,.2)}
+.palmares .d{font-family:"Playfair Display",serif;font-weight:800;color:var(--red);min-width:1.8em}
+.palmares .th{width:34px;height:34px;border-radius:6px;background:#d8c6a2 center/cover;flex:none}
 .palmares .n{font-weight:800}
 .palmares .l{margin-left:auto;font-size:.85rem;opacity:.8;text-align:right}
 .tag{display:inline-block;font-size:.68rem;font-weight:800;padding:1px 7px;border-radius:99px;background:var(--green);color:var(--cream);margin-left:6px;vertical-align:middle}
@@ -125,35 +105,36 @@ header h1 em{color:var(--gold-l);font-style:italic}
 .chip.won{background:rgba(217,164,65,.25);border-color:rgba(176,127,37,.6)}
 .muted{opacity:.7;font-size:.9rem}
 footer{text-align:center;margin-top:30px;font-size:.8rem;opacity:.6}
+.loading{text-align:center;padding:60px 0;font-weight:700}
 
-/* Modale */
 .overlay{position:fixed;inset:0;z-index:50;background:rgba(15,8,4,.72);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:18px}
 .overlay.show{display:flex}
-.modal{width:min(460px,100%);background:linear-gradient(170deg,var(--paper),#e2cfa8);color:var(--ink);border-radius:18px;padding:26px 24px 22px;text-align:center;
-  box-shadow:0 30px 80px rgba(0,0,0,.6);position:relative;border:3px solid var(--gold);animation:pop .35s ease-out}
+.modal{width:min(460px,100%);max-height:94vh;overflow:auto;background:linear-gradient(170deg,var(--paper),#e2cfa8);color:var(--ink);border-radius:18px;padding:24px 22px 20px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.6);border:3px solid var(--gold);animation:pop .35s ease-out}
 @keyframes pop{from{transform:scale(.9);opacity:0}to{transform:none;opacity:1}}
 .modal .day{font-family:"Playfair Display",serif;font-weight:800;color:var(--red);font-size:1rem;letter-spacing:.2em;text-transform:uppercase}
-.modal .big{font-family:"Playfair Display",serif;font-weight:800;font-size:2.4rem;margin:.15em 0;color:var(--red-d);min-height:1.3em;word-break:break-word}
-.modal .big.spin{color:#7d6040;filter:blur(.4px)}
-.modal .lot{display:inline-block;margin-top:6px;padding:8px 16px;border-radius:10px;background:var(--green);color:var(--cream);font-weight:800;font-size:1.1rem;opacity:0;transform:translateY(6px);transition:.4s}
-.modal .lot.show{opacity:1;transform:none}
+.modal .big{font-family:"Playfair Display",serif;font-weight:800;font-size:2.3rem;margin:.15em 0;color:var(--red-d);min-height:1.3em;word-break:break-word}
+.modal .big.spin{color:#7d6040}
+.prize{opacity:0;transform:translateY(8px);transition:.45s}
+.prize.show{opacity:1;transform:none}
+.prize img{max-width:100%;max-height:240px;border-radius:12px;margin-top:8px;box-shadow:0 6px 18px rgba(0,0,0,.3);background:#fff8e8}
+.prize .lot{display:inline-block;margin-top:10px;padding:8px 16px;border-radius:10px;background:var(--green);color:var(--cream);font-weight:800;font-size:1.1rem}
+.prize .desc{margin-top:8px;font-size:.92rem;white-space:pre-line}
 .modal .note{font-size:.88rem;margin-top:12px;opacity:.8}
+.modal .actions{margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .btn{font:inherit;font-weight:800;border:0;border-radius:10px;padding:10px 18px;cursor:pointer;background:var(--red);color:var(--cream);box-shadow:0 3px 0 var(--red-d)}
 .btn:hover{filter:brightness(1.08)}
-.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 2px rgba(43,26,16,.35)}
+.btn.ghost{background:transparent;color:inherit;box-shadow:inset 0 0 0 2px currentColor}
 .btn.green{background:var(--green);box-shadow:0 3px 0 var(--green-d)}
-.btn.small{padding:6px 12px;font-size:.85rem}
-.modal .actions{margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn.gold{background:var(--gold);color:var(--ink);box-shadow:0 3px 0 #9a6f1d}
+.btn.small{padding:5px 11px;font-size:.85rem}
+.btn:disabled{opacity:.5;cursor:default}
 .confetti{position:fixed;top:-10px;width:9px;height:14px;z-index:60;pointer-events:none;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(105vh) rotate(720deg)}}
 
-/* Admin */
-.admin-bar{position:fixed;z-index:40;right:16px;bottom:16px;display:flex;gap:8px}
-.drawer{position:fixed;z-index:45;top:0;right:0;bottom:0;width:min(560px,100%);background:#f8efdc;color:var(--ink);box-shadow:-20px 0 60px rgba(0,0,0,.5);
-  transform:translateX(105%);transition:transform .35s;display:flex;flex-direction:column}
+.drawer{position:fixed;z-index:45;top:0;right:0;bottom:0;width:min(600px,100%);background:#f8efdc;color:var(--ink);box-shadow:-20px 0 60px rgba(0,0,0,.5);transform:translateX(105%);transition:transform .35s;display:flex;flex-direction:column}
 .drawer.show{transform:none}
-.drawer header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--red-d);color:var(--cream);text-align:left}
-.drawer header h2{margin:0;font-family:"Playfair Display",serif;font-size:1.25rem}
+.drawer .dh{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--red-d);color:var(--cream)}
+.drawer .dh h2{margin:0;font-family:"Playfair Display",serif;font-size:1.25rem}
 .tabs{display:flex;gap:2px;background:#e4d3b0;padding:6px 6px 0}
 .tabs button{flex:1;font:inherit;font-weight:800;font-size:.85rem;border:0;background:transparent;padding:9px 4px;border-radius:8px 8px 0 0;cursor:pointer;color:var(--ink)}
 .tabs button.on{background:#f8efdc}
@@ -162,39 +143,56 @@ footer{text-align:center;margin-top:30px;font-size:.8rem;opacity:.6}
 .pane h3{font-family:"Playfair Display",serif;color:var(--red-d);margin:.6em 0 .4em}
 .row{display:flex;gap:8px;align-items:center;margin:6px 0;flex-wrap:wrap}
 input[type=text],input[type=password],input[type=date],textarea,select{font:inherit;padding:7px 9px;border-radius:8px;border:1.5px solid rgba(43,26,16,.3);background:#fffaf0;color:var(--ink)}
-textarea{width:100%;min-height:80px}
+textarea{width:100%;min-height:70px;resize:vertical}
 table{width:100%;border-collapse:collapse;font-size:.88rem}
 th,td{text-align:left;padding:5px 6px;border-bottom:1px solid rgba(43,26,16,.15)}
 th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
 .x{border:0;background:none;color:var(--red);font-size:1.1rem;cursor:pointer;font-weight:800}
-.dirty{background:#fff1c9;border:1px solid var(--gold);border-radius:8px;padding:8px 10px;font-size:.85rem;margin:8px 18px 0}
-.lots-grid{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:center}
-.lots-grid label{font-weight:800;color:var(--red-d);font-size:.85rem}
-.toast{position:fixed;z-index:70;left:50%;bottom:24px;transform:translateX(-50%) translateY(30px);opacity:0;background:var(--green-d);color:var(--cream);padding:10px 18px;border-radius:10px;font-weight:700;transition:.3s;pointer-events:none}
+.lotrow{display:grid;grid-template-columns:92px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid rgba(43,26,16,.15)}
+.lotrow .thumb{width:92px;height:92px;border-radius:10px;border:2px dashed rgba(43,26,16,.35);background:#fffaf0 center/cover no-repeat;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  text-align:center;font-size:.75rem;font-weight:700;color:rgba(43,26,16,.6);position:relative}
+.lotrow .thumb.has{border-style:solid;color:transparent}
+.lotrow .thumb .n{position:absolute;top:-8px;left:-8px;background:var(--red);color:var(--cream);border-radius:99px;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:.8rem}
+.lotrow input[type=text]{width:100%;font-weight:700}
+.lotrow textarea{min-height:46px;margin-top:6px;font-size:.88rem}
+.lotrow .rm{font-size:.75rem;border:0;background:none;color:var(--red);cursor:pointer;padding:2px 0;font-weight:700}
+.toast{position:fixed;z-index:70;left:50%;bottom:24px;transform:translateX(-50%) translateY(30px);opacity:0;background:var(--green-d);color:var(--cream);padding:10px 18px;border-radius:10px;font-weight:700;transition:.3s;pointer-events:none;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%)}
+.help{font-size:.88rem;line-height:1.5;background:#fff8e6;border:1px solid var(--gold);border-radius:10px;padding:10px 12px;text-align:left}
+.help ol{margin:.3em 0;padding-left:1.2em}
 
 @media (max-width:760px){
   .board{grid-template-columns:repeat(3,1fr);gap:10px;padding:12px}
   .panels{grid-template-columns:1fr}
 }
-@media (prefers-reduced-motion:reduce){
-  .bulb,.cell.ready .door{animation:none}
-  .door{transition:none}
-}
+@media (prefers-reduced-motion:reduce){.bulb,.cell.ready .door{animation:none}.door{transition:none}}
 </style>
 </head>
 <body>
 <canvas id="snow" aria-hidden="true"></canvas>
 <div class="garland" aria-hidden="true"><svg id="garland" preserveAspectRatio="none" viewBox="0 0 1000 70"></svg></div>
 
-<main>
-  <header>
-    <div class="kicker">Compagnie libre SPADS</div>
-    <h1 id="title">Calendrier de l'Avent <em>des SPADS</em></h1>
-    <div class="status" id="status">…</div>
-  </header>
+<div class="adminbar" id="adminbar" hidden>
+  <span class="lbl">⚙ Admin</span>
+  <span>Simulation :</span>
+  <button class="btn small ghost" id="simPrev" aria-label="Jour précédent">◀</button>
+  <select id="simDay" aria-label="Date simulée"></select>
+  <button class="btn small ghost" id="simNext" aria-label="Jour suivant">▶</button>
+  <label><input type="checkbox" id="simAll"> Tout ouvrir</label>
+  <button class="btn small gold" id="openDrawer">Gérer</button>
+  <span class="save" id="saveState">À jour</span>
+  <button class="btn small ghost" id="logout">Quitter</button>
+</div>
 
-  <section class="board" id="board" aria-label="Cases du calendrier"></section>
+<main>
+  <header class="top">
+    <div class="kicker">Compagnie libre SPADS</div>
+    <h1>Calendrier de l'Avent <em>des SPADS</em></h1>
+    <div class="status" id="status">Chargement…</div>
+  </header>
+  <div class="simbanner" id="simbanner" hidden></div>
+
+  <section class="board" id="board" aria-label="Cases du calendrier"><div class="loading" style="grid-column:1/-1">Chargement du calendrier…</div></section>
 
   <div class="panels">
     <section class="card">
@@ -212,101 +210,82 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
   <footer>Joyeux Noël d'Éorzéa ✦ SPADS</footer>
 </main>
 
-<!-- Modale ouverture -->
 <div class="overlay" id="ov" role="dialog" aria-modal="true" aria-labelledby="mDay">
   <div class="modal">
     <div class="day" id="mDay"></div>
-    <div class="muted" id="mSub">Le gagnant du jour est…</div>
+    <div class="muted" id="mSub"></div>
     <div class="big" id="mName"></div>
-    <div class="lot" id="mLot"></div>
+    <div class="prize" id="mPrize"></div>
     <div class="note" id="mNote"></div>
     <div class="actions"><button class="btn" id="mClose">Fermer</button></div>
   </div>
 </div>
 
-<!-- Connexion admin -->
 <div class="overlay" id="login" role="dialog" aria-modal="true" aria-labelledby="lTitle">
   <form class="modal" id="loginForm">
     <div class="day" id="lTitle">Mode admin</div>
-    <p>Mot de passe :</p>
-    <input type="password" id="lPass" autocomplete="current-password" style="width:100%">
+    <p>Colle ton jeton GitHub :</p>
+    <input type="password" id="lToken" autocomplete="off" style="width:100%" placeholder="github_pat_…">
     <div class="note" id="lErr"></div>
-    <div class="actions"><button type="button" class="btn ghost" id="lCancel">Annuler</button><button class="btn" type="submit">Entrer</button></div>
+    <div class="help" style="margin-top:12px">
+      Pas encore de jeton ?
+      <ol>
+        <li>Ouvre <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com → Fine-grained token</a></li>
+        <li>Repository access : <b>Only select repositories</b> → <b id="lRepo"></b></li>
+        <li>Permissions → Repository → <b>Contents : Read and write</b></li>
+        <li>Generate, puis colle-le ici. Il reste enregistré dans ce navigateur.</li>
+      </ol>
+    </div>
+    <div class="actions"><button type="button" class="btn ghost" style="color:var(--ink)" id="lCancel">Annuler</button><button class="btn" type="submit" id="lSubmit">Entrer</button></div>
   </form>
 </div>
 
-<div class="admin-bar" id="adminBar" hidden><button class="btn green" id="openDrawer">⚙ Admin</button></div>
 <aside class="drawer" id="drawer" aria-label="Panneau admin">
-  <header><h2>Administration</h2><button class="btn small ghost" style="color:var(--cream);box-shadow:inset 0 0 0 2px rgba(255,255,255,.4)" id="closeDrawer">Fermer</button></header>
-  <div class="dirty" id="dirty" hidden>Modifications non publiées : télécharge le HTML mis à jour (onglet Export) et remplace le fichier sur GitHub Pages.</div>
+  <div class="dh"><h2>Gestion du calendrier</h2><button class="btn small ghost" id="closeDrawer">Fermer</button></div>
   <nav class="tabs" id="tabs">
     <button data-p="pInscrits" class="on">Inscrits</button>
     <button data-p="pLots">Lots</button>
     <button data-p="pTirages">Tirages</button>
-    <button data-p="pExport">Export</button>
+    <button data-p="pTexte">Texte</button>
   </nav>
   <div class="pane on" id="pInscrits">
     <h3>Ajouter des inscrits</h3>
-    <p class="muted">Un pseudo par ligne (copier-coller depuis Discord). Un inscrit participe aux tirages des jours qui suivent sa date d'inscription.</p>
+    <p class="muted">Un pseudo par ligne (copier-coller depuis Discord). Un inscrit participe aux tirages à partir du lendemain de sa date d'inscription.</p>
     <textarea id="addNames" placeholder="Pseudo 1&#10;Pseudo 2"></textarea>
-    <div class="row">Date d'inscription <input type="date" id="addDate"> <button class="btn small green" id="addBtn">Ajouter</button></div>
+    <div class="row">Inscrit le <input type="date" id="addDate"> <button class="btn small green" id="addBtn">Ajouter</button></div>
     <h3>Liste (<span id="admCount">0</span>)</h3>
     <table><thead><tr><th>Pseudo</th><th>Inscrit le</th><th></th></tr></thead><tbody id="admList"></tbody></table>
   </div>
   <div class="pane" id="pLots">
-    <h3>Les 25 lots</h3>
-    <p class="muted">Chaque jour, un lot encore disponible est tiré au hasard. Tu peux renommer un lot à tout moment, même déjà gagné.</p>
-    <div class="lots-grid" id="lotsGrid"></div>
-    <h3>Texte « Comment participer »</h3>
-    <textarea id="howtoEdit"></textarea>
+    <p class="muted">Clique sur une vignette pour ajouter ou changer l'image. Chaque jour, un lot encore disponible est tiré au hasard.</p>
+    <div id="lotsList"></div>
+    <input type="file" id="imgInput" accept="image/*" hidden>
   </div>
   <div class="pane" id="pTirages">
-    <h3>Aperçu</h3>
-    <div class="row">Simuler la date : <select id="simDay"></select></div>
-    <p class="muted">La simulation n'affecte que ton écran. Elle permet de voir le calendrier et les tirages comme s'ils avaient lieu ce jour-là.</p>
-    <div class="row"><button class="btn small ghost" id="resetOpened">Refermer mes cases</button></div>
-    <h3>Résultats</h3>
-    <p class="muted">🔒 = tirage figé (enregistré dans le fichier lors du dernier export). Les tirages non figés peuvent changer si tu modifies les inscrits.</p>
-    <table><thead><tr><th>Jour</th><th>Gagnant</th><th>Lot</th><th>Tour</th><th></th></tr></thead><tbody id="admDraws"></tbody></table>
+    <p class="muted">Résultats calculés jusqu'au 25 avec les inscrits actuels. 🔒 = jour passé, résultat définitif. Les jours à venir peuvent encore changer si des inscrits s'ajoutent.</p>
+    <table><thead><tr><th>Jour</th><th>Gagnant</th><th>Lot</th><th>Tour</th></tr></thead><tbody id="admDraws"></tbody></table>
+    <div class="row" style="margin-top:12px"><button class="btn small ghost" id="resetOpened">Refermer mes cases (vraie date)</button></div>
   </div>
-  <div class="pane" id="pExport">
-    <h3>Publier les changements</h3>
-    <p>1. Télécharge le fichier mis à jour.<br>2. Remplace l'ancien fichier sur GitHub Pages.</p>
-    <p class="muted">À l'export, les tirages des jours déjà ouverts (date réelle) sont figés : ils ne bougeront plus, même si tu retires un inscrit.</p>
-    <div class="row"><button class="btn green" id="dlBtn">⬇ Télécharger le HTML</button> <button class="btn ghost" id="cpBtn">Copier la config</button></div>
-    <h3>Mot de passe admin</h3>
-    <div class="row"><input type="password" id="newPass" placeholder="Nouveau mot de passe" autocomplete="new-password"> <button class="btn small" id="passBtn">Changer</button></div>
-    <h3>Brouillon</h3>
-    <p class="muted">Tes modifications sont gardées dans ce navigateur jusqu'à l'export.</p>
-    <div class="row"><button class="btn small ghost" id="discardBtn">Abandonner le brouillon</button></div>
+  <div class="pane" id="pTexte">
+    <h3>Texte « Comment participer »</h3>
+    <textarea id="howtoEdit"></textarea>
   </div>
 </aside>
 <div class="toast" id="toast"></div>
 
-<script id="config" type="application/json">
-{
-  "annee": 2026,
-  "graine": "spads-noel-7f3a91c2",
-  "mdpHash": "",
-  "messageInscription": "Pour participer, inscris-toi sur le Discord des SPADS ! Ton pseudo apparaîtra ici dès qu'il aura été ajouté.",
-  "lots": ["Lot 1","Lot 2","Lot 3","Lot 4","Lot 5","Lot 6","Lot 7","Lot 8","Lot 9","Lot 10","Lot 11","Lot 12","Lot 13","Lot 14","Lot 15","Lot 16","Lot 17","Lot 18","Lot 19","Lot 20","Lot 21","Lot 22","Lot 23","Lot 24","Lot 25"],
-  "inscrits": [],
-  "figes": {}
-}
-</script>
-
 <script>
-const SOURCE = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-const EMBEDDED = JSON.parse(document.getElementById('config').textContent);
-const DEFAULT_PASS = 'baguettes';
-const LS_DRAFT = 'spads-avent-brouillon-' + EMBEDDED.annee;
-const LS_OPENED = 'spads-avent-ouvertes-' + EMBEDDED.annee;
-const LS_ADMIN = 'spads-avent-admin';
+/* ===== Réglages du dépôt ===== */
+const REPO = { owner: 'letouque', repo: 'spadshouse', branch: 'main', dir: 'avent' };
+const YEAR = 2026;
 
-/* ---------- utilitaires ---------- */
+const API = `https://api.github.com/repos/${REPO.owner}/${REPO.repo}/contents/${REPO.dir}`;
+const RAW = `https://raw.githubusercontent.com/${REPO.owner}/${REPO.repo}/${REPO.branch}/${REPO.dir}`;
+const LS_TOKEN = 'spads-avent-token';
+const LS_OPENED = 'spads-avent-ouvertes-' + YEAR;
+
 const $ = s => document.querySelector(s);
 const pad = n => String(n).padStart(2, '0');
-const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function cyrb53(str, seed = 0) {
   let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
   for (let i = 0; i < str.length; i++) { const ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
@@ -318,26 +297,78 @@ function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; le
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
 const lsDel = k => { try { localStorage.removeItem(k); } catch (e) {} };
-function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2200); }
-function parisToday() {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+function toast(msg, ms = 2400) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), ms); }
+const parisToday = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+function b64encodeBytes(bytes) { let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(s); }
+const b64encodeText = str => b64encodeBytes(new TextEncoder().encode(str));
+const b64decodeText = b64 => new TextDecoder().decode(Uint8Array.from(atob(b64.replace(/\s/g, '')), c => c.charCodeAt(0)));
+
+/* ===== Données ===== */
+function defaultData() {
+  return {
+    annee: YEAR,
+    graine: 'spads-' + Math.random().toString(36).slice(2, 10),
+    messageInscription: "Pour participer, inscris-toi sur le Discord des SPADS ! Ton pseudo apparaîtra ici dès qu'il aura été ajouté.",
+    lots: Array.from({ length: 25 }, (_, i) => ({ nom: `Lot ${i + 1}`, desc: '', image: '' })),
+    inscrits: [],
+    figes: {}
+  };
+}
+function normalize(d) {
+  const base = defaultData();
+  d = Object.assign(base, d || {});
+  d.lots = Array.from({ length: 25 }, (_, i) => {
+    const l = d.lots[i];
+    if (typeof l === 'string') return { nom: l, desc: '', image: '' };
+    return Object.assign({ nom: `Lot ${i + 1}`, desc: '', image: '' }, l || {});
+  });
+  d.figes = d.figes || {}; d.inscrits = d.inscrits || [];
+  return d;
 }
 
-/* ---------- état ---------- */
+let data = null, dataSha = null;
+let token = lsGet(LS_TOKEN, null);
 let isAdmin = false;
-let cfg = structuredClone(EMBEDDED);
-let simDay = null; // null = date réelle
+let simDay = null, simAll = false;
 let opened = new Set(lsGet(LS_OPENED, []));
+let simOpened = new Set();
 
+function ghHeaders(raw) {
+  const h = { 'Accept': raw ? 'application/vnd.github.raw+json' : 'application/vnd.github+json' };
+  if (token && isAdmin) h.Authorization = 'Bearer ' + token;
+  return h;
+}
+async function loadData() {
+  // 1) API GitHub (toujours à jour)  2) secours : data.json servi par GitHub Pages
+  try {
+    const r = await fetch(`${API}/data.json?ref=${REPO.branch}&t=${Date.now()}`, { headers: ghHeaders(false), cache: 'no-store' });
+    if (r.status === 404) { dataSha = null; return defaultData(); }
+    if (!r.ok) throw new Error('api ' + r.status);
+    const j = await r.json(); dataSha = j.sha;
+    return normalize(JSON.parse(b64decodeText(j.content)));
+  } catch (e) {
+    const r = await fetch(`data.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (!r.ok) throw new Error('data.json introuvable');
+    return normalize(await r.json());
+  }
+}
+async function putFile(path, b64, sha, message) {
+  const body = { message, content: b64, branch: REPO.branch };
+  if (sha) body.sha = sha;
+  const r = await fetch(`${API}/${path}`, { method: 'PUT', headers: { ...ghHeaders(false), 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (!r.ok) { const t = await r.text(); const err = new Error(`GitHub ${r.status}`); err.status = r.status; err.body = t; throw err; }
+  return r.json();
+}
+
+/* ===== Tirages ===== */
 function realOpenDay() {
-  const t = parisToday(), y = cfg.annee;
-  if (t < `${y}-12-01`) return 0;
-  if (t > `${y}-12-25`) return 25;
+  const t = parisToday();
+  if (t < `${YEAR}-12-01`) return 0;
+  if (t > `${YEAR}-12-25`) return 25;
   return parseInt(t.slice(8, 10), 10);
 }
 const openDay = () => simDay ?? realOpenDay();
 
-/* ---------- tirages déterministes ---------- */
 function computeDraws(c, upto) {
   const res = {};
   const lotsLeft = c.lots.map((_, i) => i);
@@ -348,9 +379,7 @@ function computeDraws(c, upto) {
       if (f.vide) { res[d] = { vide: true, fige: true }; continue; }
       if (f.tour > tour) { tour = f.tour; won = new Set(); }
       const i = lotsLeft.indexOf(f.lot); if (i >= 0) lotsLeft.splice(i, 1);
-      won.add(f.gagnant);
-      res[d] = { ...f, fige: true };
-      continue;
+      won.add(f.gagnant); res[d] = { ...f, fige: true }; continue;
     }
     const dateD = `${c.annee}-12-${pad(d)}`;
     const eligible = [...new Set(c.inscrits.filter(p => p.date < dateD).map(p => p.nom))].sort((a, b) => a.localeCompare(b, 'fr'));
@@ -360,14 +389,23 @@ function computeDraws(c, upto) {
     const rng = mulberry32(cyrb53(c.graine + '|jour|' + d));
     const gagnant = pool[Math.floor(rng() * pool.length)];
     const lot = lotsLeft.splice(Math.floor(rng() * lotsLeft.length), 1)[0];
-    won.add(gagnant);
-    res[d] = { gagnant, lot, tour };
+    won.add(gagnant); res[d] = { gagnant, lot, tour };
   }
   return res;
 }
-const lotName = i => cfg.lots[i] || `Lot ${i + 1}`;
+// Fige les jours réellement passés, avant toute modification : leurs résultats ne bougeront plus.
+function freezePast(c) {
+  const real = realOpenDay(), draws = computeDraws(c, real);
+  for (let d = 1; d <= real; d++) {
+    if (c.figes[d]) continue;
+    const r = draws[d];
+    c.figes[d] = r.vide ? { vide: true } : { gagnant: r.gagnant, lot: r.lot, tour: r.tour };
+  }
+}
+const lot = i => data.lots[i] || { nom: `Lot ${i + 1}`, desc: '', image: '' };
+const imgUrl = l => l && l.image ? `${RAW}/${l.image}` : '';
 
-/* ---------- décor ---------- */
+/* ===== Décor ===== */
 const ORN = {
   star: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.2l7.1-.6z"/></svg>',
   holly: '<svg viewBox="0 0 24 24"><path fill="#2f7a4b" d="M3 10c3-1 5 1 6 4-3 1-5-1-6-4zm18 0c-3-1-5 1-6 4 3 1 5-1 6-4z"/><circle cx="10" cy="12" r="2.4" fill="#c4232c"/><circle cx="14" cy="12" r="2.4" fill="#c4232c"/><circle cx="12" cy="9" r="2.4" fill="#d8323b"/></svg>',
@@ -381,268 +419,300 @@ const ORDER = [7, 18, 3, 22, 12, 1, 15, 9, 25, 5, 20, 11, 2, 16, 24, 8, 13, 4, 1
 const COLORS = ['c-red', 'c-green', 'c-cream', 'c-gold'];
 
 function buildGarland() {
-  const svg = $('#garland'); let h = '<path d="M0 8 Q125 48 250 10 T500 10 T750 10 T1000 8" stroke="#1b3a26" stroke-width="3" fill="none"/>';
+  let h = '<path d="M0 8 Q125 48 250 10 T500 10 T750 10 T1000 8" stroke="#1b3a26" stroke-width="3" fill="none"/>';
   const cols = ['#ff4d4d', '#ffd36b', '#5ee08a', '#6bc5ff', '#ff9a3c'];
   for (let i = 0; i < 26; i++) {
-    const x = 20 + i * 37.6, tt = (x % 250) / 250, y = 10 + Math.sin(tt * Math.PI) * 26 + 6;
-    const c = cols[i % cols.length];
+    const x = 20 + i * 37.6, tt = (x % 250) / 250, y = 10 + Math.sin(tt * Math.PI) * 26 + 6, c = cols[i % 5];
     h += `<g class="bulb" style="color:${c};animation-delay:${(i % 5) * .45}s"><rect x="${x - 3}" y="${y - 6}" width="6" height="5" fill="#333"/><ellipse cx="${x}" cy="${y + 6}" rx="6" ry="9" fill="${c}"/></g>`;
   }
-  svg.innerHTML = h;
+  $('#garland').innerHTML = h;
 }
-
 function startSnow() {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const cv = $('#snow'), cx = cv.getContext('2d'); let W, H, flakes = [];
+  const cv = $('#snow'), cx = cv.getContext('2d'); let W, H; const flakes = [];
   const resize = () => { W = cv.width = innerWidth; H = cv.height = innerHeight; };
   resize(); addEventListener('resize', resize);
-  for (let i = 0; i < 110; i++) flakes.push({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 2.4 + .6, s: Math.random() * .6 + .25, w: Math.random() * Math.PI * 2 });
+  for (let i = 0; i < 110; i++) flakes.push({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 2.4 + .6, s: Math.random() * .6 + .25, w: Math.random() * 6.3 });
   (function tick() {
     cx.clearRect(0, 0, W, H); cx.fillStyle = 'rgba(255,255,255,.8)';
-    for (const f of flakes) {
-      f.y += f.s; f.w += .01; f.x += Math.sin(f.w) * .35;
-      if (f.y > H + 5) { f.y = -5; f.x = Math.random() * W; }
-      cx.beginPath(); cx.arc(f.x, f.y, f.r, 0, 7); cx.fill();
-    }
+    for (const f of flakes) { f.y += f.s; f.w += .01; f.x += Math.sin(f.w) * .35; if (f.y > H + 5) { f.y = -5; f.x = Math.random() * W; } cx.beginPath(); cx.arc(f.x, f.y, f.r, 0, 7); cx.fill(); }
     requestAnimationFrame(tick);
   })();
 }
 
-/* ---------- rendu ---------- */
-function render() {
-  const od = openDay();
-  const draws = computeDraws(cfg, od);
-  const y = cfg.annee;
+/* ===== Rendu ===== */
+const simulating = () => isAdmin && simDay != null;
+const openedSet = () => simulating() ? simOpened : opened;
 
-  // statut
-  const t = parisToday();
+function render() {
+  if (!data) return;
+  const od = openDay(), draws = computeDraws(data, od), t = parisToday();
+
   let st;
-  if (simDay != null) st = `Simulation : <b>${simDay ? simDay + ' décembre' : 'avant le 1er décembre'}</b>`;
-  else if (od === 0) {
-    const days = Math.ceil((Date.parse(`${y}-12-01`) - Date.parse(t)) / 864e5);
-    st = `Ouverture de la première case dans <b>${days} jour${days > 1 ? 's' : ''}</b>`;
-  } else if (od >= 25 && t > `${y}-12-25`) st = `Le calendrier est terminé — <b>joyeuses fêtes !</b>`;
+  if (simulating()) st = `Simulation : <b>${simDay ? simDay + ' décembre' : 'avant le 1er décembre'}</b>`;
+  else if (od === 0) { const n = Math.ceil((Date.parse(`${YEAR}-12-01`) - Date.parse(t)) / 864e5); st = `Ouverture de la première case dans <b>${n} jour${n > 1 ? 's' : ''}</b>`; }
+  else if (t > `${YEAR}-12-25`) st = `Le calendrier est terminé — <b>joyeuses fêtes !</b>`;
   else st = `Aujourd'hui, la case <b>${od}</b> est ouverte !`;
   $('#status').innerHTML = st;
+  const sb = $('#simbanner'); sb.hidden = !simulating();
+  if (simulating()) sb.textContent = 'Aperçu admin — les membres ne voient pas cette simulation';
 
-  // grille
   const board = $('#board'); board.innerHTML = '';
+  const os = openedSet();
   ORDER.forEach((d, idx) => {
     const cell = document.createElement('div');
     const size = d === 25 ? 'big' : d === 24 ? 'wide' : d === 1 ? 'tall' : '';
-    const unlocked = d <= od, isOpen = unlocked && (opened.has(d) || (isAdmin && simDay != null && false));
+    const unlocked = d <= od, isOpen = unlocked && (os.has(d) || (simulating() && simAll));
     cell.className = `cell ${size} ${COLORS[(idx * 3 + d) % 4]} ${unlocked ? (isOpen ? 'open' : 'ready') : 'locked'}`;
     const r = draws[d];
-    const o1 = ORN[ORN_KEYS[(d * 7) % ORN_KEYS.length]], o2 = ORN[ORN_KEYS[(d * 3 + 2) % ORN_KEYS.length]];
-    const insideTxt = !isOpen ? '' : r && !r.vide
-      ? `${ORN.gift.replace('<svg', '<svg class="gift"')}<div class="who">${esc(r.gagnant)}</div><div class="lotname">${esc(lotName(r.lot))}</div>`
-      : `<div class="lotname">Pas de tirage</div>`;
+    const o1 = ORN[ORN_KEYS[(d * 7) % 6]], o2 = ORN[ORN_KEYS[(d * 3 + 2) % 6]];
+    let inside = '';
+    if (isOpen) {
+      if (r && !r.vide) {
+        const L = lot(r.lot), u = imgUrl(L);
+        inside = (u ? `<div class="img" style="background-image:url('${esc(u)}')"></div>` : ORN.gift.replace('<svg', '<svg class="gift"'))
+          + `<div class="who">${esc(r.gagnant)}</div><div class="lotname">${esc(L.nom)}</div>`;
+      } else inside = `<div class="lotname" style="margin:auto">Pas de tirage</div>`;
+    }
     cell.innerHTML = `
-      <div class="inside" ${isOpen ? `tabindex="0" role="button" aria-label="Revoir le tirage du ${d} décembre"` : ''}>${insideTxt}</div>
-      <button class="door" ${unlocked ? '' : 'aria-disabled="true"'} aria-label="Case ${d}${unlocked ? '' : ' (verrouillée)'}" ${isOpen ? 'tabindex="-1"' : ''}>
-        <span class="face front"><span class="orn tl">${o1}</span><span class="num">${d}</span><span class="orn br">${o2}</span>${unlocked ? '' : '<span class="lock" title="S\'ouvre le ' + d + ' décembre">🔒</span>'}</span>
+      <div class="inside" ${isOpen ? `tabindex="0" role="button" aria-label="Revoir le tirage du ${d} décembre"` : ''}>${inside}</div>
+      <button class="door" aria-label="Case ${d}${unlocked ? '' : ' (verrouillée)'}" ${isOpen ? 'tabindex="-1"' : ''}>
+        <span class="face front"><span class="orn tl">${o1}</span><span class="num">${d}</span><span class="orn br">${o2}</span>${unlocked ? '' : `<span class="lock" title="S'ouvre le ${d} décembre">🔒</span>`}</span>
         <span class="face back"></span>
       </button>`;
-    const door = cell.querySelector('.door');
-    door.addEventListener('click', () => {
+    cell.querySelector('.door').addEventListener('click', () => {
       if (!unlocked) { toast(`Patience ! Cette case s'ouvre le ${d} décembre.`); return; }
-      opened.add(d); lsSet(LS_OPENED, [...opened]);
+      os.add(d); if (!simulating()) lsSet(LS_OPENED, [...opened]);
       cell.classList.remove('ready'); cell.classList.add('open');
       setTimeout(() => showDraw(d, r, true), 650);
       setTimeout(render, 900);
     });
-    const ins = cell.querySelector('.inside');
     if (isOpen) {
+      const ins = cell.querySelector('.inside');
       ins.addEventListener('click', () => showDraw(d, r, false));
       ins.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showDraw(d, r, false); } });
     }
     board.appendChild(cell);
   });
 
-  // palmarès
   const pal = $('#palmares'); pal.innerHTML = '';
-  let any = false;
   for (let d = od; d >= 1; d--) {
-    const r = draws[d]; if (!r) continue; any = true;
+    const r = draws[d]; if (!r) continue;
     const li = document.createElement('li');
-    li.innerHTML = r.vide
-      ? `<span class="d">${d}</span><span class="muted">Pas de tirage</span>`
-      : `<span class="d">${d}</span><span class="n">${esc(r.gagnant)}${r.tour > 1 ? `<span class="tag">${r.tour}e tour</span>` : ''}</span><span class="l">${esc(lotName(r.lot))}</span>`;
+    if (r.vide) li.innerHTML = `<span class="d">${d}</span><span class="muted">Pas de tirage</span>`;
+    else {
+      const L = lot(r.lot), u = imgUrl(L);
+      li.innerHTML = `<span class="d">${d}</span>${u ? `<span class="th" style="background-image:url('${esc(u)}')"></span>` : ''}<span class="n">${esc(r.gagnant)}${r.tour > 1 ? `<span class="tag">${r.tour}e tour</span>` : ''}</span><span class="l">${esc(L.nom)}</span>`;
+    }
     pal.appendChild(li);
   }
-  if (!any) pal.innerHTML = '<li class="muted">Les premiers gagnants apparaîtront ici à partir du 1er décembre.</li>';
+  if (!pal.children.length) pal.innerHTML = '<li class="muted">Les premiers gagnants apparaîtront ici à partir du 1er décembre.</li>';
 
-  // inscrits
-  $('#howto').textContent = cfg.messageInscription;
+  $('#howto').textContent = data.messageInscription;
   const winners = new Set(Object.values(draws).filter(r => r && !r.vide).map(r => r.gagnant));
-  const names = [...new Set(cfg.inscrits.map(p => p.nom))].sort((a, b) => a.localeCompare(b, 'fr'));
+  const names = [...new Set(data.inscrits.map(p => p.nom))].sort((a, b) => a.localeCompare(b, 'fr'));
   $('#nbInscrits').textContent = `(${names.length})`;
   $('#inscrits').innerHTML = names.length
-    ? names.map(n => `<span class="chip ${winners.has(n) ? 'won' : ''}" title="${winners.has(n) ? 'A déjà gagné' : ''}">${winners.has(n) ? '★ ' : ''}${esc(n)}</span>`).join('')
+    ? names.map(n => `<span class="chip ${winners.has(n) ? 'won' : ''}">${winners.has(n) ? '★ ' : ''}${esc(n)}</span>`).join('')
     : '<span class="muted">Aucun inscrit pour le moment.</span>';
 
-  if (isAdmin) renderAdmin(draws);
+  if (isAdmin) renderAdmin();
 }
 
-/* ---------- modale tirage ---------- */
+/* ===== Modale ===== */
 let spinTimer = null;
 function showDraw(d, r, animate) {
-  const ov = $('#ov'), nm = $('#mName'), lot = $('#mLot'), note = $('#mNote');
+  const nm = $('#mName'), prize = $('#mPrize'), note = $('#mNote');
   $('#mDay').textContent = `${d} décembre`;
-  clearTimeout(spinTimer);
-  lot.classList.remove('show'); note.textContent = '';
-  ov.classList.add('show'); $('#mClose').focus();
-  if (!r || r.vide) {
-    $('#mSub').textContent = '';
-    nm.textContent = 'Pas de tirage';
-    note.textContent = 'Il n\'y avait aucun inscrit (ou plus aucun lot) ce jour-là.';
-    return;
-  }
+  clearTimeout(spinTimer); prize.classList.remove('show'); prize.innerHTML = ''; note.textContent = '';
+  $('#ov').classList.add('show'); $('#mClose').focus();
+  if (!r || r.vide) { $('#mSub').textContent = ''; nm.textContent = 'Pas de tirage'; note.textContent = "Il n'y avait aucun inscrit (ou plus aucun lot) ce jour-là."; return; }
   $('#mSub').textContent = 'Le gagnant du jour est…';
+  const L = lot(r.lot), u = imgUrl(L);
   const finish = () => {
     nm.classList.remove('spin'); nm.textContent = r.gagnant;
-    lot.textContent = '🎁 ' + lotName(r.lot); lot.classList.add('show');
-    note.textContent = r.tour > 1 ? `Tous les inscrits ont déjà gagné une fois : ${r.tour}e tour de tirage !` : 'Félicitations !';
+    prize.innerHTML = (u ? `<img src="${esc(u)}" alt="${esc(L.nom)}">` : '') + `<div><span class="lot">🎁 ${esc(L.nom)}</span></div>` + (L.desc ? `<div class="desc">${esc(L.desc)}</div>` : '');
+    prize.classList.add('show');
+    note.textContent = r.tour > 1 ? `Tous les inscrits avaient déjà gagné : ${r.tour}e tour de tirage !` : 'Félicitations !';
     if (animate) confetti();
   };
-  const names = [...new Set(cfg.inscrits.map(p => p.nom))];
+  const names = [...new Set(data.inscrits.map(p => p.nom))];
   if (!animate || names.length < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return; }
-  nm.classList.add('spin');
-  let step = 0, delay = 50;
-  const roll = () => {
-    nm.textContent = names[Math.floor(Math.random() * names.length)];
-    step++; delay *= 1.11;
-    if (delay < 380) spinTimer = setTimeout(roll, delay); else spinTimer = setTimeout(finish, 300);
-  };
+  if (u) { const pre = new Image(); pre.src = u; }
+  nm.classList.add('spin'); let delay = 50;
+  const roll = () => { nm.textContent = names[Math.floor(Math.random() * names.length)]; delay *= 1.11; spinTimer = setTimeout(delay < 380 ? roll : finish, delay < 380 ? delay : 300); };
   roll();
 }
 function closeModal() { clearTimeout(spinTimer); $('#ov').classList.remove('show'); }
 $('#mClose').onclick = closeModal;
 $('#ov').addEventListener('click', e => { if (e.target.id === 'ov') closeModal(); });
-addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); $('#login').classList.remove('show'); } });
-
+addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); $('#login').classList.remove('show'); $('#drawer').classList.remove('show'); } });
 function confetti() {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const cols = ['#c4232c', '#f3cf7a', '#2f7a4b', '#fff', '#d9a441'];
   for (let i = 0; i < 70; i++) {
     const p = document.createElement('div'); p.className = 'confetti';
-    p.style.left = Math.random() * 100 + 'vw'; p.style.background = cols[i % cols.length];
+    p.style.left = Math.random() * 100 + 'vw'; p.style.background = cols[i % 5];
     p.style.animationDuration = (2 + Math.random() * 2) + 's'; p.style.animationDelay = Math.random() * .4 + 's';
     document.body.appendChild(p); setTimeout(() => p.remove(), 4800);
   }
 }
 
-/* ---------- admin ---------- */
-function wantsAdmin() { return /[?&#]admin\b/.test(location.search + location.hash); }
-function checkPass(p) { return cfg.mdpHash ? String(cyrb53(p, 7)) === cfg.mdpHash : p === DEFAULT_PASS; }
-function enterAdmin() {
-  isAdmin = true;
-  const draft = lsGet(LS_DRAFT, null);
-  if (draft && draft.annee === EMBEDDED.annee) cfg = draft;
-  $('#adminBar').hidden = false;
-  try { sessionStorage.setItem(LS_ADMIN, '1'); } catch (e) {}
+/* ===== Admin : enregistrement ===== */
+let saveTimer = null, saving = false, pendingSave = false;
+function setSave(txt, err) { const s = $('#saveState'); s.textContent = txt; s.classList.toggle('err', !!err); }
+function mutate(fn) {          // toute modification passe par ici
+  freezePast(data); fn(data); render(); setSave('Modifié…');
+  clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 1200);
+}
+async function saveNow() {
+  if (saving) { pendingSave = true; return; }
+  saving = true; setSave('Enregistrement…');
+  try {
+    const json = JSON.stringify(data, null, 2);
+    const res = await putFile('data.json', b64encodeText(json), dataSha, 'Calendrier : mise à jour des données');
+    dataSha = res.content.sha; setSave('Enregistré ✓');
+  } catch (e) {
+    if (e.status === 409 || e.status === 422) { setSave('Conflit, rechargé', true); toast('Les données ont changé ailleurs : rechargement. Refais ta dernière modification.', 4000); data = await loadData(); render(); }
+    else { setSave('Erreur', true); toast('Échec de l\'enregistrement (' + e.message + ')', 4000); }
+  } finally {
+    saving = false;
+    if (pendingSave) { pendingSave = false; saveNow(); }
+  }
+}
+addEventListener('beforeunload', e => { if (saveTimer && $('#saveState').textContent === 'Modifié…') { e.preventDefault(); e.returnValue = ''; } });
+
+/* ===== Admin : connexion ===== */
+const wantsAdmin = () => /[?&#]admin\b/.test(location.search + location.hash);
+async function checkToken(tk) {
+  const r = await fetch(`https://api.github.com/repos/${REPO.owner}/${REPO.repo}`, { headers: { Authorization: 'Bearer ' + tk, Accept: 'application/vnd.github+json' } });
+  if (!r.ok) return false;
+  const j = await r.json(); return !!(j.permissions && (j.permissions.push || j.permissions.admin));
+}
+async function enterAdmin(tk) {
+  token = tk; isAdmin = true; lsSet(LS_TOKEN, tk);
+  $('#adminbar').hidden = false;
+  data = await loadData(); // relecture authentifiée (sha à jour)
   buildAdminStatic(); render(); toast('Mode admin activé');
 }
-function saveDraft() { lsSet(LS_DRAFT, cfg); $('#dirty').hidden = JSON.stringify(cfg) === JSON.stringify(EMBEDDED); render(); }
+$('#loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const tk = $('#lToken').value.trim(); if (!tk) return;
+  $('#lSubmit').disabled = true; $('#lErr').textContent = 'Vérification…';
+  try {
+    if (await checkToken(tk)) { $('#login').classList.remove('show'); await enterAdmin(tk); }
+    else $('#lErr').textContent = "Jeton refusé, ou sans droit d'écriture sur le dépôt.";
+  } catch (err) { $('#lErr').textContent = 'Impossible de joindre GitHub.'; }
+  $('#lSubmit').disabled = false;
+});
+$('#lCancel').onclick = () => $('#login').classList.remove('show');
+$('#lRepo').textContent = `${REPO.owner}/${REPO.repo}`;
+$('#logout').onclick = () => { lsDel(LS_TOKEN); token = null; isAdmin = false; simDay = null; $('#adminbar').hidden = true; $('#drawer').classList.remove('show'); render(); toast('Déconnecté'); };
 
+/* ===== Admin : simulation ===== */
 function buildAdminStatic() {
-  const sel = $('#simDay');
-  sel.innerHTML = '<option value="">Date réelle</option><option value="0">Avant le 1er décembre</option>' +
-    Array.from({ length: 25 }, (_, i) => `<option value="${i + 1}">${i + 1} décembre</option>`).join('');
+  $('#simDay').innerHTML = '<option value="">Date réelle</option><option value="0">Avant le 1er déc.</option>' + Array.from({ length: 25 }, (_, i) => `<option value="${i + 1}">${i + 1} décembre</option>`).join('');
+  $('#simDay').value = simDay == null ? '' : String(simDay);
   $('#addDate').value = parisToday();
-  $('#howtoEdit').value = cfg.messageInscription;
-  $('#lotsGrid').innerHTML = cfg.lots.map((l, i) => `<label for="lot${i}">${i + 1}</label><input type="text" id="lot${i}" data-i="${i}" value="${esc(l)}">`).join('');
-  $('#lotsGrid').querySelectorAll('input').forEach(inp => inp.addEventListener('change', () => { cfg.lots[+inp.dataset.i] = inp.value.trim() || `Lot ${+inp.dataset.i + 1}`; saveDraft(); }));
-  $('#dirty').hidden = JSON.stringify(cfg) === JSON.stringify(EMBEDDED);
+  $('#howtoEdit').value = data.messageInscription;
+  buildLots();
 }
+function setSim(v) { simDay = v; simOpened = new Set(); $('#simDay').value = v == null ? '' : String(v); render(); }
+$('#simDay').onchange = e => setSim(e.target.value === '' ? null : +e.target.value);
+$('#simPrev').onclick = () => { const c = simDay ?? realOpenDay(); setSim(Math.max(0, c - 1)); };
+$('#simNext').onclick = () => { const c = simDay ?? realOpenDay(); setSim(Math.min(25, c + 1)); };
+$('#simAll').onchange = e => { simAll = e.target.checked; render(); };
 
-function renderAdmin(draws) {
-  const list = [...cfg.inscrits].sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
-  $('#admCount').textContent = list.length;
-  $('#admList').innerHTML = list.map(p => `<tr><td>${esc(p.nom)}</td><td><input type="date" value="${p.date}" data-n="${esc(p.nom)}" class="dEdit"></td><td><button class="x" data-del="${esc(p.nom)}" title="Retirer">×</button></td></tr>`).join('')
-    || '<tr><td colspan="3" class="muted">Aucun inscrit.</td></tr>';
-  $('#admList').querySelectorAll('[data-del]').forEach(b => b.onclick = () => { cfg.inscrits = cfg.inscrits.filter(p => p.nom !== b.dataset.del); saveDraft(); });
-  $('#admList').querySelectorAll('.dEdit').forEach(inp => inp.onchange = () => { const p = cfg.inscrits.find(p => p.nom === inp.dataset.n); if (p && inp.value) { p.date = inp.value; saveDraft(); } });
-
-  const all = computeDraws(cfg, 25), od = openDay();
-  $('#admDraws').innerHTML = Array.from({ length: 25 }, (_, i) => {
-    const d = i + 1, r = all[d];
-    const style = d > od ? ' style="opacity:.5"' : '';
-    if (!r || r.vide) return `<tr${style}><td>${d}${r && r.fige ? ' 🔒' : ''}</td><td colspan="3" class="muted">Pas de tirage</td><td>${r && r.fige ? `<button class="x" data-unf="${d}" title="Défiger">↺</button>` : ''}</td></tr>`;
-    return `<tr${style}><td>${d}${r.fige ? ' 🔒' : ''}</td><td>${esc(r.gagnant)}</td><td>${esc(lotName(r.lot))}</td><td>${r.tour}</td><td>${r.fige ? `<button class="x" data-unf="${d}" title="Défiger ce jour et les suivants">↺</button>` : ''}</td></tr>`;
-  }).join('');
-  $('#admDraws').querySelectorAll('[data-unf]').forEach(b => b.onclick = () => {
-    const d = +b.dataset.unf;
-    Object.keys(cfg.figes).forEach(k => { if (+k >= d) delete cfg.figes[k]; });
-    saveDraft(); toast(`Tirages défigés à partir du ${d}`);
-  });
-}
-
-$('#addBtn').onclick = () => {
-  const date = $('#addDate').value || parisToday();
-  const names = $('#addNames').value.split(/\n/).map(s => s.trim()).filter(Boolean);
-  let added = 0;
-  names.forEach(n => { if (!cfg.inscrits.some(p => p.nom.toLowerCase() === n.toLowerCase())) { cfg.inscrits.push({ nom: n, date }); added++; } });
-  $('#addNames').value = '';
-  saveDraft(); toast(added ? `${added} inscrit${added > 1 ? 's' : ''} ajouté${added > 1 ? 's' : ''}` : 'Déjà inscrit(s)');
-};
-$('#howtoEdit').addEventListener('change', e => { cfg.messageInscription = e.target.value.trim(); saveDraft(); });
-$('#simDay').onchange = e => { simDay = e.target.value === '' ? null : +e.target.value; render(); };
-$('#resetOpened').onclick = () => { opened = new Set(); lsSet(LS_OPENED, []); render(); toast('Cases refermées sur ce navigateur'); };
+/* ===== Admin : panneau ===== */
+$('#openDrawer').onclick = () => $('#drawer').classList.add('show');
+$('#closeDrawer').onclick = () => $('#drawer').classList.remove('show');
 $('#tabs').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
   document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.id === b.dataset.p));
 });
-$('#openDrawer').onclick = () => $('#drawer').classList.add('show');
-$('#closeDrawer').onclick = () => $('#drawer').classList.remove('show');
+$('#resetOpened').onclick = () => { opened = new Set(); lsSet(LS_OPENED, []); render(); toast('Cases refermées sur ce navigateur'); };
 
-function exportConfig() {
-  const out = structuredClone(cfg);
-  const real = realOpenDay();
-  const draws = computeDraws(out, real);
-  for (let d = 1; d <= real; d++) {
-    const r = draws[d]; if (!r) continue;
-    out.figes[d] = r.vide ? { vide: true } : { gagnant: r.gagnant, lot: r.lot, tour: r.tour };
+function renderAdmin() {
+  const list = [...data.inscrits].sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+  $('#admCount').textContent = list.length;
+  $('#admList').innerHTML = list.map(p => `<tr><td>${esc(p.nom)}</td><td><input type="date" value="${esc(p.date)}" data-n="${esc(p.nom)}" class="dEdit"></td><td><button class="x" data-del="${esc(p.nom)}" title="Retirer">×</button></td></tr>`).join('')
+    || '<tr><td colspan="3" class="muted">Aucun inscrit.</td></tr>';
+  $('#admList').querySelectorAll('[data-del]').forEach(b => b.onclick = () => mutate(d => { d.inscrits = d.inscrits.filter(p => p.nom !== b.dataset.del); }));
+  $('#admList').querySelectorAll('.dEdit').forEach(inp => inp.onchange = () => { if (inp.value) mutate(d => { const p = d.inscrits.find(p => p.nom === inp.dataset.n); if (p) p.date = inp.value; }); });
+
+  const all = computeDraws(data, 25), real = realOpenDay();
+  $('#admDraws').innerHTML = Array.from({ length: 25 }, (_, i) => {
+    const d = i + 1, r = all[d], past = d <= real, st = past ? '' : ' style="opacity:.6"';
+    if (!r || r.vide) return `<tr${st}><td>${d}${past ? ' 🔒' : ''}</td><td colspan="3" class="muted">Pas de tirage</td></tr>`;
+    return `<tr${st}><td>${d}${past ? ' 🔒' : ''}</td><td>${esc(r.gagnant)}</td><td>${esc(lot(r.lot).nom)}</td><td>${r.tour}</td></tr>`;
+  }).join('');
+}
+
+function buildLots() {
+  $('#lotsList').innerHTML = data.lots.map((l, i) => `
+    <div class="lotrow" data-i="${i}">
+      <div><div class="thumb ${l.image ? 'has' : ''}" data-img="${i}" role="button" tabindex="0" style="${l.image ? `background-image:url('${esc(imgUrl(l))}')` : ''}"><span class="n">${i + 1}</span>${l.image ? '' : '+ image'}</div>
+        ${l.image ? `<button class="rm" data-rm="${i}">Retirer l'image</button>` : ''}</div>
+      <div><input type="text" value="${esc(l.nom)}" data-nom="${i}" aria-label="Nom du lot ${i + 1}" placeholder="Nom du lot">
+        <textarea data-desc="${i}" placeholder="Description (optionnelle)" aria-label="Description du lot ${i + 1}">${esc(l.desc)}</textarea></div>
+    </div>`).join('');
+  const L = $('#lotsList');
+  L.querySelectorAll('[data-nom]').forEach(inp => inp.onchange = () => mutate(d => { d.lots[+inp.dataset.nom].nom = inp.value.trim() || `Lot ${+inp.dataset.nom + 1}`; }));
+  L.querySelectorAll('[data-desc]').forEach(inp => inp.onchange = () => mutate(d => { d.lots[+inp.dataset.desc].desc = inp.value.trim(); }));
+  L.querySelectorAll('[data-img]').forEach(th => {
+    const go = () => { imgTarget = +th.dataset.img; $('#imgInput').value = ''; $('#imgInput').click(); };
+    th.onclick = go; th.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } };
+  });
+  L.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { mutate(d => { d.lots[+b.dataset.rm].image = ''; }); buildLots(); });
+}
+
+let imgTarget = null;
+async function resizeImage(file) {
+  const bmp = await createImageBitmap(file);
+  const keepAlpha = /png|gif|webp/.test(file.type), max = keepAlpha ? 512 : 800;
+  const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+  const cv = document.createElement('canvas'); cv.width = Math.round(bmp.width * k); cv.height = Math.round(bmp.height * k);
+  cv.getContext('2d').drawImage(bmp, 0, 0, cv.width, cv.height);
+  const type = keepAlpha ? 'image/png' : 'image/jpeg';
+  const blob = await new Promise(r => cv.toBlob(r, type, .86));
+  return { blob, ext: keepAlpha ? 'png' : 'jpg' };
+}
+$('#imgInput').onchange = async e => {
+  const f = e.target.files[0], i = imgTarget; if (!f || i == null) return;
+  const th = document.querySelector(`[data-img="${i}"]`); th.textContent = 'Envoi…';
+  try {
+    const { blob, ext } = await resizeImage(f);
+    const b64 = b64encodeBytes(new Uint8Array(await blob.arrayBuffer()));
+    const path = `lots/lot-${pad(i + 1)}-${Date.now().toString(36)}.${ext}`;
+    await putFile(path, b64, null, `Calendrier : image du lot ${i + 1}`);
+    mutate(d => { d.lots[i].image = path; });
+    buildLots(); toast(`Image du lot ${i + 1} enregistrée`);
+  } catch (err) { toast("Échec de l'envoi de l'image (" + err.message + ')', 4000); buildLots(); }
+};
+
+$('#addBtn').onclick = () => {
+  const date = $('#addDate').value || parisToday();
+  const names = $('#addNames').value.split(/\n/).map(s => s.trim()).filter(Boolean);
+  let added = 0;
+  mutate(d => names.forEach(n => { if (!d.inscrits.some(p => p.nom.toLowerCase() === n.toLowerCase())) { d.inscrits.push({ nom: n, date }); added++; } }));
+  $('#addNames').value = '';
+  toast(added ? `${added} inscrit${added > 1 ? 's' : ''} ajouté${added > 1 ? 's' : ''}` : 'Déjà inscrit(s)');
+};
+$('#howtoEdit').onchange = e => mutate(d => { d.messageInscription = e.target.value.trim(); });
+
+/* ===== Démarrage ===== */
+buildGarland(); startSnow();
+(async () => {
+  try { data = await loadData(); render(); }
+  catch (e) { $('#board').innerHTML = '<div class="loading" style="grid-column:1/-1">Impossible de charger le calendrier. Réessaie dans un instant.</div>'; $('#status').textContent = 'Erreur de chargement'; }
+  if (wantsAdmin()) {
+    if (token) { try { if (await checkToken(token)) { await enterAdmin(token); return; } } catch (e) {} lsDel(LS_TOKEN); token = null; }
+    $('#login').classList.add('show'); setTimeout(() => $('#lToken').focus(), 50);
   }
-  return out;
-}
-$('#dlBtn').onclick = () => {
-  const out = exportConfig();
-  const json = JSON.stringify(out, null, 2).replace(/</g, '\\u003c');
-  const html = SOURCE.replace(/(<script id="config" type="application\/json">)[\s\S]*?(<\/script>)/, `$1\n${json}\n$2`);
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-  a.download = 'index.html'; document.body.appendChild(a); a.click(); a.remove();
-  cfg = out; lsSet(LS_DRAFT, cfg); render();
-  toast('Fichier téléchargé : remplace-le sur GitHub Pages');
-};
-$('#cpBtn').onclick = async () => {
-  try { await navigator.clipboard.writeText(JSON.stringify(exportConfig(), null, 2)); toast('Config copiée'); } catch (e) { toast('Copie refusée par le navigateur'); }
-};
-$('#passBtn').onclick = () => {
-  const p = $('#newPass').value; if (p.length < 4) { toast('4 caractères minimum'); return; }
-  cfg.mdpHash = String(cyrb53(p, 7)); $('#newPass').value = ''; saveDraft(); toast('Mot de passe changé (à exporter)');
-};
-$('#discardBtn').onclick = () => { lsDel(LS_DRAFT); cfg = structuredClone(EMBEDDED); buildAdminStatic(); render(); toast('Brouillon abandonné'); };
-
-$('#loginForm').addEventListener('submit', e => {
-  e.preventDefault();
-  if (checkPass($('#lPass').value)) { $('#login').classList.remove('show'); enterAdmin(); }
-  else $('#lErr').textContent = 'Mot de passe incorrect.';
-});
-$('#lCancel').onclick = () => $('#login').classList.remove('show');
-
-/* ---------- démarrage ---------- */
-buildGarland();
-startSnow();
-render();
-let adminSession = false; try { adminSession = sessionStorage.getItem(LS_ADMIN) === '1'; } catch (e) {}
-if (wantsAdmin()) {
-  if (adminSession) enterAdmin();
-  else { $('#login').classList.add('show'); setTimeout(() => $('#lPass').focus(), 50); }
-}
-setInterval(() => { if (simDay == null) render(); }, 60 * 1000 * 10);
+})();
+// Rafraîchit les données toutes les 5 minutes pour les visiteurs (et à la date qui change)
+setInterval(async () => { if (isAdmin || document.hidden) return; try { data = await loadData(); render(); } catch (e) {} }, 5 * 60 * 1000);
 </script>
 </body>
 </html>
