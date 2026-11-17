@@ -129,6 +129,23 @@
       "image": ""
     }
   ],
-  "inscrits": [],
+  "inscrits": [
+    {
+      "nom": "Cugell",
+      "date": "2026-11-17"
+    },
+    {
+      "nom": "Yuinata",
+      "date": "2026-11-17"
+    },
+    {
+      "nom": "Lana",
+      "date": "2026-11-17"
+    },
+    {
+      "nom": "Myaou",
+      "date": "2026-11-17"
+    }
+  ],
   "figes": {}
 }
