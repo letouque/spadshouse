@@ -171,5 +171,66 @@
       "date": "2026-11-20"
     }
   ],
-  "figes": {}
+  "figes": {},
+  "jackpot": {
+    "maj": "2026-11-18T00:32:40.466Z",
+    "items": [
+      {
+        "nom": "Anneau de récupération",
+        "type": "anneau",
+        "luxe": false,
+        "prix": 8000,
+        "qte": 130
+      },
+      {
+        "nom": "Bracelet de récupération",
+        "type": "bracelet",
+        "luxe": false,
+        "prix": 9000,
+        "qte": 23
+      },
+      {
+        "nom": "Boucle d'oreille de récupération",
+        "type": "boucle",
+        "luxe": false,
+        "prix": 10000,
+        "qte": 9
+      },
+      {
+        "nom": "Collier de récupération",
+        "type": "collier",
+        "luxe": false,
+        "prix": 13000,
+        "qte": 18
+      },
+      {
+        "nom": "Anneau de récupération luxueux",
+        "type": "anneau",
+        "luxe": true,
+        "prix": 27000,
+        "qte": 20
+      },
+      {
+        "nom": "Bracelet de récupération luxueux",
+        "type": "bracelet",
+        "luxe": true,
+        "prix": 28500,
+        "qte": 18
+      },
+      {
+        "nom": "Boucle d'oreille de récupération luxueuse",
+        "type": "boucle",
+        "luxe": true,
+        "prix": 30000,
+        "qte": 45
+      },
+      {
+        "nom": "Collier de récupération luxueux",
+        "type": "collier",
+        "luxe": true,
+        "prix": 34500,
+        "qte": 8
+      }
+    ]
+  }
 }
