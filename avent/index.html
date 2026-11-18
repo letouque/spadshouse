@@ -16,6 +16,7 @@
   --radius:10px;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0;min-height:100%}
 html{background:#2c1a10}
 body{
@@ -106,6 +107,26 @@ h1 em{color:var(--gold-l);font-style:italic}
 .muted{opacity:.7;font-size:.9rem}
 footer{text-align:center;margin-top:30px;font-size:.8rem;opacity:.6}
 .loading{text-align:center;padding:60px 0;font-weight:700}
+.jackpot{margin:0 auto 22px;max-width:860px;border-radius:18px;padding:18px 22px;color:var(--ink);position:relative;overflow:hidden;
+  background:radial-gradient(ellipse at 15% 0%,#fff3c9,transparent 60%),linear-gradient(160deg,#f3cf7a,#c99332);border:3px solid #fff0bf;box-shadow:0 0 40px rgba(243,207,122,.35),0 16px 40px rgba(0,0,0,.45)}
+.jackpot::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.35) 50%,transparent 60%);background-size:250% 100%;animation:shine 5s infinite}
+@keyframes shine{0%{background-position:150% 0}60%,100%{background-position:-60% 0}}
+.jp-top{display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:center;text-align:center}
+.jp-title{font-family:"Playfair Display",serif;font-weight:800;color:var(--red-d);font-size:1.15rem;letter-spacing:.06em;text-transform:uppercase}
+.jp-total{font-family:"Playfair Display",serif;font-weight:800;font-size:clamp(2.2rem,6vw,3.4rem);line-height:1;color:#3b2410;text-shadow:0 2px 0 rgba(255,255,255,.5)}
+.jp-total small{font-size:.45em;margin-left:.2em}
+.jp-share{font-weight:800;background:var(--green);color:var(--cream);padding:6px 14px;border-radius:99px;display:inline-block;margin-top:6px}
+.jp-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:14px}
+.jp-item{display:flex;align-items:center;gap:8px;background:rgba(255,250,235,.55);border-radius:10px;padding:6px 8px;font-size:.82rem;line-height:1.2}
+.jp-item svg{width:30px;height:30px;flex:none}
+.jp-item b{font-size:1.05rem}
+.jp-foot{text-align:center;font-size:.78rem;margin-top:10px;opacity:.75}
+.jp-chest{width:64px;height:64px;flex:none}
+.modal .jpmodal{margin-top:14px;padding:12px;border-radius:12px;background:linear-gradient(160deg,#f3cf7a,#c99332);font-weight:700}
+.modal .jpmodal .jp-total{font-size:2rem}
+.jptable input{width:100%}
+.jptable input[type=number]{width:90px}
+input[type=number]{font:inherit;padding:6px 8px;border-radius:8px;border:1.5px solid rgba(43,26,16,.3);background:#fffaf0;color:var(--ink)}
 
 .overlay{position:fixed;inset:0;z-index:50;background:rgba(15,8,4,.72);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:18px}
 .overlay.show{display:flex}
@@ -164,8 +185,12 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
 @media (max-width:760px){
   .board{grid-template-columns:repeat(3,1fr);gap:10px;padding:12px}
   .panels{grid-template-columns:1fr}
+  .jackpot{padding:14px}
+  .jp-top .jp-chest:last-child{display:none}
+  .jp-items{grid-template-columns:1fr 1fr}
+  .jp-item svg{width:24px;height:24px}
 }
-@media (prefers-reduced-motion:reduce){.bulb,.cell.ready .door{animation:none}.door{transition:none}}
+@media (prefers-reduced-motion:reduce){.bulb,.cell.ready .door,.jackpot::after{animation:none}.door{transition:none}}
 </style>
 </head>
 <body>
@@ -191,6 +216,8 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
     <div class="status" id="status">Chargement…</div>
   </header>
   <div class="simbanner" id="simbanner" hidden></div>
+
+  <section class="jackpot" id="jackpot" aria-label="Jackpot des sous-marins" hidden></section>
 
   <section class="board" id="board" aria-label="Cases du calendrier"><div class="loading" style="grid-column:1/-1">Chargement du calendrier…</div></section>
 
@@ -245,6 +272,7 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
   <nav class="tabs" id="tabs">
     <button data-p="pInscrits" class="on">Inscrits</button>
     <button data-p="pLots">Lots</button>
+    <button data-p="pJackpot">Jackpot</button>
     <button data-p="pTirages">Tirages</button>
     <button data-p="pTexte">Texte</button>
   </nav>
@@ -260,6 +288,13 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
     <p class="muted">Clique sur une vignette pour ajouter ou changer l'image. Chaque jour, un lot encore disponible est tiré au hasard.</p>
     <div id="lotsList"></div>
     <input type="file" id="imgInput" accept="image/*" hidden>
+  </div>
+  <div class="pane" id="pJackpot">
+    <p class="muted">Trésors des sous-marins mis de côté pour le 25. Mets à jour les quantités au retour des sous-marins : le compteur public suit en direct. Valeur = prix de revente au PNJ.</p>
+    <table class="jptable"><thead><tr><th>Objet</th><th>Prix unit.</th><th>Qté</th><th>Total</th><th></th></tr></thead><tbody id="jpRows"></tbody>
+      <tfoot><tr><th colspan="3">Total</th><th id="jpSum"></th><th></th></tr></tfoot></table>
+    <div class="row" style="margin-top:10px"><button class="btn small green" id="jpAdd">+ Ajouter un objet</button></div>
+    <p class="muted" id="jpInfo"></p>
   </div>
   <div class="pane" id="pTirages">
     <p class="muted">Résultats calculés jusqu'au 25 avec les inscrits actuels. 🔒 = jour passé, résultat définitif. Les jours à venir peuvent encore changer si des inscrits s'ajoutent.</p>
@@ -304,6 +339,17 @@ const b64encodeText = str => b64encodeBytes(new TextEncoder().encode(str));
 const b64decodeText = b64 => new TextDecoder().decode(Uint8Array.from(atob(b64.replace(/\s/g, '')), c => c.charCodeAt(0)));
 
 /* ===== Données ===== */
+// type : forme de l'icône (anneau, bracelet, boucle, collier) ; luxe : version dorée
+const JACKPOT_DEFAUT = [
+  { nom: 'Anneau de récupération', type: 'anneau', luxe: false, prix: 8000, qte: 30 },
+  { nom: 'Bracelet de récupération', type: 'bracelet', luxe: false, prix: 9000, qte: 23 },
+  { nom: "Boucle d'oreille de récupération", type: 'boucle', luxe: false, prix: 10000, qte: 9 },
+  { nom: 'Collier de récupération', type: 'collier', luxe: false, prix: 13000, qte: 18 },
+  { nom: 'Anneau de récupération luxueux', type: 'anneau', luxe: true, prix: 27000, qte: 20 },
+  { nom: 'Bracelet de récupération luxueux', type: 'bracelet', luxe: true, prix: 28500, qte: 18 },
+  { nom: "Boucle d'oreille de récupération luxueuse", type: 'boucle', luxe: true, prix: 30000, qte: 45 },
+  { nom: 'Collier de récupération luxueux', type: 'collier', luxe: true, prix: 34500, qte: 8 }
+];
 function defaultData() {
   return {
     annee: YEAR,
@@ -311,7 +357,8 @@ function defaultData() {
     messageInscription: "Pour participer, inscris-toi sur le Discord des SPADS ! Ton pseudo apparaîtra ici dès qu'il aura été ajouté.",
     lots: Array.from({ length: 25 }, (_, i) => ({ nom: `Lot ${i + 1}`, desc: '', image: '' })),
     inscrits: [],
-    figes: {}
+    figes: {},
+    jackpot: { maj: '', items: JACKPOT_DEFAUT.map(x => ({ ...x })) }
   };
 }
 function normalize(d) {
@@ -323,6 +370,7 @@ function normalize(d) {
     return Object.assign({ nom: `Lot ${i + 1}`, desc: '', image: '' }, l || {});
   });
   d.figes = d.figes || {}; d.inscrits = d.inscrits || [];
+  if (!d.jackpot || !Array.isArray(d.jackpot.items)) d.jackpot = { maj: '', items: JACKPOT_DEFAUT.map(x => ({ ...x })) };
   return d;
 }
 
@@ -401,6 +449,50 @@ function freezePast(c) {
     const r = draws[d];
     c.figes[d] = r.vide ? { vide: true } : { gagnant: r.gagnant, lot: r.lot, tour: r.tour };
   }
+  if (real >= 25 && !c.jackpot.beneficiaires) c.jackpot.beneficiaires = jpBeneficiaires(c);
+}
+/* ===== Jackpot ===== */
+const fmt = n => Math.round(n).toLocaleString('fr-FR');
+const jpTotal = c => c.jackpot.items.reduce((s, it) => s + (+it.prix || 0) * (+it.qte || 0), 0);
+function jpBeneficiaires(c) {
+  if (c.jackpot.beneficiaires) return c.jackpot.beneficiaires;
+  return [...new Set(c.inscrits.filter(p => p.date < `${c.annee}-12-25`).map(p => p.nom))].sort((a, b) => a.localeCompare(b, 'fr'));
+}
+function jpIcon(it) {
+  const g = it.luxe ? ['#fff1b0', '#d9a441', '#8a5d14'] : ['#ffffff', '#b9c3cf', '#5d6875'];
+  const grad = `<defs><linearGradient id="g${it.luxe ? 'l' : 'n'}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${g[0]}"/><stop offset=".5" stop-color="${g[1]}"/><stop offset="1" stop-color="${g[2]}"/></linearGradient></defs>`;
+  const f = `url(#g${it.luxe ? 'l' : 'n'})`, st = `stroke="${g[2]}" stroke-width="1"`;
+  const shapes = {
+    anneau: `<ellipse cx="16" cy="20" rx="10" ry="7" fill="none" stroke="${f}" stroke-width="4"/><path d="M16 4l4 7-4 4-4-4z" fill="${f}" ${st}/>`,
+    bracelet: `<ellipse cx="16" cy="16" rx="13" ry="9" fill="${f}" ${st}/><ellipse cx="16" cy="19" rx="10" ry="5" fill="#2b1a10"/><circle cx="10" cy="12" r="1.2" fill="${g[0]}"/><circle cx="22" cy="12" r="1.2" fill="${g[0]}"/>`,
+    boucle: `<path d="M16 3l11 11-11 15L5 14z" fill="${f}" ${st}/><path d="M16 9l5 5-5 7-5-7z" fill="${g[0]}" opacity=".6"/>`,
+    collier: `<path d="M4 6c2 9 22 9 24 0" fill="none" stroke="${f}" stroke-width="4"/><path d="M16 15l5 6-5 7-5-7z" fill="${f}" ${st}/>`
+  };
+  return `<svg viewBox="0 0 32 32" aria-hidden="true">${grad}${shapes[it.type] || shapes.anneau}</svg>`;
+}
+const CHEST = '<svg class="jp-chest" viewBox="0 0 64 64" aria-hidden="true"><path d="M8 28h48v26a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z" fill="#7a4a22"/><path d="M8 28c0-12 10-18 24-18s24 6 24 18z" fill="#9a5f2c"/><rect x="8" y="27" width="48" height="5" fill="#d9a441"/><rect x="28" y="24" width="8" height="12" rx="2" fill="#f3cf7a" stroke="#8a5d14"/><path d="M14 10l3-6 3 6m26-2l3-5 2 5M30 4l2-4 2 4" stroke="#fff3c9" stroke-width="2" fill="none"/><path d="M10 34v20M54 34v20" stroke="#d9a441" stroke-width="3"/></svg>';
+function renderJackpot() {
+  const j = data.jackpot, el = $('#jackpot');
+  const items = j.items.filter(it => +it.qte > 0);
+  const total = jpTotal(data), ben = jpBeneficiaires(data), part = ben.length ? Math.floor(total / ben.length) : 0;
+  el.hidden = !j.items.length;
+  const done = openDay() >= 25;
+  el.innerHTML = `
+    <div class="jp-top">${CHEST}
+      <div><div class="jp-title">${done ? 'Jackpot des sous-marins — partagé !' : 'Jackpot des sous-marins · partagé le 25 décembre'}</div>
+        <div class="jp-total" data-total="${total}">${fmt(total)}<small>gils</small></div>
+        <div class="jp-share">${ben.length ? `≈ ${fmt(part)} gils pour chacun des ${ben.length} inscrit${ben.length > 1 ? 's' : ''}` : 'Inscris-toi pour avoir ta part !'}</div></div>
+      ${CHEST.replace('class="jp-chest"', 'class="jp-chest" style="transform:scaleX(-1)"')}</div>
+    <div class="jp-items">${items.map(it => `<div class="jp-item">${jpIcon(it)}<div><b>× ${fmt(it.qte)}</b><br>${esc(it.nom)}</div></div>`).join('')}</div>
+    <div class="jp-foot">Valeur estimée à la revente PNJ · partagé à parts égales entre tous les inscrits avant le 25${j.maj ? ' · mis à jour le ' + new Date(j.maj).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Paris' }) : ''}</div>`;
+  const prev = renderJackpot.last; renderJackpot.last = total;
+  if (prev != null && prev !== total) countUp(el.querySelector('.jp-total'), prev, total);
+}
+function countUp(node, from, to) {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const t0 = performance.now(), dur = 1500;
+  const step = t => { const k = Math.min(1, (t - t0) / dur), v = from + (to - from) * (1 - Math.pow(1 - k, 3)); node.innerHTML = fmt(v) + '<small>gils</small>'; if (k < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
 }
 const lot = i => data.lots[i] || { nom: `Lot ${i + 1}`, desc: '', image: '' };
 const imgUrl = l => l && l.image ? `${RAW}/${l.image}` : '';
@@ -516,6 +608,7 @@ function render() {
     ? names.map(n => `<span class="chip ${winners.has(n) ? 'won' : ''}">${winners.has(n) ? '★ ' : ''}${esc(n)}</span>`).join('')
     : '<span class="muted">Aucun inscrit pour le moment.</span>';
 
+  renderJackpot();
   if (isAdmin) renderAdmin();
 }
 
@@ -534,6 +627,10 @@ function showDraw(d, r, animate) {
     prize.innerHTML = (u ? `<img src="${esc(u)}" alt="${esc(L.nom)}">` : '') + `<div><span class="lot">🎁 ${esc(L.nom)}</span></div>` + (L.desc ? `<div class="desc">${esc(L.desc)}</div>` : '');
     prize.classList.add('show');
     note.textContent = r.tour > 1 ? `Tous les inscrits avaient déjà gagné : ${r.tour}e tour de tirage !` : 'Félicitations !';
+    if (d === 25) {
+      const total = jpTotal(data), ben = jpBeneficiaires(data), part = ben.length ? Math.floor(total / ben.length) : 0;
+      prize.insertAdjacentHTML('beforeend', `<div class="jpmodal">🎉 Et le jackpot des sous-marins pour tout le monde :<div class="jp-total">${fmt(total)}<small>gils</small></div>soit <b>${fmt(part)} gils</b> pour chacun des ${ben.length} inscrits !</div>`);
+    }
     if (animate) confetti();
   };
   const names = [...new Set(data.inscrits.map(p => p.nom))];
@@ -641,6 +738,7 @@ function renderAdmin() {
   $('#admList').querySelectorAll('[data-del]').forEach(b => b.onclick = () => mutate(d => { d.inscrits = d.inscrits.filter(p => p.nom !== b.dataset.del); }));
   $('#admList').querySelectorAll('.dEdit').forEach(inp => inp.onchange = () => { if (inp.value) mutate(d => { const p = d.inscrits.find(p => p.nom === inp.dataset.n); if (p) p.date = inp.value; }); });
 
+  renderJackpotAdmin();
   const all = computeDraws(data, 25), real = realOpenDay();
   $('#admDraws').innerHTML = Array.from({ length: 25 }, (_, i) => {
     const d = i + 1, r = all[d], past = d <= real, st = past ? '' : ' style="opacity:.6"';
@@ -648,6 +746,30 @@ function renderAdmin() {
     return `<tr${st}><td>${d}${past ? ' 🔒' : ''}</td><td>${esc(r.gagnant)}</td><td>${esc(lot(r.lot).nom)}</td><td>${r.tour}</td></tr>`;
   }).join('');
 }
+
+function renderJackpotAdmin() {
+  const tb = $('#jpRows'); if (tb.contains(document.activeElement)) { updateJpSum(); return; }
+  tb.innerHTML = data.jackpot.items.map((it, i) => `<tr>
+    <td><div style="display:flex;gap:6px;align-items:center">${jpIcon(it).replace('<svg', '<svg style="width:26px;height:26px;flex:none"')}<input type="text" value="${esc(it.nom)}" data-jf="nom" data-i="${i}" aria-label="Nom"></div></td>
+    <td><input type="number" min="0" step="500" value="${+it.prix || 0}" data-jf="prix" data-i="${i}" aria-label="Prix unitaire"></td>
+    <td><input type="number" min="0" value="${+it.qte || 0}" data-jf="qte" data-i="${i}" aria-label="Quantité"></td>
+    <td class="jpl">${fmt((+it.prix || 0) * (+it.qte || 0))}</td>
+    <td><button class="x" data-jrm="${i}" title="Retirer">×</button></td></tr>`).join('');
+  tb.querySelectorAll('[data-jf]').forEach(inp => inp.onchange = () => mutate(d => {
+    const it = d.jackpot.items[+inp.dataset.i], f = inp.dataset.jf;
+    it[f] = f === 'nom' ? inp.value.trim() : Math.max(0, Math.round(+inp.value || 0));
+    d.jackpot.maj = new Date().toISOString();
+  }));
+  tb.querySelectorAll('[data-jrm]').forEach(b => b.onclick = () => mutate(d => { d.jackpot.items.splice(+b.dataset.jrm, 1); d.jackpot.maj = new Date().toISOString(); }));
+  updateJpSum();
+}
+function updateJpSum() {
+  const ben = jpBeneficiaires(data), total = jpTotal(data);
+  $('#jpSum').textContent = fmt(total) + ' gils';
+  $('#jpRows').querySelectorAll('tr').forEach((tr, i) => { const it = data.jackpot.items[i]; if (it) tr.querySelector('.jpl').textContent = fmt((+it.prix || 0) * (+it.qte || 0)); });
+  $('#jpInfo').textContent = `${ben.length} bénéficiaire${ben.length > 1 ? 's' : ''} (inscrits avant le 25) → ${fmt(ben.length ? Math.floor(total / ben.length) : 0)} gils chacun.`;
+}
+$('#jpAdd').onclick = () => mutate(d => { d.jackpot.items.push({ nom: 'Nouvel objet', type: 'anneau', luxe: false, prix: 0, qte: 0 }); d.jackpot.maj = new Date().toISOString(); });
 
 function buildLots() {
   $('#lotsList').innerHTML = data.lots.map((l, i) => `
@@ -711,8 +833,8 @@ buildGarland(); startSnow();
     $('#login').classList.add('show'); setTimeout(() => $('#lToken').focus(), 50);
   }
 })();
-// Rafraîchit les données toutes les 5 minutes pour les visiteurs (et à la date qui change)
-setInterval(async () => { if (isAdmin || document.hidden) return; try { data = await loadData(); render(); } catch (e) {} }, 5 * 60 * 1000);
+// Rafraîchit les données toutes les 2 minutes pour les visiteurs (et à la date qui change)
+setInterval(async () => { if (isAdmin || document.hidden) return; try { data = await loadData(); render(); } catch (e) {} }, 2 * 60 * 1000);
 </script>
 </body>
 </html>
