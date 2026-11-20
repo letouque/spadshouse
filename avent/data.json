@@ -19,14 +19,14 @@
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026435_hr1.tex"
     },
     {
-      "nom": "Monture perroquet",
+      "nom": "Sifflet colibri silencieux",
       "desc": "",
-      "image": ""
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/004000/004350_hr1.tex"
     },
     {
-      "nom": "Monture Arveld",
+      "nom": "Cor charrette de l'équipe de soutien",
       "desc": "",
-      "image": ""
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/004000/004323_hr1.tex"
     },
     {
       "nom": "Cor Phaéton",
