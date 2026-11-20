@@ -196,6 +196,7 @@ input[type=number]{font:inherit;padding:6px 8px;border-radius:8px;border:1.5px s
 .podium .ps{width:100%;border-radius:10px 10px 0 0;background:linear-gradient(180deg,#e0b452,#a8792a);color:#2b1a10;font-family:"Playfair Display",serif;font-weight:800;font-size:1.8rem;text-align:center}
 .podium .p1 .ps{height:110px;line-height:110px}.podium .p2 .ps{height:80px;line-height:80px;background:linear-gradient(180deg,#e6e6ea,#a9a9b3)}.podium .p3 .ps{height:60px;line-height:60px;background:linear-gradient(180deg,#e2a170,#9b5d33)}
 .phr{display:block;margin:8px 0}.phr b{display:block;font-size:.85rem;margin-bottom:2px}.phr textarea{width:100%;font-size:.85rem}
+.persoSel{max-width:170px;font-size:.8rem}
 .coup{display:flex;gap:4px}.coup input{min-width:0;flex:1;font-size:.8rem;padding:4px 6px}.coup .ce{flex:0 0 42px;text-align:center}
 .chip img{width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:-5px;margin-right:5px}
 .pt-btn{width:36px;height:36px;border-radius:50%;border:2px dashed rgba(43,26,16,.4);background:#fffaf0 center/cover no-repeat;cursor:pointer;font-size:.7rem;padding:0}
@@ -367,7 +368,7 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
     <h3>Liste (<span id="admCount">0</span>)</h3>
     <p class="muted">📷 Clique sur le rond à gauche d'un pseudo pour ajouter son portrait (capture FF14) : il apparaît sur son renne pendant la course.</p>
     <p class="muted">🎯 « Coup spécial » : l'objet que le joueur lance pendant le Grand Prix (un emoji + un nom). Laissé vide, un coup de Noël est choisi au hasard.</p>
-    <table><thead><tr><th></th><th>Pseudo</th><th>Coup spécial</th><th>Inscrit le</th><th></th></tr></thead><tbody id="admList"></tbody></table>
+    <table><thead><tr><th></th><th>Pseudo</th><th>Perso (Lodestone)</th><th>Coup spécial</th><th>Inscrit le</th><th></th></tr></thead><tbody id="admList"></tbody></table>
   </div>
   <div class="pane" id="pLots">
     <p class="muted">Clique sur une vignette pour ajouter ou changer l'image. Chaque jour, un lot encore disponible est tiré au hasard.</p>
@@ -490,7 +491,7 @@ function normalize(d) {
     return Object.assign({ nom: `Lot ${i + 1}`, desc: '', image: '', prix: 0, itemId: '' }, l || {});
   });
   d.cadeaux = Array.from({ length: 25 }, (_, i) => Object.assign({ nom: '', icone: '' }, (d.cadeaux || [])[i] || {}));
-  d.figes = d.figes || {}; d.inscrits = d.inscrits || []; d.portraits = d.portraits || {}; d.coups = d.coups || {}; d.phrases = d.phrases || {};
+  d.figes = d.figes || {}; d.inscrits = d.inscrits || []; d.portraits = d.portraits || {}; d.coups = d.coups || {}; d.phrases = d.phrases || {}; d.liens = d.liens || {}; d.membres = d.membres || [];
   if (!d.jackpot || !Array.isArray(d.jackpot.items)) d.jackpot = { maj: '', items: JACKPOT_DEFAUT.map(x => ({ ...x })) };
   return d;
 }
@@ -815,7 +816,21 @@ function closeModal() { clearTimeout(spinTimer); $('#ov').classList.remove('show
 const RACE_COLORS = ['#e05a4f', '#4fa3e0', '#f2c14e', '#6cc070', '#b07be0', '#ef8fb5', '#5fd0c8', '#f08a3c', '#9ab0c8', '#d6d65a', '#c46b4a', '#7fd17f'];
 const COUPS_DEFAUT = [['❄️', 'Boule de neige'], ['🎄', 'Sapin volant'], ['🍪', 'Biscuit explosif'], ['🔔', 'Clochette assourdissante'], ['🧦', 'Chaussette piégée'], ['🍬', "Sucre d'orge"], ['⭐', 'Étoile filante'], ['🎁', 'Paquet piégé'], ['☃️', 'Mini bonhomme de neige'], ['🥕', 'Carotte boomerang']];
 const ONOMATO = ['BAM !', 'PAF !', 'PLOF !', 'BOUM !', 'SPLATCH !', 'BONK !', 'VLAN !'];
-const portraitUrl = nom => { const p = data.portraits && data.portraits[nom]; return p ? (/^https?:/.test(p) ? p : `${RAW}/${p}`) : ''; };
+const MEMBRE_IMG = h => `https://img2.finalfantasyxiv.com/f/${h}_7206469080400ed57a5373d0a9c55c59fc0.jpg`;
+const normNom = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+function membreAuto(nom) {
+  const n = normNom(nom), M = data.membres || [];
+  if (!n) return null;
+  const exact = M.filter(m => normNom(m[0]) === n); if (exact.length === 1) return exact[0];
+  const first = M.filter(m => normNom(m[0].split(' ')[0]) === n); if (first.length === 1) return first[0];
+  const pre = M.filter(m => normNom(m[0]).startsWith(n)); if (pre.length === 1) return pre[0];
+  return null;
+}
+function membreDe(nom) { const l = (data.liens || {})[nom]; if (l === '-') return null; if (l) return (data.membres || []).find(m => m[0] === l) || null; return membreAuto(nom); }
+const portraitUrl = nom => { const p = data.portraits && data.portraits[nom]; if (p) return /^https?:/.test(p) ? p : `${RAW}/${p}`; const m = membreDe(nom); return m ? MEMBRE_IMG(m[1]) : ''; };
+const IMGC = {};
+const imgFor = nom => { const u = portraitUrl(nom); if (!u) return null; if (!IMGC[u]) { IMGC[u] = new Image(); IMGC[u].src = u; } return IMGC[u]; };
+const imgOk = im => im && im.complete && im.naturalWidth;
 const coupDe = nom => { const c = data.coups && data.coups[nom]; if (c && (c.e || c.n)) return { e: c.e || '🎁', n: c.n || 'Coup spécial' }; const d = COUPS_DEFAUT[cyrb53(nom) % COUPS_DEFAUT.length]; return { e: d[0], n: d[1] }; };
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const initial = nom => (nom.match(/[A-Za-zÀ-ÿ0-9]/) || ['?'])[0].toUpperCase();
@@ -1386,9 +1401,16 @@ function drawPerson(c, x, y, s, col, o = {}) {
   c.fillStyle = '#fff'; c.fillRect(-11, by - 4, 22, 4);
   c.strokeStyle = col; c.lineWidth = 5; const up = o.arms || 0, w = o.wave != null ? Math.abs(Math.sin(o.wave)) : 1;
   c.beginPath(); c.moveTo(-9, by - 20); c.lineTo(-18, by - 6 - up * 30 * w); c.moveTo(9, by - 20); c.lineTo(18, by - 6 - up * 30 * (o.wave != null ? Math.abs(Math.cos(o.wave)) : 1)); c.stroke();
+  if (imgOk(o.img)) {
+    c.save(); c.beginPath(); c.arc(0, by - 37, 13, 0, 6.283); c.clip(); c.drawImage(o.img, -13, by - 50, 26, 26);
+    if (o.ko) { c.fillStyle = 'rgba(255,255,255,.35)'; c.fillRect(-13, by - 50, 26, 26); } c.restore();
+    c.strokeStyle = col; c.lineWidth = 2; c.beginPath(); c.arc(0, by - 37, 13, 0, 6.283); c.stroke();
+    if (o.ko) { c.font = '900 12px Inter'; c.textAlign = 'center'; c.fillStyle = '#2b1a10'; c.fillText('x  x', 0, by - 35); }
+  } else {
   c.fillStyle = '#f6d7b8'; c.beginPath(); c.arc(0, by - 37, 11, 0, 6.283); c.fill();
   c.fillStyle = '#2b1a10'; if (o.ko) { c.font = '800 9px Inter'; c.textAlign = 'center'; c.fillText('x  x', 0, by - 35); } else { c.beginPath(); c.arc(-4, by - 38, 1.7, 0, 6.283); c.arc(4, by - 38, 1.7, 0, 6.283); c.fill(); }
   c.strokeStyle = '#2b1a10'; c.lineWidth = 1.5; c.beginPath(); if (o.sad) c.arc(0, by - 29, 3, Math.PI * 1.1, Math.PI * 1.9); else c.arc(0, by - 34, 3.2, .2, Math.PI - .2); c.stroke();
+  }
   c.fillStyle = '#e8322c'; c.beginPath(); c.moveTo(-11, by - 41); c.quadraticCurveTo(0, by - 64, 15, by - 50); c.lineTo(9, by - 41); c.fill(); c.fillStyle = '#fff'; c.fillRect(-12, by - 44, 24, 5); c.beginPath(); c.arc(15, by - 50, 3.5, 0, 6.283); c.fill();
   c.restore();
   return y + (by - 37 - 14) * s;
@@ -1410,7 +1432,10 @@ function drawPanel(c, title, rows, R, now) {
     c.fillStyle = r.win ? 'rgba(243,207,122,.3)' : 'rgba(255,248,234,.08)'; c.beginPath(); c.roundRect(1612, y, 296, H, 10); c.fill();
     const ar = Math.max(8, Math.min(22, H * .38));
     c.fillStyle = r.color; c.beginPath(); c.arc(1634, cy, ar, 0, 6.283); c.fill();
-    c.fillStyle = '#fff'; c.font = `800 ${ar}px Inter, system-ui, sans-serif`; c.textAlign = 'center'; c.fillText(initial(r.nom), 1634, cy + 1);
+    const pim = imgFor(r.nom);
+    if (imgOk(pim)) { c.save(); c.beginPath(); c.arc(1634, cy, ar - 2, 0, 6.283); c.clip(); c.drawImage(pim, 1634 - ar + 2, cy - ar + 2, (ar - 2) * 2, (ar - 2) * 2); c.restore(); }
+    else { c.fillStyle = '#fff'; c.font = `800 ${ar}px Inter, system-ui, sans-serif`; c.textAlign = 'center'; c.fillText(initial(r.nom), 1634, cy + 1); }
+    c.textAlign = 'center';
     if (r.win) { c.font = `${Math.min(20, H * .5)}px serif`; c.fillText('👑', 1634, cy - ar - 4); }
     c.textAlign = 'left'; c.fillStyle = '#fff8ea'; c.font = `800 ${Math.max(13, Math.min(20, H * .38))}px Inter, system-ui, sans-serif`;
     c.fillText(r.nom.length > 13 ? r.nom.slice(0, 12) + '…' : r.nom, 1634 + ar + 10, H > 40 ? cy - H * .16 : cy + 1);
@@ -1572,7 +1597,7 @@ function drawPeche(c, P, t, R, now, replay) {
     const px = hx - 58 * sc, py = hy + 4 * sc;
     c.fillStyle = '#7a4a2a'; c.fillRect(px - 12 * sc, py - 8 * sc, 24 * sc, 8 * sc);
     const pulling = cur && !cur.miss && t >= cur.t - .3 && t < cur.t + .3;
-    const top = drawPerson(c, px, py - 6 * sc, sc, inf.color, { sit: true, arms: pulling ? .9 : .35, sad: out || (cur && cur.miss && t > cur.t) });
+    const top = drawPerson(c, px, py - 6 * sc, sc, inf.color, { sit: true, arms: pulling ? .9 : .35, sad: out || (cur && cur.miss && t > cur.t), img: imgFor(nom) });
     // canne + ligne + bouchon
     if (!out) {
       const hxh = px + 16 * sc, hyh = py - 34 * sc, bend = pulling ? 1 : cur && t > cur.t - 1.2 && t < cur.t ? .3 : 0;
@@ -1706,10 +1731,10 @@ function drawBanquise(c, P, t, R, now, replay) {
   const s = P.players.length > 14 ? .78 : .92;
   for (const { nom, p } of items) {
     const inf = P.info[nom];
-    if (p.water) { const k = Math.min(1, (p.q - .6) / .3); splash(c, p.x, p.y, (p.q - .6) / .7); c.fillStyle = '#f6d7b8'; c.beginPath(); c.arc(p.x, p.y - 8, 10, 0, 6.283); c.fill(); c.strokeStyle = '#e8322c'; c.lineWidth = 6; c.beginPath(); c.ellipse(p.x, p.y + 2, 18, 7, 0, 0, 6.283); c.stroke(); c.strokeStyle = '#fff'; c.setLineDash([6, 6]); c.stroke(); c.setLineDash([]); c.fillStyle = '#e8322c'; c.beginPath(); c.moveTo(p.x - 10, p.y - 13); c.quadraticCurveTo(p.x, p.y - 30, p.x + 12, p.y - 18); c.lineTo(p.x + 8, p.y - 13); c.fill(); if (P.players.length <= 14) nameTag(c, nom, p.x, p.y - 42, .8); drawOno(c, P.elim.find(e => e.nom === nom).ono, p.x + 30, p.y - 70, p.q - .6); continue; }
-    if (p.raft) { const top = drawPerson(c, p.x, p.y + 18, .7, inf.color, { sit: true, arms: clapping(t, P) ? 1 : 0, wave: now / 200 + inf.raft, sad: true }); if (P.players.length <= 14) nameTag(c, nom, p.x, top - 4, .7); continue; }
+    if (p.water) { const k = Math.min(1, (p.q - .6) / .3); splash(c, p.x, p.y, (p.q - .6) / .7); const wi = imgFor(nom); c.fillStyle = '#f6d7b8'; c.beginPath(); c.arc(p.x, p.y - 8, 11, 0, 6.283); c.fill(); if (imgOk(wi)) { c.save(); c.beginPath(); c.arc(p.x, p.y - 8, 11, 0, 6.283); c.clip(); c.drawImage(wi, p.x - 11, p.y - 19, 22, 22); c.restore(); } c.strokeStyle = '#e8322c'; c.lineWidth = 6; c.beginPath(); c.ellipse(p.x, p.y + 2, 18, 7, 0, 0, 6.283); c.stroke(); c.strokeStyle = '#fff'; c.setLineDash([6, 6]); c.stroke(); c.setLineDash([]); c.fillStyle = '#e8322c'; c.beginPath(); c.moveTo(p.x - 10, p.y - 13); c.quadraticCurveTo(p.x, p.y - 30, p.x + 12, p.y - 18); c.lineTo(p.x + 8, p.y - 13); c.fill(); if (P.players.length <= 14) nameTag(c, nom, p.x, p.y - 42, .8); drawOno(c, P.elim.find(e => e.nom === nom).ono, p.x + 30, p.y - 70, p.q - .6); continue; }
+    if (p.raft) { const top = drawPerson(c, p.x, p.y + 18, .7, inf.color, { sit: true, arms: clapping(t, P) ? 1 : 0, wave: now / 200 + inf.raft, sad: true, img: imgFor(nom) }); if (P.players.length <= 14) nameTag(c, nom, p.x, top - 4, .7); continue; }
     const win = nom === P.winner && t >= P.Tf + .6;
-    const top = drawPerson(c, p.x, p.y, s, inf.color, { step: p.walk ? p.step : 0, bob: p.walk ? Math.abs(Math.sin(p.step)) * 3 : 0, rot: p.wobble, arms: win ? 1 : p.wobble ? .8 : 0, wave: win ? now / 150 : null });
+    const top = drawPerson(c, p.x, p.y, s, inf.color, { step: p.walk ? p.step : 0, bob: p.walk ? Math.abs(Math.sin(p.step)) * 3 : 0, rot: p.wobble, arms: win ? 1 : p.wobble ? .8 : 0, wave: win ? now / 150 : null, img: imgFor(nom) });
     nameTag(c, nom, p.x, top - 4, s);
   }
   for (const cp of P.coups) { const q = t - (cp.t - .7); if (q >= 0 && q < .7) { const a = P.posOf(cp.from, cp.t - .7), b = P.posOf(cp.to, cp.t); drawProjectile(c, P.info[cp.from].coup.e, a.x, a.y - 50, b.x, b.y - 40, q / .7); } const b = P.posOf(cp.to, t); drawOno(c, 'BAM !', b.x + 30, b.y - 90, t - cp.t); }
@@ -1802,7 +1827,7 @@ function drawBataille(c, P, t, R, now, replay) {
     } else {
       const thr = P.throws.find(th => th.from === nom && t >= th.t - 1 && t < th.t - .6);
       const win = nom === P.winner && t >= P.Tf;
-      const top = drawPerson(c, x, y, s, inf.color, { rot: out ? Math.min(1.5, q * 4) : 0, ko: out, arms: win ? 1 : thr ? 1 : 0, wave: win ? now / 150 : thr ? 0 : null, bob: pp.walk ? Math.abs(Math.sin(pp.step)) * 3 : Math.abs(Math.sin(now / 300 + inf.a * 5)) * 2, step: pp.walk ? pp.step : 0 });
+      const top = drawPerson(c, x, y, s, inf.color, { rot: out ? Math.min(1.5, q * 4) : 0, ko: out, arms: win ? 1 : thr ? 1 : 0, wave: win ? now / 150 : thr ? 0 : null, bob: pp.walk ? Math.abs(Math.sin(pp.step)) * 3 : Math.abs(Math.sin(now / 300 + inf.a * 5)) * 2, step: pp.walk ? pp.step : 0, img: imgFor(nom) });
       if (!out) { const h = Math.max(0, P.hp(nom, t)); c.font = `${12 * s}px serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; for (let k = 0; k < 3; k++) { c.globalAlpha = k < h ? 1 : .25; c.fillText('❄️', x - 14 * s + k * 14 * s, top - 24 * s); } c.globalAlpha = 1; }
       nameTag(c, nom, x, top - 6, s);
       if (thr) { c.fillStyle = '#fff'; c.beginPath(); c.arc(x + 16 * s, top + 6, 6 * s, 0, 6.283); c.fill(); }
@@ -1965,7 +1990,7 @@ function drawChaises(c, P, t, R, now, replay, roundAt, cushPos, ringPos, benchPo
     const s = P.state(nom, t), inf = P.info[nom], scale = s.bench ? .75 : sc;
     items.push({ y: s.y + (s.sit && !s.bench ? 2 : 0), f: () => {
       const cheer = s.bench ? { arms: Math.sin(now / 300 + inf.bench) > .3 ? 1 : 0, wave: now / 200 + inf.bench } : {};
-      const top = drawPerson(c, s.x, s.y + (s.sit && !s.bench ? 6 : 0), scale, inf.color, { ...s, ...cheer });
+      const top = drawPerson(c, s.x, s.y + (s.sit && !s.bench ? 6 : 0), scale, inf.color, { ...s, ...cheer, img: imgFor(nom) });
       if (!s.bench || P.players.length <= 14) nameTag(c, nom, s.x, top - 6, scale);
       if (s.deaf) { c.font = '22px serif'; c.textAlign = 'center'; c.fillText('🎧', s.x + 16 * scale, top + 18); }
       if (s.huh) { c.font = '900 26px Inter'; c.fillStyle = '#c8242f'; c.textAlign = 'center'; c.fillText('?!', s.x + 22, top + 4); }
@@ -2182,8 +2207,9 @@ $('#resetOpened').onclick = () => { opened = new Set(); lsSet(LS_OPENED, []); re
 function renderAdmin() {
   const list = [...data.inscrits].sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
   $('#admCount').textContent = list.length;
-  $('#admList').innerHTML = list.map(p => `<tr><td><button class="pt-btn ${portraitUrl(p.nom) ? 'has' : ''}" data-pt="${esc(p.nom)}" title="Portrait de ${esc(p.nom)}" style="${portraitUrl(p.nom) ? `background-image:url('${esc(portraitUrl(p.nom))}')` : ''}">${portraitUrl(p.nom) ? '' : '+'}</button></td><td>${esc(p.nom)}</td><td><div class="coup"><input type="text" class="ce" value="${esc((data.coups[p.nom] || {}).e || '')}" placeholder="${esc(coupDe(p.nom).e)}" data-ce="${esc(p.nom)}" aria-label="Emoji du coup de ${esc(p.nom)}"><input type="text" value="${esc((data.coups[p.nom] || {}).n || '')}" placeholder="${esc(coupDe(p.nom).n)}" data-cn2="${esc(p.nom)}" aria-label="Nom du coup de ${esc(p.nom)}"></div></td><td><input type="date" value="${esc(p.date)}" data-n="${esc(p.nom)}" class="dEdit"></td><td><button class="x" data-del="${esc(p.nom)}" title="Retirer">×</button></td></tr>`).join('')
-    || '<tr><td colspan="5" class="muted">Aucun inscrit.</td></tr>';
+  $('#admList').innerHTML = list.map(p => `<tr><td><button class="pt-btn ${portraitUrl(p.nom) ? 'has' : ''}" data-pt="${esc(p.nom)}" title="Portrait de ${esc(p.nom)}" style="${portraitUrl(p.nom) ? `background-image:url('${esc(portraitUrl(p.nom))}')` : ''}">${portraitUrl(p.nom) ? '' : '+'}</button></td><td>${esc(p.nom)}</td><td>${persoSelect(p.nom)}</td><td><div class="coup"><input type="text" class="ce" value="${esc((data.coups[p.nom] || {}).e || '')}" placeholder="${esc(coupDe(p.nom).e)}" data-ce="${esc(p.nom)}" aria-label="Emoji du coup de ${esc(p.nom)}"><input type="text" value="${esc((data.coups[p.nom] || {}).n || '')}" placeholder="${esc(coupDe(p.nom).n)}" data-cn2="${esc(p.nom)}" aria-label="Nom du coup de ${esc(p.nom)}"></div></td><td><input type="date" value="${esc(p.date)}" data-n="${esc(p.nom)}" class="dEdit"></td><td><button class="x" data-del="${esc(p.nom)}" title="Retirer">×</button></td></tr>`).join('')
+    || '<tr><td colspan="6" class="muted">Aucun inscrit.</td></tr>';
+  $('#admList').querySelectorAll('[data-lien]').forEach(sel => sel.onchange = () => { mutate(d => { if (sel.value) d.liens[sel.dataset.lien] = sel.value; else delete d.liens[sel.dataset.lien]; }); renderAdmin(); });
   $('#admList').querySelectorAll('[data-ce],[data-cn2]').forEach(inp => inp.onchange = () => { const nom = inp.dataset.ce || inp.dataset.cn2, k = inp.dataset.ce ? 'e' : 'n'; mutate(d => { const c = d.coups[nom] = d.coups[nom] || {}; c[k] = inp.value.trim(); if (!c.e && !c.n) delete d.coups[nom]; }); });
   $('#admList').querySelectorAll('[data-pt]').forEach(b => b.onclick = () => { ptTarget = b.dataset.pt; $('#ptInput').value = ''; $('#ptInput').click(); });
   $('#admList').querySelectorAll('[data-del]').forEach(b => b.onclick = () => mutate(d => { d.inscrits = d.inscrits.filter(p => p.nom !== b.dataset.del); }));
@@ -2198,6 +2224,11 @@ function renderAdmin() {
   }).join('');
 }
 
+function persoSelect(nom) {
+  const cur = (data.liens || {})[nom] || '', auto = membreAuto(nom);
+  const opts = (data.membres || []).slice().sort((a, b) => a[0].localeCompare(b[0], 'fr')).map(m => `<option value="${esc(m[0])}" ${cur === m[0] ? 'selected' : ''}>${esc(m[0])}</option>`).join('');
+  return `<select class="persoSel" data-lien="${esc(nom)}" aria-label="Personnage de ${esc(nom)}"><option value="" ${!cur ? 'selected' : ''}>Auto${auto ? ' : ' + esc(auto[0]) : ' (aucun trouvé)'}</option><option value="-" ${cur === '-' ? 'selected' : ''}>Aucun portrait</option>${opts}</select>`;
+}
 function renderPhrasesAdmin() {
   const box = $('#phrasesList'); if (box.contains(document.activeElement)) return;
   const list = [...new Set(data.inscrits.map(p => p.nom))].sort((a, b) => a.localeCompare(b, 'fr'));
