@@ -388,7 +388,7 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
   <div class="pane" id="pTirages">
     <p class="muted">Résultats calculés jusqu'au 25 avec les inscrits actuels. 🔒 = jour passé, résultat définitif. Les jours à venir peuvent encore changer si des inscrits s'ajoutent.</p>
     <table><thead><tr><th>Jour</th><th>Gagnant</th><th>Lot</th><th>Valeur</th><th>Tour</th><th>Jeu</th></tr></thead><tbody id="admDraws"></tbody></table>
-    <div class="row" style="margin-top:12px"><select id="testGame" aria-label="Jeu du test"><option value="">Jeu du jour</option><option value="gp">Grand Prix</option><option value="plinko">Plinko géant</option><option value="chaises">Chaises musicales</option></select> <select id="testCirc" aria-label="Circuit du test"><option value="">Circuit du jour</option><option value="foret">Forêt enneigée</option><option value="atelier">Atelier du Père Noël</option><option value="montagne">Chalet de montagne</option><option value="village">Village de Noël</option><option value="lac">Lac gelé</option></select> <button class="btn small green" id="testLive">🏁 Tester le direct</button> <button class="btn small ghost" id="resetOpened">Refermer mes cases (vraie date)</button></div>
+    <div class="row" style="margin-top:12px"><select id="testGame" aria-label="Jeu du test"><option value="">Jeu du jour</option><option value="gp">Grand Prix</option><option value="chaises">Chaises musicales</option><option value="peche">Pêche sur glace</option><option value="banquise">Banquise</option><option value="bataille">Bataille de boules de neige</option></select> <select id="testCirc" aria-label="Circuit du test"><option value="">Circuit du jour</option><option value="foret">Forêt enneigée</option><option value="atelier">Atelier du Père Noël</option><option value="montagne">Chalet de montagne</option><option value="village">Village de Noël</option><option value="lac">Lac gelé</option></select> <button class="btn small green" id="testLive">🏁 Tester le direct</button> <button class="btn small ghost" id="resetOpened">Refermer mes cases (vraie date)</button></div>
   </div>
   <div class="pane" id="pPhrases">
     <p class="muted">💬 Les phrases mythiques de chacun, une par ligne. Pendant chaque Grand Prix, 3 ou 4 bulles sortent au hasard de la tête de joueurs qui ont des phrases.</p>
@@ -798,8 +798,8 @@ function showDraw(d, r, mode, onDone) {
 function askOpen(d, race, direct) {
   $('#chT').textContent = `Case du ${d} décembre`;
   const g = gameFor(d);
-  $('#chBig').textContent = { gp: "Le Grand Prix des rennes t'attend !", plinko: "Le Plinko géant t'attend !", chaises: "Les chaises musicales t'attendent !" }[g];
-  $('#chRace').textContent = { gp: '🏁 Regarder la course', plinko: '🎯 Regarder le Plinko', chaises: '🎵 Regarder les chaises musicales' }[g];
+  $('#chBig').textContent = { gp: "Le Grand Prix des rennes t'attend !", chaises: "Les chaises musicales t'attendent !", peche: "La pêche sur glace t'attend !", banquise: "La banquise t'attend !", bataille: "La bataille de boules de neige t'attend !" }[g];
+  $('#chRace').textContent = { gp: '🏁 Regarder la course', chaises: '🎵 Regarder les chaises musicales', peche: '🎣 Regarder la pêche', banquise: '🧊 Regarder la banquise', bataille: '⛄ Regarder la bataille' }[g];
   const close = () => $('#choose').classList.remove('show');
   $('#chRace').onclick = () => { close(); race(); };
   $('#chDirect').onclick = () => { close(); direct(); };
@@ -1323,10 +1323,10 @@ function startRace(d, r, done, circ) {
 $('#raceSkip').onclick = () => { if (race) endRace(); };
 
 /* ===== Mini-jeux : alternance, moteur commun ===== */
-const GAMES = { gp: 'Grand Prix des rennes', plinko: 'Plinko géant', chaises: 'Chaises musicales du sapin' };
+const GAMES = { gp: 'Grand Prix des rennes', chaises: 'Chaises musicales du sapin', peche: 'Pêche sur glace', banquise: 'La banquise', bataille: 'Bataille de boules de neige' };
 const GAME_IDS = Object.keys(GAMES);
 let testGame = '';
-const gameLabel = d => { const g = gameFor(d); return g === 'gp' ? `🏁 ${CIRCUITS[circuitFor(d)].nom}` : g === 'plinko' ? '🎯 Plinko' : '🎵 Chaises'; };
+const gameLabel = d => { const g = gameFor(d); return g === 'gp' ? `🏁 ${CIRCUITS[circuitFor(d)].nom}` : { chaises: '🎵 Chaises', peche: '🎣 Pêche', banquise: '🧊 Banquise', bataille: '⛄ Bataille' }[g]; };
 function gameFor(d) {
   if (d >= 25) return 'gp';
   const rng = mulberry32(cyrb53((data.graine || '') + '|jeux'));
@@ -1338,7 +1338,7 @@ function startGame(d, r, done, test) {
   const g = (test && testGame) || gameFor(d);
   if (g === 'gp') return startRace(d, r, done, test ? testCircuit : '');
   const pool = r.pool && r.pool.length ? r.pool : [r.gagnant];
-  const plan = g === 'plinko' ? planPlinko(d, pool, r.gagnant) : planChaises(d, pool, r.gagnant);
+  const plan = ({ chaises: planChaises, peche: planPeche, banquise: planBanquise, bataille: planBataille })[g](d, pool, r.gagnant);
   $('#podium').hidden = true; $('#race').hidden = false; document.body.style.overflow = 'hidden';
   race = { plan, done, raf: 0, parts: [], t0: performance.now() + 2200, mini: true, osc: [] };
   race.raf = requestAnimationFrame(renderGame);
@@ -1395,11 +1395,14 @@ function nameTag(c, nom, x, y, s = 1) {
   c.font = `700 ${Math.round(13 * Math.max(.85, s))}px Inter, system-ui, sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
   const w = c.measureText(nom).width + 12; c.fillStyle = 'rgba(43,26,16,.8)'; c.beginPath(); c.roundRect(x - w / 2, y - 9, w, 18, 9); c.fill(); c.fillStyle = '#fff8ea'; c.fillText(nom, x, y);
 }
-function drawPanel(c, title, rows) {
+function drawPanel(c, title, rows, R, now) {
   c.fillStyle = '#2b1a10'; c.fillRect(1600, 0, 320, 1080);
   c.font = '800 30px "Playfair Display", serif'; c.fillStyle = '#f3cf7a'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(title, 1760, 60);
   const n = rows.length, rh = Math.min(76, 960 / Math.max(1, n));
+  if (R) { R.prow = R.prow || {}; R.pdel = R.pdel || {}; }
   rows.forEach((r, k) => {
+    if (R) { if (R.prow[r.nom] != null && R.prow[r.nom] !== k && !r.out && now - R.t0 > 1500) R.pdel[r.nom] = { d: R.prow[r.nom] - k, at: now }; R.prow[r.nom] = k; }
+    const dl = R && R.pdel[r.nom] && now - R.pdel[r.nom].at < 1600 ? R.pdel[r.nom] : null;
     const y = 100 + k * rh, H = rh - 5, cy = y + H / 2;
     c.globalAlpha = r.out ? .45 : 1;
     c.fillStyle = r.win ? 'rgba(243,207,122,.3)' : 'rgba(255,248,234,.08)'; c.beginPath(); c.roundRect(1612, y, 296, H, 10); c.fill();
@@ -1410,7 +1413,8 @@ function drawPanel(c, title, rows) {
     c.textAlign = 'left'; c.fillStyle = '#fff8ea'; c.font = `800 ${Math.max(13, Math.min(20, H * .38))}px Inter, system-ui, sans-serif`;
     c.fillText(r.nom.length > 13 ? r.nom.slice(0, 12) + '…' : r.nom, 1634 + ar + 10, H > 40 ? cy - H * .16 : cy + 1);
     if (H > 40 && r.sub) { c.font = `600 ${Math.min(15, H * .26)}px Inter, system-ui, sans-serif`; c.fillStyle = 'rgba(255,248,234,.75)'; c.fillText(r.sub, 1634 + ar + 10, cy + H * .2); }
-    else if (r.sub) { c.textAlign = 'right'; c.font = `600 ${Math.max(11, H * .34)}px Inter, system-ui, sans-serif`; c.fillStyle = 'rgba(255,248,234,.7)'; c.fillText(r.sub, 1900, cy + 1); }
+    else if (r.sub && !dl) { c.textAlign = 'right'; c.font = `600 ${Math.max(11, H * .34)}px Inter, system-ui, sans-serif`; c.fillStyle = 'rgba(255,248,234,.7)'; c.fillText(r.sub, 1900, cy + 1); }
+    if (dl) { c.globalAlpha = 1 - (now - dl.at) / 1600; c.textAlign = 'right'; c.fillStyle = dl.d > 0 ? '#6cc070' : '#ff6b5a'; c.font = `800 ${Math.max(13, Math.min(20, H * .4))}px Inter, system-ui, sans-serif`; c.fillText(`${dl.d > 0 ? '▲ +' : '▼ '}${dl.d}`, 1900, cy + 1); }
     c.globalAlpha = 1;
   });
 }
@@ -1444,160 +1448,382 @@ function renderGame(now) {
     drawTicker(c, R, [...P.ticker].reverse().find(m => m.t <= t), now);
     if (z === 1) for (const bu of P.bubbles) { const d = t - bu.t; if (d < 0 || d > 3.8) continue; const a = P.anchor(bu.nom, t); if (!a) continue; drawBubble(c, bu.txt, a.x, a.y, Math.min(1, d / .2) * (d > 3.5 ? 1 - (d - 3.5) / .3 : 1)); }
   }
-  drawPanel(c, P.panelTitle, P.panel(t));
+  drawPanel(c, P.panelTitle, P.panel(t), replay ? null : R, now);
   if (!R.skip) P.sound(t, R, replay, now);
   if (e >= 0 && !R.goFx) { R.goFx = 1; tone(1320, 0, .4, 'square', .07); }
   R.raf = requestAnimationFrame(renderGame);
 }
 
-/* ===== Plinko géant ===== */
-const PK = { X0: 800, STEP: 44, Y0: 262, ROWH: 52, ROWS: 12, SLOT_Y: 878 };
-function planPlinko(d, pool, winner) {
-  const rng = mulberry32(cyrb53(data.graine + '|plinko|' + d));
-  const players = pool.includes(winner) ? pool.slice() : [...pool, winner];
+/* ===== Outils communs aux nouveaux jeux ===== */
+const mkRng = (d, k) => mulberry32(cyrb53(data.graine + '|' + k + '|' + d));
+const shuffleR = (rng, arr) => { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
+const fmtKg = v => v.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' kg';
+function gameBubbles(rng, players, windowFn) {
+  const out = [], sp = players.filter(n => (data.phrases && data.phrases[n] || []).length);
+  if (!sp.length) return out;
+  const nb = 3 + Math.floor(rng() * 2);
+  for (let k = 0; k < nb; k++) { const t = windowFn(k, nb), cand = sp.filter(n => windowFn.alive ? windowFn.alive(n, t) : true); if (!cand.length) continue; const nom = cand[Math.floor(rng() * cand.length)], ph = data.phrases[nom]; out.push({ t, nom, txt: ph[Math.floor(rng() * ph.length)] }); }
+  return out;
+}
+function splash(c, x, y, k) { if (k < 0 || k > 1) return; c.strokeStyle = `rgba(255,255,255,${1 - k})`; c.lineWidth = 3; for (let q = 0; q < 3; q++) { c.beginPath(); c.ellipse(x, y, 10 + k * 50 + q * 12, (10 + k * 50 + q * 12) * .4, 0, 0, 6.283); c.stroke(); } c.fillStyle = `rgba(220,240,255,${1 - k})`; for (let q = 0; q < 8; q++) { const a = q / 8 * 6.283; c.beginPath(); c.arc(x + Math.cos(a) * k * 40, y - Math.sin(k * Math.PI) * 40 + Math.sin(a) * k * 14, 4, 0, 6.283); c.fill(); } }
+function plouf() { const a = audio(); if (!a) return; const len = a.sampleRate * .5, buf = a.createBuffer(1, len, a.sampleRate), d = buf.getChannelData(0); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2); const src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); src.buffer = buf; f.type = 'lowpass'; f.frequency.setValueAtTime(1800, a.currentTime); f.frequency.exponentialRampToValueAtTime(200, a.currentTime + .5); g.gain.value = .35; src.connect(f).connect(g).connect(a.destination); src.start(); }
+function paf() { const a = audio(); if (!a) return; const len = a.sampleRate * .12, buf = a.createBuffer(1, len, a.sampleRate), d = buf.getChannelData(0); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len); const src = a.createBufferSource(), g = a.createGain(); src.buffer = buf; g.gain.value = .25; src.connect(g).connect(a.destination); src.start(); }
+function auroraSky(c, now, h) {
+  const g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#060b1f'); g.addColorStop(1, '#14284a'); c.fillStyle = g; c.fillRect(0, 0, 1600, h);
+  for (let k = 0; k < 3; k++) { const col = ['rgba(90,255,170,', 'rgba(150,110,255,', 'rgba(80,220,255,'][k]; c.beginPath(); for (let x = 0; x <= 1600; x += 40) { const y = h * .45 + Math.sin(x / 210 + now / 2600 + k * 2) * 40 + Math.sin(x / 90 + now / 1700 + k) * 14 - k * 22; x ? c.lineTo(x, y) : c.moveTo(x, y); } c.lineTo(1600, h); c.lineTo(0, h); c.closePath(); const gg = c.createLinearGradient(0, h * .2, 0, h); gg.addColorStop(0, col + '0)'); gg.addColorStop(.35, col + '.28)'); gg.addColorStop(1, col + '0)'); c.fillStyle = gg; c.fill(); }
+}
+
+/* ===== Pêche sur glace ===== */
+const FISH = { gag: [['🥾', 'Vieille botte'], ['🧦', 'Chaussette perdue'], ['🥫', 'Boîte de conserve'], ['🧤', 'Moufle trempée']], small: [['🐟', 'Hareng'], ['🐠', 'Poisson-clown des neiges'], ['🦀', 'Crabe grognon'], ['🐡', 'Poisson-globe']], mid: [['🐟', 'Brochet'], ['🦑', 'Calamar'], ['🦞', 'Homard royal'], ['🐙', 'Poulpe']], big: [['🦈', 'Requin des glaces'], ['🐬', 'Dauphin égaré'], ['🐢', 'Tortue géante']], legend: [['🐋', 'Léviathan miniature'], ['🥖', 'Poisson-baguette légendaire'], ['🎄', 'Sapin de Noël entier'], ['💰', 'Coffre au trésor'], ['🐉', 'Dragon des glaces']] };
+function planPeche(d, pool, winner) {
+  const rng = mkRng(d, 'peche'), players = pool.includes(winner) ? pool.slice() : [...pool, winner];
   players.sort((a, b) => a.localeCompare(b, 'fr'));
-  const info = {}; players.forEach((n, i) => info[n] = { nom: n, color: playerColor(i), coup: coupDe(n), out: 0 });
-  const sizes = []; let a = players.length;
-  if (a > 8) { sizes.push(8); a = 8; } if (a > 3) { sizes.push(3); a = 3; } sizes.push(1);
-  const shuffle = arr => { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
-  const rounds = [], flights = [], ticker = [], events = [], bubbles = [];
-  let alive = players.slice(), t = 1.5;
-  const say = (tt, txt) => ticker.push({ t: tt, txt });
-  sizes.forEach((keep, ri) => {
-    const final = keep === 1, survivors = final ? [winner] : [winner, ...shuffle(alive.filter(x => x !== winner)).slice(0, keep - 1)];
-    const slotType = p => final ? (p === 0 ? 'jack' : Math.abs(p) === 2 ? 'presque' : 'rate') : (p % 4 === 0 ? 'ok' : 'rate');
-    const R0 = { i: ri, final, t0: t, keep, alive: alive.slice(), survivors, slotType };
-    say(t, final ? `🎯 FINALE ! ${alive.length} boule${alive.length > 1 ? 's' : ''}, un seul JACKPOT…` : `🎯 Manche ${ri + 1} : ${alive.length} boules, ${keep} places qualificatives !`);
-    let td = t + 2;
-    const order = final ? [...shuffle(alive.filter(x => x !== winner)), winner] : shuffle(alive.slice());
-    const hop = final ? .27 : .17, gap = final ? 2.6 : (alive.length > 10 ? .3 : .55), stack = {};
-    order.forEach(nom => {
-      const ok = survivors.includes(nom);
-      const allowed = [-12, -10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10, 12].filter(p => final ? (nom === winner ? p === 0 : (p === 2 || p === -2 || p === 4 || p === -4)) : (ok ? slotType(p) === 'ok' : slotType(p) === 'rate'));
-      const w = allowed.map(p => Math.exp(-((p / 6) ** 2))), sw = w.reduce((x, y) => x + y, 0);
-      let x = rng() * sw, k = 0; while (k < allowed.length - 1 && (x -= w[k]) > 0) k++;
-      const p = allowed[k], rights = (p + 12) / 2, dec = shuffle([...Array(rights).fill(1), ...Array(12 - rights).fill(-1)]);
-      const si = stack[p] = (stack[p] || 0) + 1;
-      const F = { nom, round: ri, t0: td, hop, dec, p, stack: si - 1, jx: (rng() - .5) * 6, ok, land: td + .35 + 12 * hop };
-      flights.push(F); td += gap;
-    });
-    const last = Math.max(...flights.filter(f => f.round === ri).map(f => f.land));
-    R0.end = last + (final ? 3.2 : 2.2);
-    const out = alive.filter(x => !survivors.includes(x));
-    out.forEach(n => info[n].out = ri + 1);
-    if (!final) { say(last + .3, `✅ ${survivors.length} qualifiés pour la ${sizes.length - ri - 1 === 1 ? 'finale' : 'manche suivante'} ! ${out.length} boules au tapis…`); }
-    rounds.push(R0); alive = survivors; t = R0.end + .3;
-  });
-  // coups spéciaux (lancés par des joueurs déjà posés)
-  const ONO = ['BONK !', 'PAF !', 'TOC !', 'BOING !', 'VLAN !'];
-  for (const R0 of rounds) {
-    const fl = flights.filter(f => f.round === R0.i), n = R0.final ? 1 : Math.min(2, Math.floor(fl.length / 4));
-    for (let k = 0; k < n; k++) {
-      const target = R0.final ? fl[Math.floor(rng() * (fl.length - 1))] || fl[0] : fl[Math.floor(fl.length * .4 + rng() * fl.length * .5)];
-      const row = 4 + Math.floor(rng() * 5), te = target.t0 + .35 + row * target.hop;
-      const throwers = players.filter(p => p !== target.nom && (info[p].out && info[p].out <= R0.i || flights.some(f => f.nom === p && f.round === R0.i && f.land < te - .8)));
-      if (!throwers.length) continue;
-      const from = throwers[Math.floor(rng() * throwers.length)];
-      events.push({ t: te, target, from, row, ono: ONO[Math.floor(rng() * ONO.length)] });
-      say(te - .6, `${info[from].coup.e} ${from} lance « ${info[from].coup.n} » sur la boule de ${target.nom} !`);
-    }
-  }
-  const fin = rounds[rounds.length - 1], wf = flights.find(f => f.nom === winner && f.round === fin.i);
-  fin.alive.filter(x => x !== winner).forEach(n => { const f = flights.find(q => q.nom === n && q.round === fin.i); say(f.land + .1, Math.abs(f.p) === 2 ? `😱 ${n}… PRESQUE !!!` : `💨 ${n} rate le jackpot !`); });
-  say(wf.land, `🎁 JACKPOT !!! ${winner} remporte le Plinko géant !`);
-  ticker.sort((x, y) => x.t - y.t);
-  // bulles
-  const speakers = players.filter(n => (data.phrases && data.phrases[n] || []).length);
-  if (speakers.length) { const nb = 3 + Math.floor(rng() * 2); for (let k = 0; k < nb; k++) { const nom = speakers[k % speakers.length], f = flights.find(q => q.nom === nom && q.round === Math.min(rounds.length - 1, k % 2)) || flights.find(q => q.nom === nom); if (!f) continue; const ph = data.phrases[nom]; bubbles.push({ t: f.t0 + .6, nom, txt: ph[Math.floor(rng() * ph.length)] }); } }
-  const roundAt = tt => rounds.find(r => tt < r.end) || rounds[rounds.length - 1];
-  const ballPos = (F, tt) => {
-    const X = PK.X0, S = PK.STEP, top = y => y - 20;
-    if (tt < F.t0) return null;
-    const u0 = tt - F.t0;
-    if (u0 < .35) { const u = u0 / .35; return { x: X + F.jx, y: PK.Y0 - 100 + (top(PK.Y0) + 100 - PK.Y0) * u * u }; }
-    const k = Math.floor((u0 - .35) / F.hop);
-    let p = 0; for (let i = 0; i < Math.min(k, 12); i++) p += F.dec[i];
-    if (k >= 12) { const yS = PK.SLOT_Y + 70 - F.stack * 22; const u = Math.min(1, (u0 - .35 - 12 * F.hop) / .25); return { x: X + F.p * S + F.jx * .3, y: yS, landed: true, u }; }
-    const u = (u0 - .35 - k * F.hop) / F.hop, p1 = p + F.dec[k];
-    const y0 = top(PK.Y0 + k * PK.ROWH), y1 = k === 11 ? PK.SLOT_Y + 70 - F.stack * 22 : top(PK.Y0 + (k + 1) * PK.ROWH);
-    return { x: X + (p + (p1 - p) * u) * S + F.jx * (1 - k / 12), y: y0 + (y1 - y0) * Math.pow(u, 1.7) - Math.sin(u * Math.PI) * 16 * (1 - u * .4), row: k };
+  const n = players.length, info = {};
+  players.forEach((nom, i) => info[nom] = { nom, color: playerColor(i), coup: coupDe(nom), out: 0, outT: 1e9 });
+  // disposition des trous
+  const cols = Math.min(8, Math.ceil(Math.sqrt(n * 2.2))), rows = Math.ceil(n / cols), sx = 1440 / cols, sy = Math.min(230, 700 / rows), sc = Math.min(1, sy / 170);
+  const spots = shuffleR(rng, players.slice());
+  spots.forEach((nom, i) => { const r = Math.floor(i / cols), cc = i % cols, inRow = Math.min(cols, n - r * cols); info[nom].hx = 800 + (cc - (inRow - 1) / 2) * sx + 30 * sc; info[nom].hy = 330 + Math.max(0, (690 - rows * sy) / 2) + sy * (r + .62); });
+  // manches
+  const k1 = n > 4 ? Math.max(4, Math.ceil(n / 2)) : n, k2 = Math.min(3, k1);
+  const others = shuffleR(rng, players.filter(x => x !== winner));
+  const s1 = [winner, ...others.slice(0, k1 - 1)], s2 = [winner, ...others.slice(0, k2 - 1)];
+  const R = n > 4 ? [{ a: 2.5, b: 22, alive: players, keep: s1 }, { a: 25, b: 41, alive: s1, keep: s2 }, { a: 44, b: 62, alive: s2, keep: s2, final: true }] : [{ a: 2.5, b: 20, alive: players, keep: s2 }, { a: 23, b: 42, alive: s2, keep: s2, final: true }];
+  const catches = [], cum = Object.fromEntries(players.map(p => [p, 0])), ticker = [], say = (t, txt) => ticker.push({ t, txt });
+  const pick = arr => arr[Math.floor(rng() * arr.length)];
+  const itemFor = w => w < 1.2 ? pick(FISH.gag) : w < 5 ? pick(FISH.small) : w < 15 ? pick(FISH.mid) : w < 45 ? pick(FISH.big) : pick(FISH.legend);
+  const addCatches = (nom, total, a, b, nb) => {
+    const parts = nb === 1 ? [total] : (() => { const x = .25 + rng() * .5; return [total * x, total * (1 - x)]; })();
+    let t = a + .5 + rng() * ((b - a) / nb - 2);
+    parts.forEach(w => { w = Math.round(w * 10) / 10; const it = itemFor(w); catches.push({ nom, t, w, e: it[0], label: it[1] }); t = Math.min(b - .6, t + 3.5 + rng() * ((b - a) / nb - 2)); });
   };
+  R.forEach((r, ri) => {
+    say(r.a, r.final ? `🎣 FINALE : ${r.alive.join(', ')} … la plus grosse prise gagne !` : `🎣 Manche ${ri + 1} : ${r.alive.length} pêcheurs, ${r.keep.length} places pour la suite !`);
+    if (r.final) {
+      const othersF = r.alive.filter(x => x !== winner); let maxO = 0;
+      othersF.forEach((nom, k) => { const g = k === 0 && othersF.length > 1 && rng() < .5 ? 0 : 12 + rng() * 26; if (g === 0) catches.push({ nom, t: r.a + 3 + rng() * 5, miss: 'snap' }); else addCatches(nom, g, r.a + 1, r.b - 7, 1); cum[nom] += g; maxO = Math.max(maxO, cum[nom]); });
+      const g = Math.max(maxO - cum[winner] + 25 + rng() * 40, 55 + rng() * 70), wt = r.b - 3;
+      const it = pick(FISH.legend); catches.push({ nom: winner, t: wt, w: Math.round(g * 10) / 10, e: it[0], label: it[1], legend: true }); cum[winner] += g;
+      say(wt - 3.2, `😮 La canne de ${winner} plie dangereusement…`);
+      say(wt + .2, `${it[0]} INCROYABLE !!! ${winner} remonte un ${it[1]} de ${fmtKg(g)} !`);
+      r.wt = wt;
+    } else {
+      const lose = r.alive.filter(x => !r.keep.includes(x)); let maxL = 0;
+      lose.forEach(nom => { const g = .4 + rng() * (ri === 0 ? 3.3 : 5); addCatches(nom, g, r.a, r.b, rng() < .5 ? 1 : 2); cum[nom] += g; maxL = Math.max(maxL, cum[nom]); });
+      r.keep.forEach(nom => { const g = Math.max(maxL - cum[nom] + .8 + rng() * 4, (ri === 0 ? 4.2 : 6) + rng() * 6); addCatches(nom, g, r.a, r.b, rng() < .6 ? 2 : 1); cum[nom] += g; });
+      lose.forEach(nom => { info[nom].out = ri + 1; info[nom].outT = r.b + .5; });
+      say(r.b + .3, `🪣 ${lose.length} pêcheur${lose.length > 1 ? 's rangent leur canne' : ' range sa canne'} ! ${r.keep.length} qualifiés.`);
+    }
+    // ratés et coups spéciaux
+    const nm = r.final ? 0 : Math.min(3, Math.floor(r.alive.length / 3));
+    for (let k = 0; k < nm; k++) { const nom = pick(r.alive), t = r.a + 1 + rng() * (r.b - r.a - 3); if (catches.some(c2 => c2.nom === nom && Math.abs(c2.t - t) < 2.5)) continue;
+      if (ri >= 1 && r.alive.length > 1 && rng() < .7) { const from = pick(r.alive.filter(x => x !== nom)); catches.push({ nom, t, miss: 'coup', from }); say(t - .7, `${info[from].coup.e} ${from} lance « ${info[from].coup.n} » dans le trou de ${nom} : le poisson s'enfuit !`); }
+      else catches.push({ nom, t, miss: rng() < .5 ? 'snap' : 'flee' }); }
+  });
+  catches.sort((a, b) => a.t - b.t);
+  catches.filter(c2 => !c2.miss && c2.w >= 15 && !c2.legend).forEach(c2 => say(c2.t + .2, `${c2.e} ${c2.nom} sort un ${c2.label} de ${fmtKg(c2.w)} !`));
+  ticker.sort((a, b) => a.t - b.t);
+  const fin = R[R.length - 1], wt = fin.wt;
+  const bubbles = gameBubbles(rng, players, Object.assign((k, nb) => R[0].a + 2 + k * (wt - 8) / nb + rng() * 2, { alive: (nom, t) => info[nom].outT > t + 4 }));
+  const cumAt = (nom, t) => catches.reduce((s, c2) => s + (c2.nom === nom && !c2.miss && c2.t <= t ? c2.w : 0), 0);
+  const roundAt = t => R.find(r => t < r.b + 2) || fin;
   const P = {
-    d, title: GAMES.plinko, panelTitle: 'Joueurs', bg: '#13203a', players, info, rounds, flights, events, bubbles, ticker, winner,
-    slowA: wf.t0 + .35 + 9 * wf.hop, slowB: wf.land + .3, Tend: wf.land + 3.2, replayA: wf.t0 + .35 + 6 * wf.hop, replayB: wf.land + .7, replayText: `${winner} décroche le jackpot !`,
-    podium: [winner, ...fin.alive.filter(x => x !== winner).sort((x, y) => Math.abs(flights.find(f => f.nom === x && f.round === fin.i).p) - Math.abs(flights.find(f => f.nom === y && f.round === fin.i).p)), ...(rounds.length > 1 ? rounds[rounds.length - 2].alive.filter(x => !fin.alive.includes(x)) : [])].slice(0, 3).map(n => info[n]),
-    podTitle: `🏆 Podium du Plinko géant · ${d} décembre`,
-    focus: tt => { const q = ballPos(wf, tt); return q ? { x: q.x, y: q.y } : { x: 800, y: 560 }; },
-    status: tt => { const r = roundAt(tt); return tt >= wf.land ? { txt: '🎁 JACKPOT', hot: true } : r.final ? { txt: 'FINALE', hot: true } : { txt: `MANCHE ${r.i + 1}/${rounds.length - 1}` }; },
-    anchor: (nom, tt) => { const f = flights.filter(q => q.nom === nom).find(q => tt >= q.t0 && tt <= q.land + 1); const b = f && ballPos(f, tt); return b ? { x: b.x, y: b.y - 18 } : null; },
-    panel: tt => { const r = roundAt(tt); return players.map(n => ({ nom: n, color: info[n].color, out: info[n].out && rounds[info[n].out - 1].end - 1 < tt, win: n === winner && tt >= wf.land, sub: info[n].out && rounds[info[n].out - 1].end - 1 < tt ? `éliminé · manche ${info[n].out}` : n === winner && tt >= wf.land ? 'JACKPOT !' : r.alive.includes(n) ? 'en jeu' : '' })).sort((x, y) => (x.out - y.out) || (y.win - x.win) || x.nom.localeCompare(y.nom, 'fr')); },
-    shake: tt => { for (const ev of events) { const q = tt - ev.t; if (q >= 0 && q < .3) return 8 * (1 - q / .3); } return tt >= wf.land && tt < wf.land + .4 ? 10 : 0; },
-    draw: (c, tt, R, now, replay) => drawPlinko(c, P, tt, R, now, replay, ballPos, roundAt),
-    sound: (tt, R, replay, now) => {
+    d, title: GAMES.peche, panelTitle: 'Classement', bg: '#1a2c4a', players, info, catches, bubbles, ticker, winner, sc,
+    slowA: wt - 1, slowB: wt + .9, Tend: wt + 3.6, replayA: wt - 1.8, replayB: wt + 1.4, replayText: `${winner} et sa prise légendaire !`,
+    podium: [...players].sort((a, b) => (b === winner) - (a === winner) || cum[b] - cum[a]).slice(0, 3).map(nm => info[nm]),
+    podTitle: `🏆 Podium de la pêche sur glace · ${d} décembre`,
+    focus: () => ({ x: info[winner].hx - 20, y: info[winner].hy - 70 }),
+    status: t => { const r = roundAt(t), i = R.indexOf(r); return t >= wt ? { txt: '🏆 PRISE RECORD !', hot: true } : r.final ? { txt: 'FINALE', hot: true } : { txt: `MANCHE ${i + 1}/${R.length - 1}` }; },
+    anchor: (nom, t) => ({ x: info[nom].hx - 46 * sc, y: info[nom].hy - 96 * sc }),
+    panel: t => players.map(nm => ({ nom: nm, color: info[nm].color, out: info[nm].outT < t, win: nm === winner && t >= wt, sub: fmtKg(cumAt(nm, t)), v: cumAt(nm, t) })).sort((a, b) => (a.out - b.out) || (b.v - a.v) || a.nom.localeCompare(b.nom, 'fr')),
+    shake: t => (t >= wt && t < wt + .4 ? 10 : 0),
+    draw: (c, t, Rr, now, replay) => drawPeche(c, P, t, Rr, now, replay),
+    sound: (t, Rr, replay, now) => {
       if (replay) return;
-      for (const F of flights) { const u0 = tt - F.t0 - .35; if (u0 < 0 || u0 > 12 * F.hop + .3) continue; const k = Math.floor(u0 / F.hop); const key = F.nom + F.round; if ((R.pk || (R.pk = {}))[key] !== k) { R.pk[key] = k; if (now - (R.lastTick || 0) > 35) { R.lastTick = now; k >= 12 ? tone(160, 0, .12, 'sine', .12) : tone(900 + Math.random() * 500, 0, .03, 'square', .04); } } }
-      for (const r of rounds) if (!r.final && !R['rs' + r.i] && tt >= r.t0 + .1) { R['rs' + r.i] = 1; beep(true); }
-      for (const ev of events) { if (!ev.s1 && tt >= ev.t - .7) { ev.s1 = 1; whoosh(); } if (!ev.s2 && tt >= ev.t) { ev.s2 = 1; boing(); } }
-      for (const F of flights) if (rounds[F.round].final && !F.snd && tt >= F.land) { F.snd = 1; if (F.nom === winner) { jingle(); crowd(); } else [523, 440, 349].forEach((fq, i) => tone(fq, i * .18, .25, 'triangle', .1)); }
-      if (!R.fw && tt >= wf.land) { R.fw = 1; confettiBurst(R, PK.X0, PK.SLOT_Y + 40, 220); }
-      if (tt >= wf.land && tt < wf.land + 4 && now - (R.lastFw || 0) > 400) { R.lastFw = now; burst(R, 200 + Math.random() * 1200, 160 + Math.random() * 300); }
+      for (const c2 of catches) { if (!c2.s0 && t >= c2.t - 1.1) { c2.s0 = 1; tone(1200, 0, .05, 'sine', .05); } if (!c2.s1 && t >= c2.t) { c2.s1 = 1; if (c2.miss === 'snap') { tone(1500, 0, .08, 'sawtooth', .07); tone(300, .08, .25, 'triangle', .06); } else if (c2.miss) { boing(); } else { plouf(); if (c2.legend) { jingle(); crowd(); confettiBurst(Rr, info[c2.nom].hx, info[c2.nom].hy - 60, 240); } else tone(660 + Math.min(600, c2.w * 20), .05, .15, 'triangle', .08); } }
+        if (c2.miss === 'coup' && !c2.sw && t >= c2.t - .8) { c2.sw = 1; whoosh(); } }
+      R.forEach((r, i) => { if (!Rr['pr' + i] && t >= r.a) { Rr['pr' + i] = 1; beep(true); } });
+      if (t >= wt && t < wt + 4 && now - (Rr.lastFw || 0) > 420) { Rr.lastFw = now; burst(Rr, 200 + Math.random() * 1200, 160 + Math.random() * 120); }
     }
   };
   return P;
 }
-function drawPlinko(c, P, t, R, now, replay, ballPos, roundAt) {
-  const g = c.createLinearGradient(0, 0, 0, 1080); g.addColorStop(0, '#0f1a33'); g.addColorStop(1, '#22365a'); c.fillStyle = g; c.fillRect(0, 0, 1600, 1080);
-  if (!R.stars) { const rng = mulberry32(3); R.stars = Array.from({ length: 140 }, () => [rng() * 1600, rng() * 1080, rng() * 2 + .5, rng() * 6]); }
-  for (const [x, y, r, ph] of R.stars) { c.fillStyle = `rgba(255,255,255,${.3 + .4 * Math.abs(Math.sin(now / 900 + ph))})`; c.beginPath(); c.arc(x, y, r, 0, 6.283); c.fill(); }
-  const X = PK.X0, S = PK.STEP;
-  // sapin
-  c.fillStyle = '#163d2a'; c.beginPath(); c.moveTo(X, PK.Y0 - 70); c.lineTo(X + 12 * S + 40, PK.Y0 + 11 * PK.ROWH + 40); c.lineTo(X - 12 * S - 40, PK.Y0 + 11 * PK.ROWH + 40); c.closePath(); c.fill();
-  c.strokeStyle = 'rgba(255,255,255,.08)'; c.lineWidth = 2; for (let k = 1; k < 6; k++) { const y = PK.Y0 - 70 + k * 120; const w = (y - PK.Y0 + 70) / (11 * PK.ROWH + 110) * (12 * S + 40); c.beginPath(); c.moveTo(X - w, y); c.quadraticCurveTo(X, y + 30, X + w, y); c.stroke(); }
-  c.fillStyle = '#ffd36b'; c.shadowColor = '#ffd36b'; c.shadowBlur = 20; c.beginPath(); for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? 16 : 36; c.lineTo(X + Math.cos(a) * rr, PK.Y0 - 100 + Math.sin(a) * rr); } c.fill(); c.shadowBlur = 0;
-  // goulotte
-  // clous
-  const glow = {};
-  for (const F of P.flights) { const u0 = t - F.t0 - .35; if (u0 < 0) continue; const k = Math.floor(u0 / F.hop); if (k > 11) continue; let p = 0; for (let i = 0; i < k; i++) p += F.dec[i]; const ph = (u0 - k * F.hop) / F.hop; if (ph < .35) glow[k + ',' + p] = 1 - ph / .35; }
-  for (let r = 0; r < PK.ROWS; r++) for (let p = -r; p <= r; p += 2) {
-    const x = X + p * S, y = PK.Y0 + r * PK.ROWH, gl = glow[r + ',' + p] || 0;
-    const col = ['#e8322c', '#f3cf7a', '#4fa3e0', '#e08aff', '#7fe07f'][(r * 3 + p + 20) % 5];
-    if (gl) { c.fillStyle = `rgba(255,240,180,${gl * .8})`; c.beginPath(); c.arc(x, y, 16 + gl * 8, 0, 6.283); c.fill(); }
-    c.fillStyle = col; c.beginPath(); c.arc(x, y, 8, 0, 6.283); c.fill(); c.fillStyle = 'rgba(255,255,255,.7)'; c.beginPath(); c.arc(x - 2.5, y - 2.5, 2.5, 0, 6.283); c.fill();
+function drawPeche(c, P, t, R, now, replay) {
+  auroraSky(c, now, 260);
+  const g = c.createLinearGradient(0, 240, 0, 1080); g.addColorStop(0, '#b9d0e6'); g.addColorStop(1, '#8eaccb'); c.fillStyle = g; c.fillRect(0, 240, 1600, 840);
+  c.fillStyle = '#e8f1fa'; c.beginPath(); c.moveTo(0, 262); for (let x = 0; x <= 1600; x += 80) c.lineTo(x, 250 + Math.sin(x / 130) * 10); c.lineTo(1600, 280); c.lineTo(0, 280); c.fill();
+  if (!R.cracks) { const rng = mulberry32(21); R.cracks = Array.from({ length: 50 }, () => { let x = rng() * 1600, y = 280 + rng() * 800; const pts = [[x, y]]; for (let k = 0; k < 5; k++) { x += (rng() - .5) * 70; y += (rng() - .5) * 40; pts.push([x, y]); } return pts; }); }
+  c.strokeStyle = 'rgba(255,255,255,.45)'; c.lineWidth = 1.5; R.cracks.forEach(pts => { c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.stroke(); });
+  // cabanes + pingouins
+  [[90, 330], [1510, 350], [70, 980], [1530, 990]].forEach(([x, y], i) => { c.fillStyle = 'rgba(0,0,0,.18)'; c.fillRect(x - 36, y + 26, 80, 10); c.fillStyle = ['#c8242f', '#2f5a8a', '#1f7a4c', '#8a5a35'][i]; c.fillRect(x - 36, y - 20, 72, 46); c.fillStyle = '#fff'; c.beginPath(); c.moveTo(x - 46, y - 18); c.lineTo(x, y - 52); c.lineTo(x + 46, y - 18); c.fill(); c.fillStyle = '#4a2c16'; c.fillRect(x - 10, y, 20, 26); });
+  for (let k = 0; k < 4; k++) { const px = ((now / 40 + k * 420) % 1800) - 100, py = 300 + k * 6; c.fillStyle = '#1f2633'; c.beginPath(); c.ellipse(px, py, 7, 11, 0, 0, 6.283); c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.ellipse(px + 1, py + 2, 4.5, 8, 0, 0, 6.283); c.fill(); c.fillStyle = '#f2a33c'; c.beginPath(); c.moveTo(px + 4, py - 7); c.lineTo(px + 11, py - 6); c.lineTo(px + 4, py - 4); c.fill(); }
+  const sc = P.sc, wt = P.catches.find(c2 => c2.legend).t;
+  for (const nom of [...P.players].sort((a, b) => P.info[a].hy - P.info[b].hy)) {
+    const inf = P.info[nom], hx = inf.hx, hy = inf.hy, out = inf.outT < t;
+    const mine = P.catches.filter(c2 => c2.nom === nom), cur = mine.find(c2 => t >= c2.t - 1.2 && t < c2.t + .9);
+    c.globalAlpha = out ? .55 : 1;
+    // trou
+    c.fillStyle = '#dbe8f4'; c.beginPath(); c.ellipse(hx, hy, 34 * sc, 14 * sc, 0, 0, 6.283); c.fill();
+    c.fillStyle = '#123456'; c.beginPath(); c.ellipse(hx, hy, 26 * sc, 10 * sc, 0, 0, 6.283); c.fill();
+    c.fillStyle = 'rgba(120,180,230,.5)'; c.beginPath(); c.ellipse(hx - 6 * sc, hy - 2 * sc, 10 * sc, 3 * sc, 0, 0, 6.283); c.fill();
+    // pêcheur assis
+    const px = hx - 58 * sc, py = hy + 4 * sc;
+    c.fillStyle = '#7a4a2a'; c.fillRect(px - 12 * sc, py - 8 * sc, 24 * sc, 8 * sc);
+    const pulling = cur && !cur.miss && t >= cur.t - .3 && t < cur.t + .3;
+    const top = drawPerson(c, px, py - 6 * sc, sc, inf.color, { sit: true, arms: pulling ? .9 : .35, sad: out || (cur && cur.miss && t > cur.t) });
+    // canne + ligne + bouchon
+    if (!out) {
+      const hxh = px + 16 * sc, hyh = py - 34 * sc, bend = pulling ? 1 : cur && t > cur.t - 1.2 && t < cur.t ? .3 : 0;
+      const tipx = hx + 4 * sc, tipy = hy - (70 - bend * 26) * sc;
+      c.strokeStyle = '#5b3a22'; c.lineWidth = 3.5 * sc; c.beginPath(); c.moveTo(hxh, hyh); c.quadraticCurveTo(hx - 10 * sc, hy - (90 - bend * 50) * sc, tipx, tipy); c.stroke();
+      let by = hy - 2 * sc; if (cur && t < cur.t) { const k = (t - (cur.t - 1.2)) / 1.2; by += Math.sin(now / 60) * 4 * k * sc + k * 5 * sc; }
+      c.strokeStyle = 'rgba(255,255,255,.9)'; c.lineWidth = 1; c.beginPath(); c.moveTo(tipx, tipy); c.lineTo(hx + 2 * sc, by); c.stroke();
+      c.fillStyle = '#e8322c'; c.beginPath(); c.arc(hx + 2 * sc, by, 4 * sc, Math.PI, 0); c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.arc(hx + 2 * sc, by, 4 * sc, 0, Math.PI); c.fill();
+    }
+    // tas de prises
+    const done = mine.filter(c2 => !c2.miss && c2.t + .7 <= t && !c2.legend);
+    c.font = `${22 * sc}px serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
+    done.slice(-4).forEach((c2, k) => c.fillText(c2.e, hx + (42 + k * 14) * sc, hy + (6 - k * 4) * sc));
+    nameTag(c, nom, px, top - 4, sc);
+    c.globalAlpha = 1;
+    // animations de prise
+    for (const c2 of mine) {
+      const q = t - c2.t;
+      if (c2.miss) { if (q >= 0 && q < .9) { c.font = `${30 * sc}px serif`; c.fillText(c2.miss === 'snap' ? '💢' : c2.miss === 'coup' ? P.info[c2.from].coup.e : '💨', hx + 30 * sc, hy - 70 * sc - q * 30); } if (c2.miss === 'coup') { const qq = t - (c2.t - .8); if (qq >= 0 && qq < .7) { const a = P.info[c2.from]; drawProjectile(c, a.coup.e, a.hx - 58 * sc, a.hy - 60 * sc, hx, hy, qq / .7); } drawOno(c, 'PLOUF !', hx + 40, hy - 80, q); }
+        else if (q >= 0 && q < 1.2) { c.font = '800 16px Inter, system-ui, sans-serif'; c.fillStyle = '#c8242f'; c.fillText(c2.miss === 'snap' ? 'La ligne casse !' : 'Il s\'enfuit !', hx, hy - 110 * sc - q * 10); } continue; }
+      if (q >= 0 && q < .8) { const k = q / .8, big = c2.legend ? 3.4 : 1 + Math.min(1.2, c2.w / 25), x = hx + (40 * sc) * k, y = hy - Math.sin(k * Math.PI) * (c2.legend ? 230 : 110) * sc - k * 10;
+        c.save(); c.translate(x, y); c.rotate(Math.sin(now / 80) * .3); c.font = `${30 * big * sc}px serif`; c.fillText(c2.e, 0, 0); c.restore(); splash(c, hx, hy, q / .6); }
+      if (c2.legend && q >= .8) { c.save(); c.translate(hx + 40 * sc, hy - 40 * sc); c.scale(1 + .05 * Math.sin(now / 150), 1 + .05 * Math.sin(now / 150)); c.font = `${96 * sc}px serif`; c.fillText(c2.e, 0, 0); c.restore(); }
+      if (q >= 0 && q < 1.8) { const k = q / 1.8; c.globalAlpha = 1 - k * k; c.font = `900 ${(c2.legend ? 40 : 22) * Math.max(.8, sc)}px Inter, system-ui, sans-serif`; c.lineWidth = 5; c.strokeStyle = '#2b1a10'; const txt = `+${fmtKg(c2.w)}`; c.strokeText(txt, hx, hy - 120 * sc - k * 40); c.fillStyle = c2.legend ? '#ffd36b' : '#fff8ea'; c.fillText(txt, hx, hy - 120 * sc - k * 40); c.globalAlpha = 1; }
+    }
   }
-  // cases
-  const R0 = roundAt(t);
-  for (let p = -12; p <= 12; p += 2) {
-    const x = X + p * S, ty = R0.slotType(p), y = PK.SLOT_Y;
-    const col = { ok: '#1f7a4c', rate: '#7a1f27', jack: '#c99332', presque: '#a8582a' }[ty];
-    c.fillStyle = col; c.beginPath(); c.roundRect(x - S + 3, y, 2 * S - 6, 120, 8); c.fill();
-    if (ty === 'jack') { c.fillStyle = `rgba(255,230,140,${.25 + .25 * Math.sin(now / 200)})`; c.beginPath(); c.roundRect(x - S + 3, y, 2 * S - 6, 120, 8); c.fill(); }
-    c.fillStyle = '#fff8ea'; c.font = `800 ${ty === 'jack' ? 13 : 12}px Inter, system-ui, sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.fillText({ ok: 'QUALIFIÉ', rate: 'RATÉ', jack: '🎁 JACKPOT', presque: 'PRESQUE' }[ty], x, y + 18);
-  }
-  c.fillStyle = '#d9c39a'; for (let p = -13; p <= 13; p += 2) c.fillRect(X + p * S - 3, PK.SLOT_Y - 6, 6, 126);
-  // boules
-  const live = P.flights.filter(F => F.round === R0.i || (t < rounds_end(P, F.round) + .2 && F.round === R0.i - 1));
-  const inFlight = live.filter(F => t >= F.t0 && t < F.land).length;
-  for (const F of live) {
-    const b = ballPos(F, t); if (!b) continue;
-    const info = P.info[F.nom];
-    let flash = 0; for (const ev of P.events) if (ev.target === F) { const q = t - ev.t; if (q >= 0 && q < .4) flash = 1 - q / .4; }
-    c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(b.x + 3, b.y + 14, 11, 4, 0, 0, 6.283); c.fill();
-    c.fillStyle = info.color; c.beginPath(); c.arc(b.x, b.y, 15, 0, 6.283); c.fill();
-    if (flash) { c.fillStyle = `rgba(255,255,255,${flash})`; c.beginPath(); c.arc(b.x, b.y, 15, 0, 6.283); c.fill(); }
-    c.fillStyle = 'rgba(255,255,255,.55)'; c.beginPath(); c.arc(b.x - 5, b.y - 5, 4.5, 0, 6.283); c.fill();
-    c.fillStyle = '#fff'; c.font = '800 13px Inter, system-ui, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(initial(F.nom), b.x, b.y + 1);
-    if (inFlight <= 6 || R0.final || (b.landed && live.length <= 10)) nameTag(c, F.nom, b.x, b.y - 28, .9);
-    if (b.landed && b.u < 1 && F.ok && !R0.final) { c.strokeStyle = `rgba(127,224,127,${1 - b.u})`; c.lineWidth = 4; c.beginPath(); c.arc(b.x, b.y, 15 + b.u * 25, 0, 6.283); c.stroke(); }
-  }
-  for (const ev of P.events) {
-    const q = t - (ev.t - .7), b = ballPos(ev.target, ev.t), bnow = ballPos(ev.target, t);
-    if (q >= 0 && q < .7 && b) drawProjectile(c, P.info[ev.from].coup.e, ev.target.p < 0 ? 1560 : 40, 420, b.x, b.y, q / .7);
-    if (bnow) drawOno(c, ev.ono, bnow.x + 40, bnow.y - 50, t - ev.t);
-  }
-  if (!replay) for (const r of P.rounds) { const q = t - r.t0; if (q >= 0 && q < 1.8) { const k = Math.min(1, q / .3) * (q > 1.4 ? 1 - (q - 1.4) / .4 : 1); c.save(); c.globalAlpha = k; c.translate(800, 520); c.scale(.8 + .2 * k, .8 + .2 * k); c.font = '900 92px "Playfair Display", serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineWidth = 10; c.strokeStyle = '#2b1a10'; const txt = r.final ? 'FINALE !' : `MANCHE ${r.i + 1}`; c.strokeText(txt, 0, 0); c.fillStyle = '#ffd36b'; c.fillText(txt, 0, 0); c.restore(); } }
+  if (!replay) [...new Set(P.ticker.filter(m => /^🎣/.test(m.txt)).map(m => m.t))].forEach((ta, i, arr) => { const q = t - ta; if (q >= 0 && q < 1.8) { const k = Math.min(1, q / .3) * (q > 1.4 ? 1 - (q - 1.4) / .4 : 1); c.save(); c.globalAlpha = k; c.translate(800, 560); c.scale(.8 + .2 * k, .8 + .2 * k); c.font = '900 92px "Playfair Display", serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineWidth = 10; c.strokeStyle = '#2b1a10'; const txt = i === arr.length - 1 ? 'FINALE !' : `MANCHE ${i + 1}`; c.strokeText(txt, 0, 0); c.fillStyle = '#ffd36b'; c.fillText(txt, 0, 0); c.restore(); } });
 }
-const rounds_end = (P, i) => P.rounds[i] ? P.rounds[i].end : 0;
+
+/* ===== La banquise ===== */
+function planBanquise(d, pool, winner) {
+  const rng = mkRng(d, 'banquise'), players = pool.includes(winner) ? pool.slice() : [...pool, winner];
+  players.sort((a, b) => a.localeCompare(b, 'fr'));
+  const n = players.length, info = {}, CX = 800, CY = 590, RX = 450, RY = 285, CS = 56;
+  players.forEach((nom, i) => info[nom] = { nom, color: playerColor(i), coup: coupDe(nom), outT: 1e9, raft: -1 });
+  // cellules
+  const cells = [];
+  for (let gy = -6; gy <= 6; gy++) for (let gx = -9; gx <= 9; gx++) { const x = CX + gx * CS, y = CY + gy * CS * .82, dn = ((x - CX) / RX) ** 2 + ((y - CY) / RY) ** 2 + (rng() - .5) * .18; if (dn < 1) cells.push({ x, y, d: dn, a: Math.atan2((y - CY) / RY, (x - CX) / RX), tb: 1e9, chunk: -1 }); }
+  cells.sort((a, b) => a.d - b.d);
+  const core = cells.slice(0, 3); core.forEach(cl => cl.core = true);
+  const rest = cells.slice(3).sort((a, b) => b.d - a.d), chunks = [];
+  for (let i = 0; i < rest.length;) { const band = rest.slice(i, i + 22).sort((a, b) => a.a - b.a); i += 22; for (let j = 0; j < band.length;) { const sz = 3 + Math.floor(rng() * 4), ch = band.slice(j, j + sz); j += sz; chunks.push(ch); } }
+  // le dernier morceau doit toucher le coeur
+  const lastChunk = chunks.pop(), Tf = Math.max(30, Math.min(64, 22 + n * 2.6)), times = chunks.map((_, k) => 4 + (k + .3 + rng() * .4) * (Tf - 6) / chunks.length);
+  chunks.push(lastChunk); times.push(Tf);
+  chunks.forEach((ch, k) => { const cx = ch.reduce((s, cl) => s + cl.x, 0) / ch.length, cy = ch.reduce((s, cl) => s + cl.y, 0) / ch.length; ch.forEach(cl => { cl.tb = times[k]; cl.chunk = k; }); ch.cx = cx; ch.cy = cy; ch.t = times[k]; const l = Math.hypot(cx - CX, cy - CY) || 1; ch.dx = (cx - CX) / l; ch.dy = (cy - CY) / l; ch.rot = (rng() - .5) * .8; });
+  // éliminations
+  const order = shuffleR(rng, players.filter(x => x !== winner)), loser = order.pop();
+  const evIdx = []; for (let k = 0; k < order.length; k++) evIdx.push(Math.floor((k + .5 + (rng() - .5) * .6) * (chunks.length - 1) / Math.max(1, order.length)));
+  evIdx.sort((a, b) => a - b);
+  const elim = order.map((nom, k) => ({ nom, ch: Math.min(chunks.length - 2, Math.max(0, evIdx[k])) }));
+  if (loser) elim.push({ nom: loser, ch: chunks.length - 1 });
+  let raftN = 0;
+  elim.sort((a, b) => chunks[a.ch].t - chunks[b.ch].t).forEach(e => { info[e.nom].outT = chunks[e.ch].t + .6; info[e.nom].ch = e.ch; info[e.nom].raft = raftN++; });
+  // chemins (points de passage)
+  const safeCells = t => cells.filter(cl => cl.tb > t);
+  players.forEach((nom, i) => {
+    const inf = info[nom], wp = []; let t = 0, cl = safeCells(t + 8)[Math.floor(rng() * safeCells(t + 8).length)];
+    wp.push({ t: 0, cl });
+    const end = inf.outT < 1e9 ? chunks[inf.ch].t - 2.4 : Tf + 6;
+    while (true) { t += 3 + rng() * 3; if (t >= end - .5) break; const cand = safeCells(Math.min(end, t + 6) + 1.2); if (!cand.length) break; const near = cand.filter(c2 => Math.hypot(c2.x - cl.x, c2.y - cl.y) < 200); cl = (near.length ? near : cand)[Math.floor(rng() * (near.length ? near : cand).length)]; wp.push({ t, cl }); }
+    if (inf.outT < 1e9) { const ch = chunks[inf.ch]; wp.push({ t: Math.max(wp[wp.length - 1].t + .3, end), cl: ch[Math.floor(rng() * ch.length)] }); }
+    else wp.push({ t: Math.max(wp[wp.length - 1].t + .3, Tf - 3.5), cl: core[i % core.length] });
+    inf.wp = wp; inf.jx = (rng() - .5) * 22; inf.jy = (rng() - .5) * 14;
+  });
+  const ticker = [], say = (t, txt) => ticker.push({ t, txt });
+  say(.5, `🧊 ${n} joueurs sur la banquise… et la glace commence à craquer !`);
+  const ONO = ['PLOUF !', 'SPLASH !', 'GLOUPS !', 'PLOUF !!'], coups = [];
+  elim.forEach((e, k) => { const t = chunks[e.ch].t, last = k === elim.length - 1;
+    if (!last && rng() < .3 && players.length > 2) { const from = shuffleR(rng, players.filter(x => x !== e.nom && info[x].outT > t + 1))[0]; if (from) { coups.push({ from, to: e.nom, t: t - .7 }); say(t - 1.2, `${info[from].coup.e} ${from} pousse ${e.nom} avec « ${info[from].coup.n} » !`); } }
+    e.ono = ONO[Math.floor(rng() * ONO.length)];
+    say(t + .5, last ? `🏆 La glace cède sous ${e.nom}… ${winner} est le dernier sur la banquise !!` : [`💦 ${e.nom} tombe à l'eau !`, `🐧 ${e.nom} fait un plongeon, les pingouins applaudissent !`, `🧊 Le morceau part… avec ${e.nom} dessus !`][Math.floor(rng() * 3)]); });
+  if (elim.length > 2) say(chunks[elim[elim.length - 2].ch].t + 1.8, `😰 Plus que deux sur la glace : ${winner} et ${loser} !`);
+  ticker.sort((a, b) => a.t - b.t);
+  const posOf = (nom, t) => {
+    const inf = info[nom], wp = inf.wp;
+    let i = 0; while (i < wp.length - 1 && wp[i + 1].t <= t) i++;
+    const a = wp[i], b = wp[i + 1];
+    let x = a.cl.x + inf.jx, y = a.cl.y + inf.jy, walk = false;
+    if (b) { const k = smooth(b.t - 1.3, b.t, t); if (k > 0) { x += (b.cl.x - a.cl.x) * k; y += (b.cl.y - a.cl.y) * k; walk = k < 1; } }
+    if (inf.outT < 1e9) { const ch = chunks[inf.ch], q = t - ch.t;
+      if (q >= 0) { const u = Math.min(q, 4); x += ch.dx * 40 * u; y += ch.dy * 40 * u;
+        if (q >= .6) { const raft = { x: 130 + (inf.raft % 12) * 62, y: 1015 - Math.floor(inf.raft / 12) * 34 }, k = smooth(1.6, 4.5, q); return { x: x + (raft.x - x) * k, y: y + (raft.y - y) * k, water: q < 4.5, raft: q >= 4.5, q }; }
+        return { x, y, wobble: Math.sin(q * 30) * .5 * (q / .6) }; } }
+    return { x, y, walk, step: t * 12 };
+  };
+  const bubbles = gameBubbles(rng, players, Object.assign((k, nb) => 4 + k * (Tf - 8) / nb + rng() * 2, { alive: (nom, t) => info[nom].outT > t + 4 }));
+  const P = {
+    d, title: GAMES.banquise, panelTitle: 'Sur la glace', bg: '#0d3557', players, info, cells, chunks, coups, elim, bubbles, ticker, winner, CX, CY, CS, posOf, Tf,
+    slowA: Tf - .6, slowB: Tf + 1.4, Tend: Tf + 4, replayA: Tf - 1.6, replayB: Tf + 1.6, replayText: `${winner}, dernier sur la banquise !`,
+    podium: [winner, ...elim.slice().reverse().map(e => e.nom)].slice(0, 3).map(nm => info[nm]),
+    podTitle: `🏆 Podium de la banquise · ${d} décembre`,
+    focus: () => ({ x: CX, y: CY - 30 }),
+    status: t => { const alive = players.filter(nm => info[nm].outT > t).length; return t >= Tf + .6 ? { txt: '🏆 DERNIER DEBOUT !', hot: true } : { txt: `${alive} SUR LA GLACE`, hot: alive <= 2 }; },
+    anchor: (nom, t) => { const p = posOf(nom, t); return p.water || p.raft ? null : { x: p.x, y: p.y - 70 }; },
+    panel: t => players.map(nm => ({ nom: nm, color: info[nm].color, out: info[nm].outT < t, win: nm === winner && t >= Tf + .6, sub: info[nm].outT < t ? 'à l\'eau 💦' : 'sur la glace', o: info[nm].outT })).sort((a, b) => (a.out - b.out) || (a.out ? b.o - a.o : a.nom.localeCompare(b.nom, 'fr'))),
+    shake: t => { for (const ch of chunks) { const q = t - ch.t; if (q >= 0 && q < .3) return 5 * (1 - q / .3); } return 0; },
+    draw: (c, t, Rr, now, replay) => drawBanquise(c, P, t, Rr, now, replay),
+    sound: (t, Rr, replay, now) => {
+      if (replay) return;
+      chunks.forEach((ch, k) => { if (!Rr['cr' + k] && t >= ch.t - 1.4) { Rr['cr' + k] = 1; tone(140, 0, .2, 'sawtooth', .05); } if (!Rr['br' + k] && t >= ch.t) { Rr['br' + k] = 1; tone(90, 0, .35, 'square', .06); } });
+      elim.forEach((e, k) => { if (!Rr['pl' + k] && t >= info[e.nom].outT) { Rr['pl' + k] = 1; plouf(); if (k === elim.length - 1) { jingle(); crowd(); confettiBurst(Rr, CX, CY - 80, 240); } } });
+      coups.forEach((cp, k) => { if (!Rr['cp' + k] && t >= cp.t - .7) { Rr['cp' + k] = 1; whoosh(); } if (!Rr['cq' + k] && t >= cp.t) { Rr['cq' + k] = 1; boing(); } });
+      if (t >= Tf + .6 && t < Tf + 4 && now - (Rr.lastFw || 0) > 420) { Rr.lastFw = now; burst(Rr, 200 + Math.random() * 1200, 160 + Math.random() * 250); }
+    }
+  };
+  return P;
+}
+function drawBanquise(c, P, t, R, now, replay) {
+  const g = c.createLinearGradient(0, 0, 0, 1080); g.addColorStop(0, '#0b2d4d'); g.addColorStop(1, '#0a4a72'); c.fillStyle = g; c.fillRect(0, 0, 1600, 1080);
+  c.strokeStyle = 'rgba(255,255,255,.12)'; c.lineWidth = 2; for (let y = 120; y < 1080; y += 46) { c.beginPath(); for (let x = 0; x <= 1600; x += 20) { const yy = y + Math.sin(x / 70 + now / 600 + y) * 5; x ? c.lineTo(x, yy) : c.moveTo(x, yy); } c.stroke(); }
+  // petits blocs avec pingouins
+  const clap = P.elim.some(e => { const q = t - P.info[e.nom].outT; return q >= 0 && q < 2; });
+  [[180, 300, 70], [1430, 320, 80], [1440, 820, 60], [170, 760, 64]].forEach(([x, y, r], i) => { const b = Math.sin(now / 700 + i) * 4; c.fillStyle = 'rgba(0,0,0,.2)'; c.beginPath(); c.ellipse(x + 6, y + 14 + b, r, r * .45, 0, 0, 6.283); c.fill(); c.fillStyle = '#eef6fd'; c.beginPath(); c.ellipse(x, y + b, r, r * .45, 0, 0, 6.283); c.fill();
+    for (let q = 0; q < 3; q++) { const px = x - 24 + q * 24, py = y - 8 + b - (clap ? Math.abs(Math.sin(now / 120 + q)) * 6 : 0); c.fillStyle = '#1f2633'; c.beginPath(); c.ellipse(px, py, 8, 13, 0, 0, 6.283); c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.ellipse(px, py + 2, 5, 9, 0, 0, 6.283); c.fill(); c.fillStyle = '#f2a33c'; c.beginPath(); c.moveTo(px - 2, py - 8); c.lineTo(px + 6, py - 7); c.lineTo(px - 2, py - 5); c.fill(); if (clap) { c.strokeStyle = '#1f2633'; c.lineWidth = 3; c.beginPath(); c.moveTo(px - 7, py); c.lineTo(px - 3 + Math.sin(now / 80) * 3, py - 8); c.moveTo(px + 7, py); c.lineTo(px + 3 - Math.sin(now / 80) * 3, py - 8); c.stroke(); } } });
+  // aileron
+  { const a = now / 3000, fx = 800 + Math.cos(a) * 640, fy = 600 + Math.sin(a) * 420; c.fillStyle = '#2b3440'; c.beginPath(); c.moveTo(fx - 14, fy); c.lineTo(fx + 4, fy - 34); c.lineTo(fx + 16, fy); c.fill(); c.strokeStyle = 'rgba(255,255,255,.5)'; c.lineWidth = 2; c.beginPath(); c.ellipse(fx, fy + 2, 22, 5, 0, 0, 6.283); c.stroke(); }
+  // radeau de secours
+  c.fillStyle = '#8a5a35'; c.fillRect(90, 1028, 800, 16); c.fillStyle = '#c8242f'; c.font = '800 16px Inter, system-ui, sans-serif'; c.textAlign = 'left'; c.fillText('🛟 Radeau de secours', 96, 1062);
+  // glace
+  const CS = P.CS, drawCell = (cl, a) => { c.globalAlpha = a; c.fillStyle = '#f2f8fd'; c.beginPath(); c.roundRect(cl.x - CS * .56, cl.y - CS * .48, CS * 1.12, CS * .96, 8); c.fill(); c.globalAlpha = 1; };
+  c.save(); c.translate(0, 12); c.fillStyle = 'rgba(0,20,40,.35)'; P.cells.filter(cl => cl.tb > t).forEach(cl => { c.beginPath(); c.roundRect(cl.x - CS * .56, cl.y - CS * .48, CS * 1.12, CS * .96, 8); c.fill(); }); c.restore();
+  P.cells.filter(cl => cl.tb > t).forEach(cl => drawCell(cl, 1));
+  c.fillStyle = 'rgba(160,200,230,.35)'; P.cells.filter(cl => cl.tb > t).forEach(cl => { c.beginPath(); c.ellipse(cl.x - 8, cl.y - 6, 10, 4, 0, 0, 6.283); c.fill(); });
+  // fissures
+  P.chunks.forEach(ch => { const q = t - (ch.t - 1.5); if (q < 0 || t >= ch.t) return; const k = q / 1.5; c.strokeStyle = `rgba(20,60,100,${.4 + .5 * Math.abs(Math.sin(now / 90))})`; c.lineWidth = 2 + k * 3; ch.forEach(cl => { const ix = cl.x - ch.dx * CS * .5, iy = cl.y - ch.dy * CS * .5; c.beginPath(); c.moveTo(ix - ch.dy * CS * .6, iy + ch.dx * CS * .6); for (let s = 1; s <= 4; s++) c.lineTo(ix - ch.dy * CS * (.6 - s * .3) + (s % 2 ? 6 : -6), iy + ch.dx * CS * (.6 - s * .3)); c.stroke(); }); });
+  // morceaux qui partent
+  P.chunks.forEach(ch => { const q = t - ch.t; if (q < 0 || q > 5) return; const u = Math.min(q, 4), a = 1 - q / 5; c.save(); c.translate(ch.cx + ch.dx * 40 * u, ch.cy + ch.dy * 40 * u + q * 6); c.rotate(ch.rot * Math.min(1, q / 2)); c.translate(-ch.cx, -ch.cy); ch.forEach(cl => drawCell(cl, a)); c.restore(); });
+  // joueurs
+  const items = P.players.map(nom => ({ nom, p: P.posOf(nom, t) })).sort((a, b) => a.p.y - b.p.y);
+  const s = P.players.length > 14 ? .78 : .92;
+  for (const { nom, p } of items) {
+    const inf = P.info[nom];
+    if (p.water) { const k = Math.min(1, (p.q - .6) / .3); splash(c, p.x, p.y, (p.q - .6) / .7); c.fillStyle = '#f6d7b8'; c.beginPath(); c.arc(p.x, p.y - 8, 10, 0, 6.283); c.fill(); c.strokeStyle = '#e8322c'; c.lineWidth = 6; c.beginPath(); c.ellipse(p.x, p.y + 2, 18, 7, 0, 0, 6.283); c.stroke(); c.strokeStyle = '#fff'; c.setLineDash([6, 6]); c.stroke(); c.setLineDash([]); c.fillStyle = '#e8322c'; c.beginPath(); c.moveTo(p.x - 10, p.y - 13); c.quadraticCurveTo(p.x, p.y - 30, p.x + 12, p.y - 18); c.lineTo(p.x + 8, p.y - 13); c.fill(); if (P.players.length <= 14) nameTag(c, nom, p.x, p.y - 42, .8); drawOno(c, P.elim.find(e => e.nom === nom).ono, p.x + 30, p.y - 70, p.q - .6); continue; }
+    if (p.raft) { const top = drawPerson(c, p.x, p.y + 18, .7, inf.color, { sit: true, arms: clapping(t, P) ? 1 : 0, wave: now / 200 + inf.raft, sad: true }); if (P.players.length <= 14) nameTag(c, nom, p.x, top - 4, .7); continue; }
+    const win = nom === P.winner && t >= P.Tf + .6;
+    const top = drawPerson(c, p.x, p.y, s, inf.color, { step: p.walk ? p.step : 0, bob: p.walk ? Math.abs(Math.sin(p.step)) * 3 : 0, rot: p.wobble, arms: win ? 1 : p.wobble ? .8 : 0, wave: win ? now / 150 : null });
+    nameTag(c, nom, p.x, top - 4, s);
+  }
+  for (const cp of P.coups) { const q = t - (cp.t - .7); if (q >= 0 && q < .7) { const a = P.posOf(cp.from, cp.t - .7), b = P.posOf(cp.to, cp.t); drawProjectile(c, P.info[cp.from].coup.e, a.x, a.y - 50, b.x, b.y - 40, q / .7); } const b = P.posOf(cp.to, t); drawOno(c, 'BAM !', b.x + 30, b.y - 90, t - cp.t); }
+}
+function clapping(t, P) { return P.elim.some(e => { const q = t - P.info[e.nom].outT; return q >= 0 && q < 2; }); }
+
+/* ===== Bataille de boules de neige ===== */
+function planBataille(d, pool, winner) {
+  const rng = mkRng(d, 'bataille'), players = pool.includes(winner) ? pool.slice() : [...pool, winner];
+  players.sort((a, b) => a.localeCompare(b, 'fr'));
+  const n = players.length, info = {}, CX = 800, CY = 600, RX = n > 14 ? 650 : 560, RY = n > 14 ? 360 : 320;
+  const ring = shuffleR(rng, players.slice());
+  ring.forEach((nom, i) => { const a = -Math.PI / 2 + 6.283 * i / n + (rng() - .5) * .1; info[nom] = { nom, color: playerColor(players.indexOf(nom)), coup: coupDe(nom), x: CX + Math.cos(a) * RX, y: CY + Math.sin(a) * RY, a, outT: 1e9, hits: [] }; });
+  const Tf = Math.max(24, Math.min(64, 14 + n * 2.1));
+  const order = shuffleR(rng, players.filter(x => x !== winner));
+  const elimT = order.map((_, k) => 6 + (k + .5 + (rng() - .5) * .5) * (Tf - 11) / Math.max(1, order.length - 1));
+  elimT[elimT.length - 1] = Tf;
+  const finalist = order[order.length - 1], duelT = order.length >= 2 ? elimT[order.length - 2] + 1.2 : 1.5;
+  const spots = {}; if (finalist) { const left = info[winner].x <= info[finalist].x; spots[winner] = { x: CX + (left ? -170 : 170), y: CY + 30 }; spots[finalist] = { x: CX + (left ? 170 : -170), y: CY + 30 }; }
+  const pos = (nom, t) => { const b = info[nom], sp = spots[nom]; if (!sp || t <= duelT) return { x: b.x, y: b.y }; const k = smooth(duelT, duelT + 2.2, t); return { x: b.x + (sp.x - b.x) * k, y: b.y + (sp.y - b.y) * k, walk: k > 0 && k < 1, step: t * 12 }; };
+  const throws = [], ticker = [], say = (t, txt) => ticker.push({ t, txt });
+  const aliveAt = t => players.filter(p => info[p].outT > t);
+  const pick = arr => arr[Math.floor(rng() * arr.length)];
+  order.forEach((nom, k) => { info[nom].outT = elimT[k]; });
+  // tirs mortels
+  order.forEach((nom, k) => {
+    const te = elimT[k], att = aliveAt(te + .01).filter(x => x !== nom);
+    const from = k === order.length - 1 ? winner : pick(att.length ? att : [winner]);
+    const special = k === order.length - 1 || rng() < .35;
+    throws.push({ from, to: nom, t: te, kill: true, special });
+    // deux touches avant
+    for (let h = 0; h < 2; h++) { const th = Math.max(2, te - 2 - rng() * Math.min(14, te - 3)), a2 = aliveAt(th).filter(x => x !== nom); if (a2.length) throws.push({ from: pick(a2), to: nom, t: th, hit: true }); }
+    say(te - .6, special ? `${info[from].coup.e} ${from} dégaine « ${info[from].coup.n} » sur ${nom} !` : `❄️ ${from} vise ${nom}…`);
+    say(te + .4, k === order.length - 1 ? `🏆 ${winner} remporte la bataille de boules de neige !!` : [`☃️ ${nom} est transformé en bonhomme de neige !`, `💥 ${nom} est K.O. !`, `☃️ Et un bonhomme de neige de plus : ${nom} !`][Math.floor(rng() * 3)]);
+  });
+  // touches non mortelles sur le gagnant
+  for (let h = 0; h < 1 + Math.floor(rng() * 2); h++) { const th = 5 + rng() * (Tf - 10), a2 = aliveAt(th).filter(x => x !== winner); if (a2.length) throws.push({ from: pick(a2), to: winner, t: th, hit: true }); }
+  // tirs ratés d'ambiance
+  for (let t = 1.5; t < Tf - .5; t += .25 + rng() * .35) { const al = aliveAt(t + .1); if (al.length < 2) break; const from = pick(al), to = pick(al.filter(x => x !== from)); throws.push({ from, to, t, miss: true, mx: (rng() - .5) * 90, my: (rng() - .5) * 40 }); }
+  throws.sort((a, b) => a.t - b.t);
+  players.forEach(nm => info[nm].hits = throws.filter(th => th.to === nm && (th.hit || th.kill)).map(th => th.t).sort((a, b) => a - b));
+  say(.4, `⛄ ${n} combattants, des boules de neige plein les poches… FEU !`);
+  if (order.length > 1) say(duelT + .3, `⚔️ Duel final au centre de l'arène : ${winner} contre ${finalist} !`);
+  ticker.sort((a, b) => a.t - b.t);
+  const hp = (nom, t) => 3 - info[nom].hits.filter(h => h <= t).length;
+  const bubbles = gameBubbles(rng, players, Object.assign((k, nb) => 3 + k * (Tf - 6) / nb + rng() * 2, { alive: (nom, t) => info[nom].outT > t + 4 }));
+  const ONO = ['BAM !', 'SPLATCH !', 'PAF !', 'POUF !', 'BONK !'];
+  throws.filter(th => th.kill).forEach(th => th.ono = th.special ? 'KABOUM !' : ONO[Math.floor(rng() * ONO.length)]);
+  const P = {
+    d, title: GAMES.bataille, panelTitle: 'Combattants', bg: '#dfe9f4', players, info, throws, bubbles, ticker, winner, Tf, CX, CY, RX, RY, hp, pos,
+    slowA: Tf - .8, slowB: Tf + 1.2, Tend: Tf + 3.8, replayA: Tf - 1.6, replayB: Tf + 1.4, replayText: `Le coup décisif de ${winner} !`,
+    podium: [winner, ...order.slice().reverse()].slice(0, 3).map(nm => info[nm]),
+    podTitle: `🏆 Podium de la bataille de boules de neige · ${d} décembre`,
+    focus: () => { const a = spots[winner] || info[winner], b = spots[finalist] || a; return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 - 50 }; },
+    status: t => { const al = aliveAt(t).length; return t >= Tf ? { txt: '🏆 VICTOIRE !', hot: true } : { txt: `${al} EN LICE`, hot: al <= 2 }; },
+    anchor: (nom, t) => { if (info[nom].outT < t) return null; const q = pos(nom, t); return { x: q.x, y: q.y - 80 }; },
+    panel: t => players.map(nm => { const o = info[nm].outT < t + .01 && nm !== winner; const h = Math.max(0, hp(nm, t)); return { nom: nm, color: info[nm].color, out: o, win: nm === winner && t >= Tf, sub: o ? 'bonhomme de neige ☃️' : '●'.repeat(h) + '○'.repeat(3 - h), o: info[nm].outT }; }).sort((a, b) => (a.out - b.out) || (a.out ? b.o - a.o : a.nom.localeCompare(b.nom, 'fr'))),
+    shake: t => { for (const th of throws) if (th.kill) { const q = t - th.t; if (q >= 0 && q < .3) return 8 * (1 - q / .3); } return 0; },
+    draw: (c, t, Rr, now, replay) => drawBataille(c, P, t, Rr, now, replay),
+    sound: (t, Rr, replay, now) => {
+      if (replay) return;
+      throws.forEach((th, k) => { if (!th.s0 && t >= th.t - .7) { th.s0 = 1; if (th.special || (th.kill && now - (Rr.lw || 0) > 100)) { Rr.lw = now; whoosh(); } }
+        if (!th.s1 && t >= th.t) { th.s1 = 1; if (th.kill) { boing(); if (th.to === order[order.length - 1]) { jingle(); { const w = pos(winner, t); confettiBurst(Rr, w.x, w.y - 80, 240); } } } else if (th.hit) paf(); else if (now - (Rr.lm || 0) > 90) { Rr.lm = now; tone(200 + Math.random() * 100, 0, .04, 'sine', .04); } } });
+      if (t >= Tf && t < Tf + 4 && now - (Rr.lastFw || 0) > 420) { Rr.lastFw = now; burst(Rr, 200 + Math.random() * 1200, 160 + Math.random() * 250); }
+    }
+  };
+  return P;
+}
+function drawBataille(c, P, t, R, now, replay) {
+  const g = c.createLinearGradient(0, 0, 0, 1080); g.addColorStop(0, '#eef4fb'); g.addColorStop(1, '#d0deec'); c.fillStyle = g; c.fillRect(0, 0, 1600, 1080);
+  if (!R.blots) { const rng = mulberry32(31); R.blots = Array.from({ length: 900 }, () => [rng() * 1600, rng() * 1080, 6 + rng() * 22, rng()]); }
+  R.blots.forEach(([x, y, r, a]) => { c.fillStyle = `rgba(150,175,210,${.08 + a * .12})`; c.beginPath(); c.ellipse(x, y, r, r * .35, 0, 0, 6.283); c.fill(); });
+  // traces au sol (impacts)
+  for (const th of P.throws) { if (t < th.t) continue; const b = { ...P.info[th.to], ...P.pos(th.to, th.t) }, x = th.miss ? b.x + th.mx - (b.x - P.CX) * .12 : b.x, y = th.miss ? b.y + th.my - (b.y - P.CY) * .12 : b.y; c.fillStyle = 'rgba(255,255,255,.75)'; c.beginPath(); c.ellipse(x, y + 10, 10, 4, 0, 0, 6.283); c.fill(); }
+  const sorted = [...P.players].sort((a, b) => P.info[a].y - P.info[b].y), s = P.players.length > 14 ? .8 : 1;
+  for (const nom of sorted) {
+    const inf = P.info[nom], pp = P.pos(nom, t), { x, y } = pp, out = inf.outT < t && nom !== P.winner, q = t - inf.outT;
+    // fort
+    const fx = inf.x - Math.cos(inf.a) * 40, fy = inf.y - Math.sin(inf.a) * 28 + 6;
+    const fortBehind = fy < y;
+    const fort = () => { c.fillStyle = 'rgba(40,60,90,.18)'; c.beginPath(); c.ellipse(fx + 6, fy + 12, 44 * s, 10 * s, 0, 0, 6.283); c.fill(); c.fillStyle = '#fbfdff'; c.strokeStyle = '#c4d4e6'; c.lineWidth = 2; for (let k = -2; k <= 2; k++) { c.beginPath(); c.arc(fx + k * 15 * s, fy - Math.abs(k) * 2, 13 * s, Math.PI, 0); c.fill(); c.stroke(); } c.fillRect(fx - 43 * s, fy - 2, 86 * s, 10); };
+    if (fortBehind) fort();
+    if (out && q > .9) { // bonhomme de neige
+      const k = Math.min(1, (q - .9) / .4); c.save(); c.translate(x, y); c.scale(k * s, k * s);
+      c.fillStyle = 'rgba(40,60,90,.2)'; c.beginPath(); c.ellipse(4, 4, 24, 7, 0, 0, 6.283); c.fill();
+      c.fillStyle = '#fff'; c.strokeStyle = '#c4d4e6'; c.lineWidth = 2; [[0, -14, 20], [0, -42, 14], [0, -62, 10]].forEach(([dx, dy, r]) => { c.beginPath(); c.arc(dx, dy, r, 0, 6.283); c.fill(); c.stroke(); });
+      c.fillStyle = '#2b1a10'; c.beginPath(); c.arc(-3, -64, 1.6, 0, 6.283); c.arc(3, -64, 1.6, 0, 6.283); c.fill(); c.fillStyle = '#f08a3c'; c.beginPath(); c.moveTo(0, -61); c.lineTo(10, -59); c.lineTo(0, -57); c.fill();
+      c.fillStyle = inf.color; c.fillRect(-11, -54, 22, 5); c.fillStyle = '#e8322c'; c.beginPath(); c.moveTo(-10, -70); c.quadraticCurveTo(0, -88, 12, -76); c.lineTo(8, -70); c.fill();
+      c.restore(); c.globalAlpha = .6; nameTag(c, nom, x, y - 96 * s, s * .9); c.globalAlpha = 1;
+    } else {
+      const thr = P.throws.find(th => th.from === nom && t >= th.t - 1 && t < th.t - .6);
+      const win = nom === P.winner && t >= P.Tf;
+      const top = drawPerson(c, x, y, s, inf.color, { rot: out ? Math.min(1.5, q * 4) : 0, ko: out, arms: win ? 1 : thr ? 1 : 0, wave: win ? now / 150 : thr ? 0 : null, bob: pp.walk ? Math.abs(Math.sin(pp.step)) * 3 : Math.abs(Math.sin(now / 300 + inf.a * 5)) * 2, step: pp.walk ? pp.step : 0 });
+      if (!out) { const h = Math.max(0, P.hp(nom, t)); c.font = `${12 * s}px serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; for (let k = 0; k < 3; k++) { c.globalAlpha = k < h ? 1 : .25; c.fillText('❄️', x - 14 * s + k * 14 * s, top - 24 * s); } c.globalAlpha = 1; }
+      nameTag(c, nom, x, top - 6, s);
+      if (thr) { c.fillStyle = '#fff'; c.beginPath(); c.arc(x + 16 * s, top + 6, 6 * s, 0, 6.283); c.fill(); }
+      for (const h of inf.hits) { const qq = t - h; if (qq >= 0 && qq < .5) { c.fillStyle = `rgba(255,255,255,${1 - qq / .5})`; for (let k = 0; k < 7; k++) { const a = k / 7 * 6.283; c.beginPath(); c.arc(x + Math.cos(a) * qq * 60, y - 40 + Math.sin(a) * qq * 40, 5, 0, 6.283); c.fill(); } } }
+    }
+    if (!fortBehind) fort();
+  }
+  // boules en vol
+  c.textAlign = 'center'; c.textBaseline = 'middle';
+  for (const th of P.throws) {
+    const q = t - (th.t - .7); if (q < 0 || q > .7) continue;
+    const a = { ...P.info[th.from], ...P.pos(th.from, th.t - .7) }, b = { ...P.info[th.to], ...P.pos(th.to, th.t) }, k = q / .7, tx = th.miss ? b.x + th.mx - (b.x - P.CX) * .12 : b.x, ty = (th.miss ? b.y + th.my - (b.y - P.CY) * .12 : b.y) - 40;
+    const x = a.x + (tx - a.x) * k, y = a.y - 60 + (ty - a.y + 60) * k - Math.sin(k * Math.PI) * 120;
+    if (th.special) { drawProjectile(c, a.coup.e, a.x, a.y - 60, tx, ty, k); continue; }
+    c.fillStyle = 'rgba(40,60,90,.18)'; c.beginPath(); c.ellipse(a.x + (tx - a.x) * k, a.y + (ty + 40 - a.y) * k, 6, 2.5, 0, 0, 6.283); c.fill();
+    c.fillStyle = '#fff'; c.strokeStyle = '#b8c8da'; c.lineWidth = 1.5; c.beginPath(); c.arc(x, y, th.kill ? 9 : 7, 0, 6.283); c.fill(); c.stroke();
+  }
+  for (const th of P.throws) if (th.kill) { const b = P.pos(th.to, th.t); drawOno(c, th.ono, b.x + 30, b.y - 100, t - th.t); }
+  // tempête qui rétrécit
+  const k = Math.min(1, t / P.Tf), rx = 900 - 380 * k, ry = 620 - 240 * k;
+  const gr = c.createRadialGradient(P.CX, P.CY, Math.min(rx, ry) * .8, P.CX, P.CY, Math.max(rx, ry) * 1.25); gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(1, `rgba(235,242,250,${.35 + .35 * k})`);
+  c.fillStyle = gr; c.fillRect(0, 0, 1600, 1080);
+}
 
 /* ===== Chaises musicales du sapin ===== */
 const CH = { cx: 800, cy: 610, rx: 410, ry: 250, crx: 300, cry: 190 };
