@@ -304,7 +304,7 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
       <h2>Comment participer</h2>
       <p id="howto"></p>
       <ul class="rules">
-        <li>🌙 <b>Chaque nuit à minuit</b>, la case du jour s'ouvre en direct avec un mini-jeu : Grand Prix des rennes, chaises musicales du sapin, pêche sur glace, banquise ou bataille de boules de neige. Le vainqueur remporte un lot tiré au hasard.</li>
+        <li>🌙 <b>Chaque nuit à minuit</b>, la case du jour s'ouvre en direct avec un mini-jeu : Grand Prix des rennes, chaises musicales du sapin, pêche sur glace, banquise, coupe de sapin ou emballage de cadeaux. Le vainqueur remporte un lot tiré au hasard.</li>
         <li>⏪ <b>Tu as raté le direct ?</b> Ouvre la case toi-même : tu peux regarder le jeu ou voir directement le résultat.</li>
         <li>🔁 <b>Chacun son tour</b> : personne ne regagne tant que tous les inscrits n'ont pas gagné une première fois. Au 2e tour, ceux qui ont eu les plus petits lots ont plus de chances.</li>
         <li>🎁 <b>Tous les participants</b> reçoivent aussi un petit cadeau (nourriture, objet de maison…) pour chaque jour où ils sont inscrits.</li>
@@ -391,7 +391,7 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
   <div class="pane" id="pTirages">
     <p class="muted">Résultats calculés jusqu'au 25 avec les inscrits actuels. 🔒 = jour passé, résultat définitif. Les jours à venir peuvent encore changer si des inscrits s'ajoutent.</p>
     <table><thead><tr><th>Jour</th><th>Gagnant</th><th>Lot</th><th>Valeur</th><th>Tour</th><th>Jeu</th></tr></thead><tbody id="admDraws"></tbody></table>
-    <div class="row" style="margin-top:12px"><select id="testGame" aria-label="Jeu du test"><option value="">Jeu du jour</option><option value="gp">Grand Prix</option><option value="chaises">Chaises musicales</option><option value="peche">Pêche sur glace</option><option value="banquise">Banquise</option><option value="bataille">Bataille de boules de neige</option></select> <select id="testCirc" aria-label="Circuit du test"><option value="">Circuit du jour</option><option value="foret">Forêt enneigée</option><option value="atelier">Atelier du Père Noël</option><option value="montagne">Chalet de montagne</option><option value="village">Village de Noël</option><option value="lac">Lac gelé</option></select> <button class="btn small green" id="testLive">🏁 Tester le direct</button> <button class="btn small ghost" id="resetOpened">Refermer mes cases (vraie date)</button></div>
+    <div class="row" style="margin-top:12px"><select id="testGame" aria-label="Jeu du test"><option value="">Jeu du jour</option><option value="gp">Grand Prix</option><option value="chaises">Chaises musicales</option><option value="peche">Pêche sur glace</option><option value="banquise">Banquise</option><option value="bucheron">Coupe de sapin</option><option value="emballage">Emballage de cadeaux</option><option value="solo">Tableau « tout seul »</option></select> <select id="testCirc" aria-label="Circuit du test"><option value="">Circuit du jour</option><option value="foret">Forêt enneigée</option><option value="atelier">Atelier du Père Noël</option><option value="montagne">Chalet de montagne</option><option value="village">Village de Noël</option><option value="lac">Lac gelé</option></select> <button class="btn small green" id="testLive">🏁 Tester le direct</button> <button class="btn small ghost" id="resetOpened">Refermer mes cases (vraie date)</button></div>
   </div>
   <div class="pane" id="pPhrases">
     <p class="muted">💬 Les phrases mythiques de chacun, une par ligne. Pendant chaque Grand Prix, 3 ou 4 bulles sortent au hasard de la tête de joueurs qui ont des phrases.</p>
@@ -801,8 +801,8 @@ function showDraw(d, r, mode, onDone) {
 function askOpen(d, race, direct) {
   $('#chT').textContent = `Case du ${d} décembre`;
   const g = gameFor(d);
-  $('#chBig').textContent = { gp: "Le Grand Prix des rennes t'attend !", chaises: "Les chaises musicales t'attendent !", peche: "La pêche sur glace t'attend !", banquise: "La banquise t'attend !", bataille: "La bataille de boules de neige t'attend !" }[g];
-  $('#chRace').textContent = { gp: '🏁 Regarder la course', chaises: '🎵 Regarder les chaises musicales', peche: '🎣 Regarder la pêche', banquise: '🧊 Regarder la banquise', bataille: '⛄ Regarder la bataille' }[g];
+  $('#chBig').textContent = { gp: "Le Grand Prix des rennes t'attend !", chaises: "Les chaises musicales t'attendent !", peche: "La pêche sur glace t'attend !", banquise: "La banquise t'attend !", bucheron: "La coupe de sapin t'attend !", emballage: "L'emballage de cadeaux t'attend !" }[g];
+  $('#chRace').textContent = { gp: '🏁 Regarder la course', chaises: '🎵 Regarder les chaises musicales', peche: '🎣 Regarder la pêche', banquise: '🧊 Regarder la banquise', bucheron: '🪓 Regarder la coupe de sapin', emballage: '🎁 Regarder l\'emballage' }[g];
   const close = () => $('#choose').classList.remove('show');
   $('#chRace').onclick = () => { close(); race(); };
   $('#chDirect').onclick = () => { close(); direct(); };
@@ -1340,10 +1340,10 @@ function startRace(d, r, done, circ) {
 $('#raceSkip').onclick = () => { if (race) endRace(); };
 
 /* ===== Mini-jeux : alternance, moteur commun ===== */
-const GAMES = { gp: 'Grand Prix des rennes', chaises: 'Chaises musicales du sapin', peche: 'Pêche sur glace', banquise: 'La banquise', bataille: 'Bataille de boules de neige' };
+const GAMES = { gp: 'Grand Prix des rennes', chaises: 'Chaises musicales du sapin', peche: 'Pêche sur glace', banquise: 'La banquise', bucheron: 'Coupe de sapin', emballage: 'Emballage de cadeaux' };
 const GAME_IDS = Object.keys(GAMES);
 let testGame = '';
-const gameLabel = d => { const g = gameFor(d); return g === 'gp' ? `🏁 ${CIRCUITS[circuitFor(d)].nom}` : { chaises: '🎵 Chaises', peche: '🎣 Pêche', banquise: '🧊 Banquise', bataille: '⛄ Bataille' }[g]; };
+const gameLabel = d => { const g = gameFor(d); return g === 'gp' ? `🏁 ${CIRCUITS[circuitFor(d)].nom}` : { chaises: '🎵 Chaises', peche: '🎣 Pêche', banquise: '🧊 Banquise', bucheron: '🪓 Coupe de sapin', emballage: '🎁 Emballage' }[g]; };
 function gameFor(d) {
   if (d >= 25) return 'gp';
   const rng = mulberry32(cyrb53((data.graine || '') + '|jeux'));
@@ -1353,9 +1353,15 @@ function gameFor(d) {
 }
 function startGame(d, r, done, test) {
   const g = (test && testGame) || gameFor(d);
+  const pool0 = r.pool && r.pool.length ? r.pool : [r.gagnant];
+  if (g === 'solo' || (pool0.length === 1 && g !== 'gp_force')) {
+    $('#podium').hidden = true; $('#race').hidden = false; document.body.style.overflow = 'hidden';
+    race = { plan: planSolo(d, r.gagnant), done, raf: 0, parts: [], t0: performance.now() + 1200, mini: true, osc: [] };
+    race.raf = requestAnimationFrame(renderGame); return;
+  }
   if (g === 'gp') return startRace(d, r, done, test ? testCircuit : '');
   const pool = r.pool && r.pool.length ? r.pool : [r.gagnant];
-  const plan = ({ chaises: planChaises, peche: planPeche, banquise: planBanquise, bataille: planBataille })[g](d, pool, r.gagnant);
+  const plan = ({ chaises: planChaises, peche: planPeche, banquise: planBanquise, bucheron: planBucheron, emballage: planEmballage })[g](d, pool, r.gagnant);
   $('#podium').hidden = true; $('#race').hidden = false; document.body.style.overflow = 'hidden';
   race = { plan, done, raf: 0, parts: [], t0: performance.now() + 2200, mini: true, osc: [] };
   race.raf = requestAnimationFrame(renderGame);
@@ -1450,6 +1456,7 @@ function renderGame(now) {
   const P = R.plan, dt = Math.min(.05, (now - (R.last || now)) / 1000); R.last = now;
   const e = (now - R.t0) / 1000, eEnd = P.slowA + (P.slowB - P.slowA) / .3 + (P.Tend - P.slowB);
   let t, replay = false;
+  if (e >= eEnd && P.noReplay) { endRace(); return; }
   if (e < eEnd) t = Math.max(0, gameTime(P, e));
   else { const er = e - eEnd; if (er > 8.5) { showPodium(); return; } replay = true; t = P.replayA + Math.min(P.replayB - P.replayA, er * (P.replayB - P.replayA) / 8); if (!R.rs) { R.rs = 1; R.parts = []; } }
   const slow = !replay && t > P.slowA && t < P.slowB;
@@ -1741,115 +1748,355 @@ function drawBanquise(c, P, t, R, now, replay) {
 }
 function clapping(t, P) { return P.elim.some(e => { const q = t - P.info[e.nom].outT; return q >= 0 && q < 2; }); }
 
-/* ===== Bataille de boules de neige ===== */
-function planBataille(d, pool, winner) {
-  const rng = mkRng(d, 'bataille'), players = pool.includes(winner) ? pool.slice() : [...pool, winner];
+/* ===== Outils : disposition en grille et manches ===== */
+function gridLayout(players, rng, top = 330, h = 690) {
+  const n = players.length, cols = Math.min(8, Math.ceil(Math.sqrt(n * 2.2))), rows = Math.ceil(n / cols), sx = 1440 / cols, sy = Math.min(230, h / rows), sc = Math.min(1, sy / 170);
+  const pos = {}; shuffleR(rng, players.slice()).forEach((nom, i) => { const r = Math.floor(i / cols), cc = i % cols, inRow = Math.min(cols, n - r * cols); pos[nom] = { x: 800 + (cc - (inRow - 1) / 2) * sx, y: top + Math.max(0, (h - rows * sy) / 2) + sy * (r + .78) }; });
+  return { pos, sc, sx, sy };
+}
+function roundSizes(n) { const s = []; let a = n; if (a > 4) { const k = Math.max(4, Math.ceil(a / 2)); if (k < a) { s.push(k); a = k; } } if (a > 3) { s.push(3); a = 3; } return s; }
+function bigBanner(c, txt, q) { if (q < 0 || q > 1.8) return; const k = Math.min(1, q / .3) * (q > 1.4 ? 1 - (q - 1.4) / .4 : 1); c.save(); c.globalAlpha = k; c.translate(800, 560); c.scale(.8 + .2 * k, .8 + .2 * k); c.font = '900 92px "Playfair Display", serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineWidth = 10; c.strokeStyle = '#2b1a10'; c.strokeText(txt, 0, 0); c.fillStyle = '#ffd36b'; c.fillText(txt, 0, 0); c.restore(); }
+
+/* ===== Coupe de sapin ===== */
+function planBucheron(d, pool, winner) {
+  const rng = mkRng(d, 'bucheron'), players = pool.includes(winner) ? pool.slice() : [...pool, winner];
   players.sort((a, b) => a.localeCompare(b, 'fr'));
-  const n = players.length, info = {}, CX = 800, CY = 600, RX = n > 14 ? 650 : 560, RY = n > 14 ? 360 : 320;
-  const ring = shuffleR(rng, players.slice());
-  ring.forEach((nom, i) => { const a = -Math.PI / 2 + 6.283 * i / n + (rng() - .5) * .1; info[nom] = { nom, color: playerColor(players.indexOf(nom)), coup: coupDe(nom), x: CX + Math.cos(a) * RX, y: CY + Math.sin(a) * RY, a, outT: 1e9, hits: [] }; });
-  const Tf = Math.max(24, Math.min(64, 14 + n * 2.1));
-  const order = shuffleR(rng, players.filter(x => x !== winner));
-  const elimT = order.map((_, k) => 6 + (k + .5 + (rng() - .5) * .5) * (Tf - 11) / Math.max(1, order.length - 1));
-  elimT[elimT.length - 1] = Tf;
-  const finalist = order[order.length - 1], duelT = order.length >= 2 ? elimT[order.length - 2] + 1.2 : 1.5;
-  const spots = {}; if (finalist) { const left = info[winner].x <= info[finalist].x; spots[winner] = { x: CX + (left ? -170 : 170), y: CY + 30 }; spots[finalist] = { x: CX + (left ? 170 : -170), y: CY + 30 }; }
-  const pos = (nom, t) => { const b = info[nom], sp = spots[nom]; if (!sp || t <= duelT) return { x: b.x, y: b.y }; const k = smooth(duelT, duelT + 2.2, t); return { x: b.x + (sp.x - b.x) * k, y: b.y + (sp.y - b.y) * k, walk: k > 0 && k < 1, step: t * 12 }; };
-  const throws = [], ticker = [], say = (t, txt) => ticker.push({ t, txt });
-  const aliveAt = t => players.filter(p => info[p].outT > t);
-  const pick = arr => arr[Math.floor(rng() * arr.length)];
-  order.forEach((nom, k) => { info[nom].outT = elimT[k]; });
-  // tirs mortels
-  order.forEach((nom, k) => {
-    const te = elimT[k], att = aliveAt(te + .01).filter(x => x !== nom);
-    const from = k === order.length - 1 ? winner : pick(att.length ? att : [winner]);
-    const special = k === order.length - 1 || rng() < .35;
-    throws.push({ from, to: nom, t: te, kill: true, special });
-    // deux touches avant
-    for (let h = 0; h < 2; h++) { const th = Math.max(2, te - 2 - rng() * Math.min(14, te - 3)), a2 = aliveAt(th).filter(x => x !== nom); if (a2.length) throws.push({ from: pick(a2), to: nom, t: th, hit: true }); }
-    say(te - .6, special ? `${info[from].coup.e} ${from} dégaine « ${info[from].coup.n} » sur ${nom} !` : `❄️ ${from} vise ${nom}…`);
-    say(te + .4, k === order.length - 1 ? `🏆 ${winner} remporte la bataille de boules de neige !!` : [`☃️ ${nom} est transformé en bonhomme de neige !`, `💥 ${nom} est K.O. !`, `☃️ Et un bonhomme de neige de plus : ${nom} !`][Math.floor(rng() * 3)]);
+  const n = players.length, info = {}, L = gridLayout(players, rng, 300, 700);
+  players.forEach((nom, i) => info[nom] = { nom, color: playerColor(i), coup: coupDe(nom), outR: 0, ...L.pos[nom] });
+  const sizes = roundSizes(n), rounds = [], ticker = [], say = (t, txt) => ticker.push({ t, txt });
+  let alive = players.slice(), t = 1.5;
+  const others = shuffleR(rng, players.filter(x => x !== winner));
+  const plan = [...sizes.map(k => ({ keep: [winner, ...others.slice(0, k - 1)] })), { keep: [winner], final: true }];
+  plan.forEach((pr, ri) => {
+    const final = !!pr.final, a = t, start = a + 1.8, scale = final ? 1.45 : [.85, 1.05, 1.25][Math.min(2, ri)];
+    const surv = alive.filter(x => pr.keep.includes(x)), lose = alive.filter(x => !pr.keep.includes(x));
+    const order = final ? [winner, ...shuffleR(rng, surv.filter(x => x !== winner))] : shuffleR(rng, surv.slice());
+    const fin = {}; order.forEach((nom, k) => fin[nom] = start + (final ? 10.5 : 7.5) + k * (final ? 1 : 1.1) + rng() * .5);
+    if (final) { order.slice(1).forEach(nom => fin[nom] = 1e9); }
+    const end = (final ? fin[winner] : Math.max(...order.map(x => fin[x]))) + (final ? 3.4 : 2.4);
+    const P = {};
+    alive.forEach(nom => {
+      const pauses = [], period = .42 + rng() * .14;
+      const nInc = lose.includes(nom) ? (rng() < .7 ? 1 : 2) : (rng() < .25 ? 1 : 0);
+      for (let k = 0; k < nInc; k++) { const ti = start + 1.5 + rng() * Math.max(1, ((fin[nom] < 1e8 ? fin[nom] : end) - start - 4)); const type = ['stuck', 'squirrel', 'coup'][Math.floor(rng() * 3)]; const dur = type === 'stuck' ? 1.5 : type === 'squirrel' ? 1.3 : 1.7; if (pauses.some(p => Math.abs(p.t - ti) < 2.5)) continue; const pz = { t: ti, d: dur, type }; if (type === 'coup') { const fr = alive.filter(x => x !== nom); pz.from = fr[Math.floor(rng() * fr.length)]; if (!pz.from) pz.type = 'stuck'; } pauses.push(pz); }
+      const stop = fin[nom] < 1e8 ? fin[nom] : end - 2.2, hits = [];
+      for (let h = start; h <= stop + 1e-6; h += period) { const pz = pauses.find(p => h >= p.t && h < p.t + p.d); if (pz) { h = pz.t + pz.d - period; continue; } hits.push(h); }
+      if (fin[nom] < 1e8) { hits[hits.length - 1] = fin[nom]; }
+      const need = fin[nom] < 1e8 ? hits.length : Math.ceil(hits.length / (final ? .6 + rng() * .3 : .5 + rng() * .35));
+      P[nom] = { hits, need, fall: fin[nom] < 1e8 ? fin[nom] : null, pauses, period };
+      pauses.forEach(pz => { if (pz.type === 'coup') say(pz.t - .2, `${info[pz.from].coup.e} ${pz.from} gèle la hache de ${nom} avec « ${info[pz.from].coup.n} » !`); });
+    });
+    lose.forEach(nom => { info[nom].outR = ri + 1; info[nom].outT = end; });
+    say(a, final ? `🪓 FINALE : des sapins géants pour ${alive.join(', ')} !` : `🪓 Manche ${ri + 1} : ${alive.length} bûcherons, ${pr.keep.length} places !`);
+    order.slice(0, final ? 1 : 2).forEach(nom => { if (fin[nom] < 1e8) say(fin[nom], final ? `🌲 ATTENTION, ÇA TOMBE !!! ${winner} abat son sapin géant en premier !` : `🌲 ATTENTION, ÇA TOMBE ! Le sapin de ${nom} est à terre !`); });
+    if (!final) say(end - 1.2, `🪵 ${lose.length} bûcheron${lose.length > 1 ? 's' : ''} éliminé${lose.length > 1 ? 's' : ''} !`);
+    rounds.push({ i: ri, final, a, start, end, scale, alive: alive.slice(), keep: pr.keep, P, wf: fin[winner] });
+    alive = surv; t = end;
   });
-  // touches non mortelles sur le gagnant
-  for (let h = 0; h < 1 + Math.floor(rng() * 2); h++) { const th = 5 + rng() * (Tf - 10), a2 = aliveAt(th).filter(x => x !== winner); if (a2.length) throws.push({ from: pick(a2), to: winner, t: th, hit: true }); }
-  // tirs ratés d'ambiance
-  for (let t = 1.5; t < Tf - .5; t += .25 + rng() * .35) { const al = aliveAt(t + .1); if (al.length < 2) break; const from = pick(al), to = pick(al.filter(x => x !== from)); throws.push({ from, to, t, miss: true, mx: (rng() - .5) * 90, my: (rng() - .5) * 40 }); }
-  throws.sort((a, b) => a.t - b.t);
-  players.forEach(nm => info[nm].hits = throws.filter(th => th.to === nm && (th.hit || th.kill)).map(th => th.t).sort((a, b) => a - b));
-  say(.4, `⛄ ${n} combattants, des boules de neige plein les poches… FEU !`);
-  if (order.length > 1) say(duelT + .3, `⚔️ Duel final au centre de l'arène : ${winner} contre ${finalist} !`);
-  ticker.sort((a, b) => a.t - b.t);
-  const hp = (nom, t) => 3 - info[nom].hits.filter(h => h <= t).length;
-  const bubbles = gameBubbles(rng, players, Object.assign((k, nb) => 3 + k * (Tf - 6) / nb + rng() * 2, { alive: (nom, t) => info[nom].outT > t + 4 }));
-  const ONO = ['BAM !', 'SPLATCH !', 'PAF !', 'POUF !', 'BONK !'];
-  throws.filter(th => th.kill).forEach(th => th.ono = th.special ? 'KABOUM !' : ONO[Math.floor(rng() * ONO.length)]);
-  const P = {
-    d, title: GAMES.bataille, panelTitle: 'Combattants', bg: '#dfe9f4', players, info, throws, bubbles, ticker, winner, Tf, CX, CY, RX, RY, hp, pos,
-    slowA: Tf - .8, slowB: Tf + 1.2, Tend: Tf + 3.8, replayA: Tf - 1.6, replayB: Tf + 1.4, replayText: `Le coup décisif de ${winner} !`,
-    podium: [winner, ...order.slice().reverse()].slice(0, 3).map(nm => info[nm]),
-    podTitle: `🏆 Podium de la bataille de boules de neige · ${d} décembre`,
-    focus: () => { const a = spots[winner] || info[winner], b = spots[finalist] || a; return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 - 50 }; },
-    status: t => { const al = aliveAt(t).length; return t >= Tf ? { txt: '🏆 VICTOIRE !', hot: true } : { txt: `${al} EN LICE`, hot: al <= 2 }; },
-    anchor: (nom, t) => { if (info[nom].outT < t) return null; const q = pos(nom, t); return { x: q.x, y: q.y - 80 }; },
-    panel: t => players.map(nm => { const o = info[nm].outT < t + .01 && nm !== winner; const h = Math.max(0, hp(nm, t)); return { nom: nm, color: info[nm].color, out: o, win: nm === winner && t >= Tf, sub: o ? 'bonhomme de neige ☃️' : '●'.repeat(h) + '○'.repeat(3 - h), o: info[nm].outT }; }).sort((a, b) => (a.out - b.out) || (a.out ? b.o - a.o : a.nom.localeCompare(b.nom, 'fr'))),
-    shake: t => { for (const th of throws) if (th.kill) { const q = t - th.t; if (q >= 0 && q < .3) return 8 * (1 - q / .3); } return 0; },
-    draw: (c, t, Rr, now, replay) => drawBataille(c, P, t, Rr, now, replay),
-    sound: (t, Rr, replay, now) => {
+  ticker.sort((x, y) => x.t - y.t);
+  const fr = rounds[rounds.length - 1], wt = fr.wf;
+  const roundAt = tt => rounds.find(r => tt < r.end) || fr;
+  const prog = (r, nom, tt) => { const p = r.P[nom]; if (!p) return 0; let k = 0; while (k < p.hits.length && p.hits[k] <= tt) k++; return Math.min(1, k / p.need); };
+  const bubbles = gameBubbles(rng, players, Object.assign((k, nb) => 3 + k * (wt - 8) / nb + rng() * 2, { alive: (nom, tt) => !info[nom].outT || info[nom].outT > tt + 4 }));
+  const Pl = {
+    d, title: GAMES.bucheron, panelTitle: 'Bûcherons', bg: '#dfe9f4', players, info, rounds, ticker, bubbles, winner, sc: L.sc,
+    slowA: wt - .9, slowB: wt + 1.2, Tend: fr.end, replayA: wt - 1.6, replayB: wt + 1.6, replayText: `${winner} abat le sapin géant !`,
+    podium: [winner, ...fr.alive.filter(x => x !== winner).sort((a, b) => prog(fr, b, wt) - prog(fr, a, wt)), ...(rounds.length > 1 ? rounds[rounds.length - 2].alive.filter(x => !fr.alive.includes(x)) : [])].slice(0, 3).map(nm => info[nm]),
+    podTitle: `🏆 Podium de la coupe de sapin · ${d} décembre`,
+    focus: () => ({ x: info[winner].x, y: info[winner].y - 80 }),
+    status: tt => { const r = roundAt(tt); return tt >= wt ? { txt: '🌲 TIMBERRR !', hot: true } : r.final ? { txt: 'FINALE', hot: true } : { txt: `MANCHE ${r.i + 1}/${rounds.length - 1}` }; },
+    anchor: (nom, tt) => ({ x: info[nom].x - 40 * L.sc, y: info[nom].y - 90 * L.sc }),
+    panel: tt => { const r = roundAt(tt); return players.map(nm => { const o = info[nm].outT && info[nm].outT <= tt; const p = r.P[nm] ? prog(r, nm, tt) : 0; return { nom: nm, color: info[nm].color, out: o, win: nm === winner && tt >= wt, sub: o ? `éliminé · manche ${info[nm].outR}` : r.P[nm] && r.P[nm].fall && tt >= r.P[nm].fall ? '🌲 abattu !' : `${Math.round(p * 100)} %`, v: o ? -1 : p }; }).sort((a, b) => (a.out - b.out) || (b.v - a.v) || a.nom.localeCompare(b.nom, 'fr')); },
+    shake: tt => { for (const r of rounds) for (const nm in r.P) { const f = r.P[nm].fall; if (f && tt >= f + .5 && tt < f + .8) return nm === winner && r.final ? 12 : 5; } return 0; },
+    draw: (c, tt, R, now, replay) => drawBucheron(c, Pl, tt, R, now, replay, roundAt, prog),
+    sound: (tt, R, replay, now) => {
       if (replay) return;
-      throws.forEach((th, k) => { if (!th.s0 && t >= th.t - .7) { th.s0 = 1; if (th.special || (th.kill && now - (Rr.lw || 0) > 100)) { Rr.lw = now; whoosh(); } }
-        if (!th.s1 && t >= th.t) { th.s1 = 1; if (th.kill) { boing(); if (th.to === order[order.length - 1]) { jingle(); { const w = pos(winner, t); confettiBurst(Rr, w.x, w.y - 80, 240); } } } else if (th.hit) paf(); else if (now - (Rr.lm || 0) > 90) { Rr.lm = now; tone(200 + Math.random() * 100, 0, .04, 'sine', .04); } } });
-      if (t >= Tf && t < Tf + 4 && now - (Rr.lastFw || 0) > 420) { Rr.lastFw = now; burst(Rr, 200 + Math.random() * 1200, 160 + Math.random() * 250); }
+      const r = roundAt(tt);
+      for (const nm in r.P) { const p = r.P[nm]; let k = 0; while (k < p.hits.length && p.hits[k] <= tt) k++; const key = 'h' + r.i + nm; if ((R[key] || 0) !== k) { R[key] = k; if (now - (R.lastChop || 0) > 45) { R.lastChop = now; tone(180 + Math.random() * 60, 0, .05, 'square', .05); } }
+        if (p.fall && !R['f' + r.i + nm] && tt >= p.fall) { R['f' + r.i + nm] = 1; tone(220, 0, .5, 'sawtooth', .06); setTimeout(() => tone(70, 0, .4, 'sine', .2), 500); if (nm === winner && r.final) { setTimeout(() => { jingle(); crowd(); }, 700); confettiBurst(R, info[nm].x, info[nm].y - 120, 240); } }
+        p.pauses.forEach((pz, i) => { const kk = 'p' + r.i + nm + i; if (!R[kk] && tt >= pz.t) { R[kk] = 1; pz.type === 'coup' ? boing() : tone(500, 0, .2, 'triangle', .06); } if (pz.type === 'coup' && !R[kk + 'w'] && tt >= pz.t - .7) { R[kk + 'w'] = 1; whoosh(); } }); }
+      rounds.forEach(rr => { if (!R['rb' + rr.i] && tt >= rr.a) { R['rb' + rr.i] = 1; beep(true); } });
+      if (tt >= wt + .6 && tt < wt + 4 && now - (R.lastFw || 0) > 420) { R.lastFw = now; burst(R, 200 + Math.random() * 1200, 160 + Math.random() * 200); }
+    }
+  };
+  return Pl;
+}
+function drawSapin(c, x, y, k, p, fallA, deco, now) {
+  const th = 22 * k, trunkH = 46 * k, notchY = y - 16 * k;
+  c.fillStyle = 'rgba(40,60,90,.2)'; c.beginPath(); c.ellipse(x + 8, y + 3, 34 * k, 8 * k, 0, 0, 6.283); c.fill();
+  // souche (sous l'entaille)
+  c.fillStyle = '#7a4a2a'; c.fillRect(x - th / 2, notchY, th, y - notchY);
+  c.fillStyle = '#e8c79a'; c.beginPath(); c.ellipse(x, notchY, th / 2, 4 * k, 0, 0, 6.283); c.fill();
+  c.save(); c.translate(x + th / 2, notchY); c.rotate(fallA); c.translate(-(x + th / 2), -notchY);
+  c.fillStyle = '#7a4a2a'; c.fillRect(x - th / 2, y - trunkH, th, trunkH - (y - notchY));
+  if (p > 0 && fallA === 0) { c.fillStyle = '#e8c79a'; c.beginPath(); c.moveTo(x - th / 2, notchY - 8 * k); c.lineTo(x - th / 2 + p * th * .85, notchY - 1); c.lineTo(x - th / 2, notchY + 6 * k * 0); c.closePath(); c.fill(); }
+  const top = y - trunkH;
+  for (let i = 0; i < 4; i++) { const yy = top + 8 * k - i * 30 * k, w = (58 - i * 11) * k; c.fillStyle = i % 2 ? '#2f7a4c' : '#24603b'; c.beginPath(); c.moveTo(x, yy - 52 * k); c.lineTo(x + w, yy); c.lineTo(x - w, yy); c.closePath(); c.fill(); c.fillStyle = 'rgba(255,255,255,.85)'; c.beginPath(); c.moveTo(x, yy - 52 * k); c.lineTo(x + w * .35, yy - 34 * k); c.lineTo(x - w * .35, yy - 34 * k); c.fill(); }
+  if (deco) { for (let i = 0; i < 18; i++) { const r2 = mulberry32(i + 7); const px = x + (r2() - .5) * 80 * k * (r2() * .7 + .3), py = top - r2() * 120 * k; const on = (Math.floor(now / 300) + i) % 3; c.fillStyle = ['#ff5a4f', '#ffd36b', '#6cc0ff'][on]; c.shadowColor = c.fillStyle; c.shadowBlur = 10; c.beginPath(); c.arc(px, py, 4 * k, 0, 6.283); c.fill(); c.shadowBlur = 0; }
+    c.fillStyle = '#ffd36b'; c.shadowColor = '#ffd36b'; c.shadowBlur = 16; c.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? 7 * k : 17 * k; c.lineTo(x + Math.cos(a) * rr, top - 138 * k + Math.sin(a) * rr); } c.fill(); c.shadowBlur = 0; }
+  c.restore();
+}
+function drawBucheron(c, P, t, R, now, replay, roundAt, prog) {
+  const g = c.createLinearGradient(0, 0, 0, 1080); g.addColorStop(0, '#eef4fb'); g.addColorStop(1, '#d3e0ee'); c.fillStyle = g; c.fillRect(0, 0, 1600, 1080);
+  if (!R.bg) { const rng = mulberry32(41); R.bg = Array.from({ length: 40 }, () => [rng() * 1600, 170 + rng() * 90, 26 + rng() * 30]); }
+  R.bg.forEach(([x, y, h]) => drawTree(c, mulberry32(x | 0), x, y, h, 0));
+  const r = roundAt(t), sc = P.sc;
+  const list = P.players.slice().sort((a, b) => P.info[a].y - P.info[b].y);
+  for (const nom of list) {
+    const inf = P.info[nom], x = inf.x + 26 * sc, y = inf.y, out = inf.outT && inf.outT <= t;
+    const rr = out ? P.rounds[inf.outR - 1] : r, p = rr.P[nom];
+    if (!p) continue;
+    const pr = prog(rr, nom, Math.min(t, rr.end)), fall = p.fall, fq = fall ? t - fall : -1;
+    const fallA = fall && fq >= 0 ? Math.min(Math.PI / 2, Math.pow(Math.min(1, fq / .8), 2) * Math.PI / 2) : 0;
+    const deco = nom === P.winner && r.final && fall && t >= fall + 1.6;
+    if (deco) { const k = Math.min(1, (t - fall - 1.6) / .5); drawSapin(c, x, y, rr.scale * sc * (.8 + .2 * k), 0, (1 - k) * Math.PI / 2, true, now); }
+    else if (fall && t >= fall + 1.6 && !rr.final && r === rr) drawSapin(c, x, y, rr.scale * sc, 0, Math.PI / 2, false, now);
+    else drawSapin(c, x, y, rr.scale * sc, pr, fallA, false, now);
+    // copeaux
+    let last = -1; for (const h of p.hits) if (h <= t) last = h; const dq = t - last;
+    if (last > 0 && dq < .35 && !fall || (fall && t - last < .35)) { c.fillStyle = '#e8c79a'; for (let k = 0; k < 4; k++) { c.beginPath(); c.arc(x - 14 * sc - dq * (60 + k * 30) * sc, y - 18 * sc - Math.sin(dq * 8 + k) * 20 * sc + dq * dq * 120, 3 * sc, 0, 6.283); c.fill(); } }
+    // bûcheron
+    const pz = p.pauses.find(q => t >= q.t && t < q.t + q.d), bx = x - 52 * sc, by = y + 4 * sc;
+    const swing = pz || fall && t > fall || out ? 0 : Math.max(0, 1 - dq / p.period);
+    const win = nom === P.winner && r.final && fall && t >= fall;
+    const top = drawPerson(c, bx, by, sc, inf.color, { sit: !!out, sad: !!out, arms: win ? 1 : swing > .5 ? 1 : .3, wave: win ? now / 150 : null, img: imgFor(nom), ko: pz && pz.type === 'coup' });
+    if (!out && !win) { c.save(); c.translate(bx + 10 * sc, by - 48 * sc); const ang = pz && pz.type === 'stuck' ? .4 : -1.2 + (1 - swing) * 1.6; c.rotate(ang); c.strokeStyle = '#6b4226'; c.lineWidth = 4 * sc; c.beginPath(); c.moveTo(0, 0); c.lineTo(34 * sc, 0); c.stroke(); c.fillStyle = pz && pz.type === 'coup' ? '#9fd8ff' : '#b8c4cf'; c.beginPath(); c.moveTo(30 * sc, -8 * sc); c.lineTo(42 * sc, -10 * sc); c.lineTo(42 * sc, 10 * sc); c.lineTo(30 * sc, 6 * sc); c.fill(); c.restore(); }
+    nameTag(c, nom, bx, top - 4, sc);
+    if (pz) { const q = t - pz.t; c.font = `${30 * sc}px serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
+      if (pz.type === 'squirrel') { const k = Math.min(1, q / .4); c.fillText('🐿️', x + (bx - x) * k, y - 120 * sc + Math.sin(k * Math.PI) * -40 + k * (top - y + 100 * sc)); }
+      if (pz.type === 'stuck') { c.fillText('😤', bx + 26 * sc, top + 6); drawOno(c, 'CRAC !', x + 30, y - 110 * sc, q); }
+      if (pz.type === 'coup') { c.fillText('❄️', bx + 30 * sc, by - 60 * sc); drawOno(c, 'GLING !', bx + 30, by - 120 * sc, q); } }
+    p.pauses.forEach(q2 => { if (q2.type !== 'coup') return; const q = t - (q2.t - .7); if (q >= 0 && q < .7) { const a = P.info[q2.from]; drawProjectile(c, a.coup.e, a.x - 26 * sc, a.y - 80 * sc, bx, by - 50 * sc, q / .7); } });
+    if (fall && fq >= .5 && fq < 1.4 && !(win && t > fall + 1.6)) drawOno(c, 'BOUM !', x + 60 * sc, y - 60 * sc, fq - .5);
+  }
+  if (!replay) P.rounds.forEach(rr => bigBanner(c, rr.final ? 'FINALE !' : `MANCHE ${rr.i + 1}`, t - rr.a));
+}
+
+/* ===== Emballage de cadeaux ===== */
+const STAGES = ['papier', 'scotch', 'ruban', 'nœud'];
+function planEmballage(d, pool, winner) {
+  const rng = mkRng(d, 'emballage'), players = pool.includes(winner) ? pool.slice() : [...pool, winner];
+  players.sort((a, b) => a.localeCompare(b, 'fr'));
+  const n = players.length, info = {}, L = gridLayout(players, rng, 330, 680);
+  players.forEach((nom, i) => info[nom] = { nom, color: playerColor(i), coup: coupDe(nom), outR: 0, ...L.pos[nom] });
+  const sizes = roundSizes(n), rounds = [], ticker = [], say = (t, txt) => ticker.push({ t, txt });
+  const others = shuffleR(rng, players.filter(x => x !== winner));
+  const plan = [...sizes.map(k => ({ keep: [winner, ...others.slice(0, k - 1)] })), { keep: [winner], final: true }];
+  let alive = players.slice(), t = 1.5;
+  plan.forEach((pr, ri) => {
+    const final = !!pr.final, a = t, start = a + 1.8, W = final ? 14 : 15, end0 = start + W;
+    const S = {};
+    if (!final) {
+      const surv = alive.filter(x => pr.keep.includes(x)), lose = alive.filter(x => !pr.keep.includes(x));
+      const tgt = {}; shuffleR(rng, surv.slice()).forEach((nm, k) => tgt[nm] = 7 - Math.min(2, Math.floor(k / 2))); lose.forEach(nm => tgt[nm] = 2 + Math.floor(rng() * 3));
+      alive.forEach(nom => {
+        const ev = [], mis = []; const nm = lose.includes(nom) ? 1 + (rng() < .5 ? 1 : 0) : (rng() < .3 ? 1 : 0);
+        for (let k = 0; k < nm; k++) mis.push(['scotch', 'refus', 'coup'][Math.floor(rng() * 3)]);
+        const extra = mis.reduce((s, m) => s + (m === 'scotch' ? 1.4 : m === 'refus' ? 0 : 1.2), 0), gifts = tgt[nom] + mis.filter(m => m === 'refus').length;
+        const base = (W - extra - 1) / (gifts * 4) * (.88 + rng() * .08);
+        let cur = start, done = 0; const misAt = mis.map(() => Math.floor(rng() * gifts));
+        for (let g = 0; g < gifts; g++) {
+          const mi = misAt.findIndex((x, i) => x === g && mis[i] !== 'used');
+          const m = mi >= 0 ? mis[mi] : null; if (mi >= 0) mis[mi] = 'used';
+          if (m === 'scotch') { ev.push({ type: 'scotch', t0: cur, t1: cur + 1.4 }); cur += 1.4; }
+          if (m === 'coup') { const fr = alive.filter(x => x !== nom); const from = fr[Math.floor(rng() * fr.length)]; if (from) { ev.push({ type: 'coup', t0: cur, t1: cur + 1.2, from }); say(cur - .3, `${info[from].coup.e} ${from} déchire le papier de ${nom} avec « ${info[from].coup.n} » !`); cur += 1.2; } }
+          for (let s = 0; s < 4; s++) { const dd = base * (.85 + rng() * .3); ev.push({ type: 'stage', s, t0: cur, t1: cur + dd }); cur += dd; }
+          if (m === 'refus') { ev.push({ type: 'refus', t0: cur, t1: cur + .9 }); cur += .9; } else { done++; ev.push({ type: 'done', t0: cur, n: done }); }
+        }
+        S[nom] = { ev, total: done };
+      });
+      lose.forEach(nm => { info[nm].outR = ri + 1; info[nm].outT = end0 + 2.2; });
+      say(a, `🎁 Manche ${ri + 1} : ${alive.length} emballeurs, ${pr.keep.length} places !`);
+      say(end0, `🔔 Temps écoulé ! ${lose.length} emballeur${lose.length > 1 ? 's' : ''} éliminé${lose.length > 1 ? 's' : ''}…`);
+      rounds.push({ i: ri, a, start, end: end0 + 2.4, alive: alive.slice(), keep: pr.keep, S }); alive = surv; t = end0 + 2.4;
+    } else {
+      const ord = [winner, ...shuffleR(rng, alive.filter(x => x !== winner))], fin = {};
+      ord.forEach((nm, k) => fin[nm] = start + 11.5 + k * 1.1 + rng() * .4);
+      alive.forEach(nom => { const ev = [], dur = fin[nom] - start; let cur = start; const ws = [.27, .22, .26, .25].map(w => w * (.9 + rng() * .2)); const sw = ws.reduce((a2, b) => a2 + b, 0);
+        if (nom !== winner && rng() < .6) { const ts = start + 3 + rng() * 5; ev.push({ type: 'scotch', t0: ts, t1: ts + 1.2 }); }
+        for (let s = 0; s < 4; s++) { const dd = dur * ws[s] / sw; ev.push({ type: 'stage', s, t0: cur, t1: cur + dd }); cur += dd; }
+        ev.push({ type: 'done', t0: fin[nom], n: 1 }); S[nom] = { ev, total: 1, fin: fin[nom] }; });
+      say(a, `🎁 FINALE : un cadeau GÉANT à emballer pour ${alive.join(', ')} !`);
+      say(fin[winner] - 2.6, `🎀 ${winner} attaque le nœud final…`);
+      say(fin[winner], `🏆 ${winner} termine son cadeau géant en premier !!`);
+      rounds.push({ i: ri, a, start, end: fin[winner] + 3.4, alive: alive.slice(), keep: [winner], S, final: true, wf: fin[winner] });
+    }
+  });
+  ticker.sort((x, y) => x.t - y.t);
+  const fr = rounds[rounds.length - 1], wt = fr.wf;
+  const roundAt = tt => rounds.find(r => tt < r.end) || fr;
+  const score = (r, nom, tt) => { const s = r.S[nom]; if (!s) return 0; let k = 0; for (const e of s.ev) if (e.type === 'done' && e.t0 <= tt) k = e.n; return k; };
+  const stageAt = (r, nom, tt) => { const s = r.S[nom]; if (!s) return null; let cur = null; for (const e of s.ev) { if (e.t0 <= tt) cur = e; } return cur; };
+  const bubbles = gameBubbles(rng, players, Object.assign((k, nb) => 3 + k * (wt - 8) / nb + rng() * 2, { alive: (nom, tt) => !info[nom].outT || info[nom].outT > tt + 4 }));
+  const Pl = {
+    d, title: GAMES.emballage, panelTitle: 'Emballeurs', bg: '#8a5a35', players, info, rounds, ticker, bubbles, winner, sc: L.sc,
+    slowA: wt - 1, slowB: wt + 1, Tend: fr.end, replayA: wt - 1.8, replayB: wt + 1.5, replayText: `${winner} et son cadeau géant !`,
+    podium: [winner, ...fr.alive.filter(x => x !== winner).sort((a, b) => fr.S[a].fin - fr.S[b].fin), ...(rounds.length > 1 ? rounds[rounds.length - 2].alive.filter(x => !fr.alive.includes(x)) : [])].slice(0, 3).map(nm => info[nm]),
+    podTitle: `🏆 Podium de l'emballage de cadeaux · ${d} décembre`,
+    focus: () => ({ x: info[winner].x, y: info[winner].y - 70 }),
+    status: tt => { const r = roundAt(tt); return tt >= wt ? { txt: '🎀 TERMINÉ !', hot: true } : r.final ? { txt: 'FINALE', hot: true } : { txt: `MANCHE ${r.i + 1}/${rounds.length - 1}` }; },
+    anchor: (nom, tt) => ({ x: info[nom].x - 40 * L.sc, y: info[nom].y - 110 * L.sc }),
+    panel: tt => { const r = roundAt(tt); return players.map(nm => { const o = info[nm].outT && info[nm].outT <= tt; const v = r.final ? (r.S[nm] ? (() => { const st = stageAt(r, nm, tt); return st ? (st.type === 'done' ? 4 : st.s || 0) : 0; })() : 0) : score(r, nm, tt); return { nom: nm, color: info[nm].color, out: o, win: nm === winner && tt >= wt, sub: o ? `éliminé · manche ${info[nm].outR}` : r.final ? (v >= 4 ? '🎁 terminé !' : `étape : ${STAGES[Math.min(3, v)]}`) : `${v} 🎁`, v: o ? -1 : v }; }).sort((a, b) => (a.out - b.out) || (b.v - a.v) || a.nom.localeCompare(b.nom, 'fr')); },
+    shake: tt => (tt >= wt && tt < wt + .35 ? 9 : 0),
+    draw: (c, tt, R, now, replay) => drawEmballage(c, Pl, tt, R, now, replay, roundAt, score, stageAt),
+    sound: (tt, R, replay, now) => {
+      if (replay) return;
+      const r = roundAt(tt);
+      for (const nm in r.S) r.S[nm].ev.forEach((e, i) => { const k = 'e' + r.i + nm + i; if (R[k] || tt < e.t0) return; R[k] = 1;
+        if (e.type === 'done') { if (r.final && nm === winner) { jingle(); crowd(); confettiBurst(R, info[nm].x, info[nm].y - 90, 240); } else if (now - (R.ld || 0) > 60) { R.ld = now; tone(880, 0, .12, 'triangle', .07); } }
+        else if (e.type === 'refus') tone(160, 0, .3, 'sawtooth', .07); else if (e.type === 'coup') boing(); else if (e.type === 'scotch') tone(400, 0, .25, 'triangle', .05);
+        else if (now - (R.ls || 0) > 70) { R.ls = now; tone(500 + e.s * 120, 0, .04, 'square', .03); } });
+      rounds.forEach(rr => { if (!R['rb' + rr.i] && tt >= rr.a) { R['rb' + rr.i] = 1; beep(true); } });
+      if (tt >= wt + .4 && tt < wt + 4 && now - (R.lastFw || 0) > 420) { R.lastFw = now; burst(R, 200 + Math.random() * 1200, 160 + Math.random() * 200); }
+    }
+  };
+  return Pl;
+}
+function drawGift(c, x, y, w, h, col, stage, k, now) {
+  // stage : -1 carton nu, 0 papier, 1 scotch, 2 ruban, 3 noeud ; k = avancement de l'étape en cours
+  c.fillStyle = 'rgba(0,0,0,.2)'; c.fillRect(x - w / 2 + 4, y - 2, w, 6);
+  c.fillStyle = '#c99a6a'; c.fillRect(x - w / 2, y - h, w, h);
+  const pap = stage > 0 ? 1 : stage === 0 ? k : 0;
+  if (pap > 0) { c.save(); c.beginPath(); c.rect(x - w / 2, y - h, w * pap, h); c.clip(); c.fillStyle = col; c.fillRect(x - w / 2, y - h, w, h); c.fillStyle = 'rgba(255,255,255,.35)'; for (let i = 0; i < 6; i++) { c.beginPath(); c.arc(x - w / 2 + (i % 3 + .5) * w / 3, y - h + (Math.floor(i / 3) + .5) * h / 2, Math.min(w, h) * .07, 0, 6.283); c.fill(); } c.restore(); }
+  if (stage > 1 || (stage === 1 && k > 0)) { const s = stage > 1 ? 1 : k; c.fillStyle = 'rgba(255,255,255,.55)'; c.fillRect(x - w * .35, y - h * .55, w * .2 * s, h * .1); c.fillRect(x + w * .15, y - h * .55, w * .2 * s, h * .1); }
+  if (stage > 2 || (stage === 2 && k > 0)) { const s = stage > 2 ? 1 : k; c.fillStyle = '#f3cf7a'; c.fillRect(x - w * .06, y - h, w * .12, h * s); c.fillRect(x - w / 2, y - h * .56, w * s, h * .12); }
+  if (stage > 3 || (stage === 3 && k > 0)) { const s = stage > 3 ? 1 : k; c.fillStyle = '#e8322c'; c.save(); c.translate(x, y - h); c.scale(s, s); c.beginPath(); c.ellipse(-w * .14, -h * .06, w * .14, h * .1, -.4, 0, 6.283); c.ellipse(w * .14, -h * .06, w * .14, h * .1, .4, 0, 6.283); c.fill(); c.beginPath(); c.arc(0, -h * .04, w * .05, 0, 6.283); c.fill(); c.restore(); }
+}
+function drawEmballage(c, P, t, R, now, replay, roundAt, score, stageAt) {
+  c.fillStyle = '#8a5a35'; c.fillRect(0, 0, 1600, 1080);
+  c.strokeStyle = 'rgba(40,20,8,.35)'; c.lineWidth = 2; for (let y = 0; y < 1080; y += 34) { c.beginPath(); c.moveTo(0, y); c.lineTo(1600, y); c.stroke(); for (let x = (y / 34 % 2) * 120; x < 1600; x += 240) { c.beginPath(); c.moveTo(x, y); c.lineTo(x, y + 34); c.stroke(); } }
+  // tapis roulant
+  c.fillStyle = '#3a3a44'; c.fillRect(0, 175, 1600, 70); c.fillStyle = '#4c4c58'; for (let x = -(now / 8 % 60); x < 1600; x += 60) c.fillRect(x, 180, 30, 60);
+  for (let i = 0; i < 12; i++) { const x = ((now / 8 + i * 160) % 1760) - 80; drawGift(c, x, 236, 44, 40, RACE_COLORS[i % 8], 4, 1, now); }
+  // lutin contrôleur
+  { const x = 1500, y = 300; drawPerson(c, x, y, .9, '#1f7a4c', { arms: .4 }); c.font = '800 13px Inter'; c.fillStyle = '#fff8ea'; c.textAlign = 'center'; c.fillText('CONTRÔLE', x, y + 18); }
+  const r = roundAt(t), sc = P.sc;
+  const list = P.players.slice().sort((a, b) => P.info[a].y - P.info[b].y);
+  for (const nom of list) {
+    const inf = P.info[nom], x = inf.x, y = inf.y, out = inf.outT && inf.outT <= t;
+    const rr = out ? P.rounds[inf.outR - 1] : r; if (!rr.S[nom]) continue;
+    const st = stageAt(rr, nom, Math.min(t, rr.end)), sco = rr.final ? 0 : score(rr, nom, Math.min(t, rr.end));
+    // emballeur derrière l'établi
+    const busy = st && st.type === 'stage' && t < st.t1, win = nom === P.winner && r.final && t >= r.wf;
+    const top = drawPerson(c, x - 6 * sc, y - 24 * sc, sc, inf.color, { arms: win ? 1 : busy ? .5 + .5 * Math.abs(Math.sin(now / 90)) : .2, wave: win ? now / 150 : null, sad: !!out, img: imgFor(nom), ko: st && st.type === 'coup' && t < st.t1 });
+    // établi
+    c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(x - 70 * sc, y + 12 * sc, 150 * sc, 10 * sc);
+    c.fillStyle = '#c99a6a'; c.fillRect(x - 74 * sc, y - 14 * sc, 148 * sc, 26 * sc); c.fillStyle = inf.color; c.fillRect(x - 74 * sc, y - 14 * sc, 148 * sc, 6 * sc);
+    // cadeau en cours
+    const gw = (rr.final ? 90 : 40) * sc, gh = (rr.final ? 80 : 36) * sc, gx = x + (rr.final ? 0 : 20 * sc), gy = y - 14 * sc;
+    if (!out) {
+      if (st && st.type === 'stage') drawGift(c, gx, gy, gw, gh, inf.color, st.s, Math.min(1, (t - st.t0) / (st.t1 - st.t0)), now);
+      else if (st && st.type === 'done' && (rr.final || t - st.t0 < .25)) drawGift(c, gx, gy - (rr.final ? 0 : (t - st.t0) * 120), gw, gh, inf.color, 4, 1, now);
+      else if (st && (st.type === 'scotch' || st.type === 'coup')) { drawGift(c, gx, gy, gw, gh, inf.color, 0, .6, now); c.font = `${26 * sc}px serif`; c.textAlign = 'center'; c.fillText(st.type === 'scotch' ? '🩹' : '💥', gx + 30 * sc, gy - gh - 10 * sc); drawOno(c, st.type === 'scotch' ? 'COLLÉ !' : 'CRRRAC !', gx + 30, gy - gh - 50 * sc, t - st.t0); }
+      else if (st && st.type === 'refus') { drawGift(c, gx, gy, gw, gh, inf.color, 3, .5, now); const q = t - st.t0; c.save(); c.translate(gx, gy - gh / 2); c.rotate(-.25); c.globalAlpha = Math.min(1, q / .15); c.strokeStyle = '#e8322c'; c.lineWidth = 3; c.font = `900 ${18 * sc}px Inter`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.strokeRect(-46 * sc, -14 * sc, 92 * sc, 28 * sc); c.fillStyle = '#e8322c'; c.fillText('REFUSÉ !', 0, 1); c.restore(); }
+    }
+    // pile de cadeaux finis
+    if (!rr.final) { for (let k = 0; k < Math.min(sco, 8); k++) drawGift(c, x - 50 * sc + (k % 2) * 18 * sc, y - 14 * sc - Math.floor(k / 2) * 16 * sc, 16 * sc, 14 * sc, RACE_COLORS[(k + 3) % 8], 4, 1, now);
+      c.fillStyle = '#2b1a10'; c.beginPath(); c.arc(x + 62 * sc, y - 34 * sc, 14 * sc, 0, 6.283); c.fill(); c.fillStyle = '#ffd36b'; c.font = `800 ${15 * sc}px Inter`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(sco, x + 62 * sc, y - 33 * sc); }
+    nameTag(c, nom, x - 6 * sc, top - 4, sc);
+    for (const e of rr.S[nom].ev) if (e.type === 'coup') { const q = t - (e.t0 - .7); if (q >= 0 && q < .7) { const a = P.info[e.from]; drawProjectile(c, a.coup.e, a.x, a.y - 90 * sc, gx, gy - 30 * sc, q / .7); } }
+  }
+  if (!replay) P.rounds.forEach(rr => bigBanner(c, rr.final ? 'FINALE !' : `MANCHE ${rr.i + 1}`, t - rr.a));
+}
+
+/* ===== Tableau solo : le Lutin du Trésor ===== */
+function planSolo(d, nom) {
+  const info = { [nom]: { nom, color: playerColor(0) } }, rng = mkRng(d, 'solo');
+  const tiles = shuffleR(rng, ['⚔️', '💰', '🗝️', '⚔️', '❓', '💎', '⚔️', '🍀', '💰', '⚔️', '🗝️', '❓', '💎', '⚔️', '🍀']); const W = 6 + Math.floor(rng() * 8); tiles.splice(W, 0, 'blanc');
+  const ticker = [{ t: .3, txt: `🗺️ ${nom} déroule la carte au trésor du jour…` }, { t: 1.6, txt: '🎲 La roue des cases tourne…' }, { t: 6.6, txt: '⬜ CASE BLANCHE ! Pas d\'adversaire aujourd\'hui !' }, { t: 8, txt: `🏮 Le Lutin du Trésor sort du coffre pour ${nom} !` }, { t: 10.2, txt: `🎁 ${nom} reçoit son cadeau sans combattre !` }];
+  const P = {
+    d, title: 'Carte au trésor', panelTitle: 'Joueur', bg: '#2b1a10', players: [nom], info, tiles, W, ticker, bubbles: [], winner: nom, solo: true, noReplay: true, noPodium: true,
+    slowA: 14, slowB: 14, Tend: 14, replayA: 0, replayB: 1, replayText: '',
+    focus: () => ({ x: 800, y: 560 }),
+    status: t => t >= 6.6 ? { txt: '⬜ CASE BLANCHE', hot: true } : { txt: '🗺️ TRÉSOR' },
+    anchor: () => null,
+    panel: t => [{ nom, color: info[nom].color, win: t >= 10.2, sub: t >= 10.2 ? 'cadeau reçu !' : 'seul en lice' }],
+    draw: (c, t, R, now) => drawSolo(c, P, t, R, now),
+    sound: (t, R, replay, now) => {
+      const idx = soloIdx(P, t); if (R.si !== idx && t < 6.6) { R.si = idx; tone(900, 0, .05, 'square', .05); }
+      if (!R.s1 && t >= 6.6) { R.s1 = 1; [784, 988, 1175].forEach((f, i) => tone(f, i * .1, .25, 'triangle', .1)); }
+      if (!R.s2 && t >= 7.8) { R.s2 = 1; boing(); }
+      if (!R.s3 && t >= 10.2) { R.s3 = 1; jingle(); crowd(); confettiBurst(R, 800, 760, 240); }
+      if (t >= 10.2 && t < 13 && now - (R.lastFw || 0) > 450) { R.lastFw = now; burst(R, 200 + Math.random() * 1200, 160 + Math.random() * 200); }
     }
   };
   return P;
 }
-function drawBataille(c, P, t, R, now, replay) {
-  const g = c.createLinearGradient(0, 0, 0, 1080); g.addColorStop(0, '#eef4fb'); g.addColorStop(1, '#d0deec'); c.fillStyle = g; c.fillRect(0, 0, 1600, 1080);
-  if (!R.blots) { const rng = mulberry32(31); R.blots = Array.from({ length: 900 }, () => [rng() * 1600, rng() * 1080, 6 + rng() * 22, rng()]); }
-  R.blots.forEach(([x, y, r, a]) => { c.fillStyle = `rgba(150,175,210,${.08 + a * .12})`; c.beginPath(); c.ellipse(x, y, r, r * .35, 0, 0, 6.283); c.fill(); });
-  // traces au sol (impacts)
-  for (const th of P.throws) { if (t < th.t) continue; const b = { ...P.info[th.to], ...P.pos(th.to, th.t) }, x = th.miss ? b.x + th.mx - (b.x - P.CX) * .12 : b.x, y = th.miss ? b.y + th.my - (b.y - P.CY) * .12 : b.y; c.fillStyle = 'rgba(255,255,255,.75)'; c.beginPath(); c.ellipse(x, y + 10, 10, 4, 0, 0, 6.283); c.fill(); }
-  const sorted = [...P.players].sort((a, b) => P.info[a].y - P.info[b].y), s = P.players.length > 14 ? .8 : 1;
-  for (const nom of sorted) {
-    const inf = P.info[nom], pp = P.pos(nom, t), { x, y } = pp, out = inf.outT < t && nom !== P.winner, q = t - inf.outT;
-    // fort
-    const fx = inf.x - Math.cos(inf.a) * 40, fy = inf.y - Math.sin(inf.a) * 28 + 6;
-    const fortBehind = fy < y;
-    const fort = () => { c.fillStyle = 'rgba(40,60,90,.18)'; c.beginPath(); c.ellipse(fx + 6, fy + 12, 44 * s, 10 * s, 0, 0, 6.283); c.fill(); c.fillStyle = '#fbfdff'; c.strokeStyle = '#c4d4e6'; c.lineWidth = 2; for (let k = -2; k <= 2; k++) { c.beginPath(); c.arc(fx + k * 15 * s, fy - Math.abs(k) * 2, 13 * s, Math.PI, 0); c.fill(); c.stroke(); } c.fillRect(fx - 43 * s, fy - 2, 86 * s, 10); };
-    if (fortBehind) fort();
-    if (out && q > .9) { // bonhomme de neige
-      const k = Math.min(1, (q - .9) / .4); c.save(); c.translate(x, y); c.scale(k * s, k * s);
-      c.fillStyle = 'rgba(40,60,90,.2)'; c.beginPath(); c.ellipse(4, 4, 24, 7, 0, 0, 6.283); c.fill();
-      c.fillStyle = '#fff'; c.strokeStyle = '#c4d4e6'; c.lineWidth = 2; [[0, -14, 20], [0, -42, 14], [0, -62, 10]].forEach(([dx, dy, r]) => { c.beginPath(); c.arc(dx, dy, r, 0, 6.283); c.fill(); c.stroke(); });
-      c.fillStyle = '#2b1a10'; c.beginPath(); c.arc(-3, -64, 1.6, 0, 6.283); c.arc(3, -64, 1.6, 0, 6.283); c.fill(); c.fillStyle = '#f08a3c'; c.beginPath(); c.moveTo(0, -61); c.lineTo(10, -59); c.lineTo(0, -57); c.fill();
-      c.fillStyle = inf.color; c.fillRect(-11, -54, 22, 5); c.fillStyle = '#e8322c'; c.beginPath(); c.moveTo(-10, -70); c.quadraticCurveTo(0, -88, 12, -76); c.lineTo(8, -70); c.fill();
-      c.restore(); c.globalAlpha = .6; nameTag(c, nom, x, y - 96 * s, s * .9); c.globalAlpha = 1;
-    } else {
-      const thr = P.throws.find(th => th.from === nom && t >= th.t - 1 && t < th.t - .6);
-      const win = nom === P.winner && t >= P.Tf;
-      const top = drawPerson(c, x, y, s, inf.color, { rot: out ? Math.min(1.5, q * 4) : 0, ko: out, arms: win ? 1 : thr ? 1 : 0, wave: win ? now / 150 : thr ? 0 : null, bob: pp.walk ? Math.abs(Math.sin(pp.step)) * 3 : Math.abs(Math.sin(now / 300 + inf.a * 5)) * 2, step: pp.walk ? pp.step : 0, img: imgFor(nom) });
-      if (!out) { const h = Math.max(0, P.hp(nom, t)); c.font = `${12 * s}px serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; for (let k = 0; k < 3; k++) { c.globalAlpha = k < h ? 1 : .25; c.fillText('❄️', x - 14 * s + k * 14 * s, top - 24 * s); } c.globalAlpha = 1; }
-      nameTag(c, nom, x, top - 6, s);
-      if (thr) { c.fillStyle = '#fff'; c.beginPath(); c.arc(x + 16 * s, top + 6, 6 * s, 0, 6.283); c.fill(); }
-      for (const h of inf.hits) { const qq = t - h; if (qq >= 0 && qq < .5) { c.fillStyle = `rgba(255,255,255,${1 - qq / .5})`; for (let k = 0; k < 7; k++) { const a = k / 7 * 6.283; c.beginPath(); c.arc(x + Math.cos(a) * qq * 60, y - 40 + Math.sin(a) * qq * 40, 5, 0, 6.283); c.fill(); } } }
-    }
-    if (!fortBehind) fort();
+function soloIdx(P, t) {
+  const n = P.tiles.length, tot = n * 3 + P.W; // 3 tours puis arrêt sur la case blanche
+  const u = Math.min(1, Math.max(0, (t - 1.6) / 5)), e = 1 - Math.pow(1 - u, 3);
+  return Math.floor(e * tot) % n;
+}
+function drawLutin(c, x, y, s, now) {
+  c.save(); c.translate(x, y); c.scale(s, s);
+  const b = Math.sin(now / 250) * 3; c.translate(0, b);
+  c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(0, 66, 40, 10, 0, 0, 6.283); c.fill();
+  c.strokeStyle = '#3a2a20'; c.lineWidth = 7; c.lineCap = 'round'; c.beginPath(); c.moveTo(-10, 30); c.lineTo(-14, 62); c.moveTo(10, 30); c.lineTo(14, 62); c.stroke();
+  c.fillStyle = '#6b4226'; c.beginPath(); c.ellipse(-16, 64, 12, 6, 0, 0, 6.283); c.ellipse(16, 64, 12, 6, 0, 0, 6.283); c.fill();
+  c.fillStyle = '#2f7a4c'; c.beginPath(); c.moveTo(-26, 34); c.quadraticCurveTo(0, -20, 26, 34); c.closePath(); c.fill();
+  c.fillStyle = '#6b4226'; c.fillRect(-24, 18, 48, 7); c.fillStyle = '#f3cf7a'; c.fillRect(-5, 17, 10, 9);
+  // bras + lanterne
+  c.strokeStyle = '#2f7a4c'; c.lineWidth = 7; c.beginPath(); c.moveTo(18, 0); c.lineTo(40, -14); c.moveTo(-18, 0); c.lineTo(-36, 12); c.stroke();
+  const g = c.createRadialGradient(46, -4, 2, 46, -4, 40); g.addColorStop(0, 'rgba(255,214,120,.7)'); g.addColorStop(1, 'rgba(255,214,120,0)'); c.fillStyle = g; c.beginPath(); c.arc(46, -4, 40, 0, 6.283); c.fill();
+  c.strokeStyle = '#2b2b33'; c.lineWidth = 2; c.beginPath(); c.moveTo(40, -14); c.lineTo(46, -20); c.stroke(); c.fillStyle = '#ffd36b'; c.beginPath(); c.roundRect(39, -18, 14, 18, 3); c.fill(); c.strokeRect(39, -18, 14, 18);
+  c.fillStyle = '#e9d7a8'; c.save(); c.translate(-40, 16); c.rotate(.5); c.fillRect(-6, -16, 12, 32); c.fillStyle = '#c8242f'; c.fillRect(-6, -3, 12, 4); c.restore();
+  // tête
+  c.fillStyle = '#f6d7b8'; c.beginPath(); c.arc(0, -20, 20, 0, 6.283); c.fill();
+  c.beginPath(); c.moveTo(-18, -24); c.lineTo(-34, -32); c.lineTo(-19, -14); c.fill(); c.beginPath(); c.moveTo(18, -24); c.lineTo(34, -32); c.lineTo(19, -14); c.fill();
+  c.fillStyle = '#2b1a10'; c.beginPath(); c.arc(-7, -22, 2.5, 0, 6.283); c.arc(7, -22, 2.5, 0, 6.283); c.fill();
+  c.fillStyle = 'rgba(232,50,44,.35)'; c.beginPath(); c.arc(-12, -14, 4, 0, 6.283); c.arc(12, -14, 4, 0, 6.283); c.fill();
+  c.strokeStyle = '#2b1a10'; c.lineWidth = 2; c.beginPath(); c.arc(0, -16, 6, .2, Math.PI - .2); c.stroke();
+  // capuche pointue
+  c.fillStyle = '#c8242f'; c.beginPath(); c.moveTo(-22, -30); c.quadraticCurveTo(-6, -82, 30, -70); c.quadraticCurveTo(8, -56, 22, -30); c.closePath(); c.fill();
+  c.fillStyle = '#ffd36b'; c.beginPath(); c.arc(30, -70, 6, 0, 6.283); c.fill();
+  c.fillStyle = '#fff'; c.beginPath(); c.roundRect(-24, -36, 48, 9, 4); c.fill();
+  c.fillStyle = '#ffd36b'; c.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? 3 : 7; c.lineTo(-2 + Math.cos(a) * rr, -46 + Math.sin(a) * rr); } c.fill();
+  c.restore();
+}
+function drawSolo(c, P, t, R, now) {
+  c.fillStyle = '#2b1a10'; c.fillRect(0, 0, 1600, 1080);
+  const k = Math.min(1, t / 1.2), mw = 1300 * (.15 + .85 * (1 - Math.pow(1 - k, 3))), mh = 820;
+  c.save(); c.translate(800, 580);
+  const g = c.createRadialGradient(0, 0, 100, 0, 0, 700); g.addColorStop(0, '#f1e0b5'); g.addColorStop(1, '#cfae72'); c.fillStyle = g; c.beginPath(); c.roundRect(-mw / 2, -mh / 2, mw, mh, 18); c.fill();
+  c.strokeStyle = '#8a5a35'; c.lineWidth = 6; c.stroke();
+  c.fillStyle = '#8a5a35'; c.beginPath(); c.roundRect(-mw / 2 - 18, -mh / 2 - 10, 26, mh + 20, 12); c.roundRect(mw / 2 - 8, -mh / 2 - 10, 26, mh + 20, 12); c.fill();
+  if (k >= 1) {
+    c.strokeStyle = 'rgba(120,70,30,.25)'; c.lineWidth = 2; c.setLineDash([8, 10]); c.beginPath(); c.moveTo(-520, 260); c.bezierCurveTo(-300, 100, -120, 320, 0, 120); c.stroke(); c.setLineDash([]);
+    c.font = '900 46px serif'; c.fillStyle = 'rgba(200,36,47,.75)'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('✕', -540, 270);
+    c.save(); c.translate(500, -300); c.strokeStyle = 'rgba(120,70,30,.5)'; c.lineWidth = 2; c.beginPath(); c.arc(0, 0, 40, 0, 6.283); c.stroke(); c.font = '800 18px serif'; c.fillStyle = 'rgba(120,70,30,.7)'; c.fillText('N', 0, -54); c.beginPath(); c.moveTo(0, -36); c.lineTo(8, 0); c.lineTo(0, 36); c.lineTo(-8, 0); c.closePath(); c.fill(); c.restore();
+    // cercle de cases
+    const n = P.tiles.length, idx = soloIdx(P, t), stopped = t >= 6.6;
+    P.tiles.forEach((tl, i) => {
+      const a = -Math.PI / 2 + i / n * 6.283, x = Math.cos(a) * 360, y = Math.sin(a) * 250 - 30, on = i === idx, white = tl === 'blanc';
+      c.save(); c.translate(x, y);
+      if (on) { c.shadowColor = white && stopped ? '#fff' : '#ffd36b'; c.shadowBlur = 30; }
+      c.fillStyle = white ? (stopped && Math.floor(now / 200) % 2 ? '#ffffff' : '#f7f3ea') : on ? '#ffd36b' : '#8a5a35';
+      c.beginPath(); c.roundRect(-38, -30, 76, 60, 10); c.fill(); c.shadowBlur = 0; c.strokeStyle = on ? '#fff' : '#5b3a22'; c.lineWidth = on ? 5 : 3; c.stroke();
+      if (!white) { c.font = '30px serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(tl, 0, 2); }
+      c.restore();
+    });
+    // pion du joueur
+    { const a = -Math.PI / 2 + idx / n * 6.283, px = Math.cos(a) * 360, py = Math.sin(a) * 250 - 30 - 46 - Math.abs(Math.sin(now / 120)) * (stopped ? 0 : 8); const im = imgFor(P.winner); c.fillStyle = P.info[P.winner].color; c.beginPath(); c.arc(px, py, 20, 0, 6.283); c.fill(); if (imgOk(im)) { c.save(); c.beginPath(); c.arc(px, py, 18, 0, 6.283); c.clip(); c.drawImage(im, px - 18, py - 18, 36, 36); c.restore(); } c.strokeStyle = '#fff'; c.lineWidth = 3; c.beginPath(); c.arc(px, py, 20, 0, 6.283); c.stroke(); }
+    // coffre central
+    const open = Math.min(1, Math.max(0, (t - 7.6) / .4));
+    c.save(); c.translate(0, 40);
+    c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(0, 52, 100, 16, 0, 0, 6.283); c.fill();
+    c.fillStyle = '#7a4a2a'; c.fillRect(-90, -10, 180, 60); c.fillStyle = '#c99332'; c.fillRect(-90, -10, 180, 8); c.fillRect(-10, -10, 20, 60); c.fillRect(-90, 42, 180, 8);
+    if (open > 0) { const gg = c.createRadialGradient(0, -10, 10, 0, -10, 160); gg.addColorStop(0, `rgba(255,230,140,${.8 * open})`); gg.addColorStop(1, 'rgba(255,230,140,0)'); c.fillStyle = gg; c.beginPath(); c.arc(0, -10, 160, 0, 6.283); c.fill(); }
+    c.save(); c.translate(-90, -10); c.rotate(-open * 1.9); c.fillStyle = '#8a5a35'; c.beginPath(); c.roundRect(0, -40, 180, 40, [20, 20, 0, 0]); c.fill(); c.fillStyle = '#c99332'; c.fillRect(0, -6, 180, 6); c.fillRect(80, -40, 20, 40); c.restore();
+    c.restore();
+    // lutin
+    if (t >= 7.7) { const q = t - 7.7, pop = Math.min(1, q / .45), ys = 40 - 150 * Math.sin(Math.min(1, q / .45) * Math.PI / 2); drawLutin(c, 0, ys - 60, .4 + .9 * pop + (q < .6 ? Math.sin(q * 20) * .05 : 0), now);
+      if (q > .7) { c.save(); c.font = '700 24px Inter, system-ui, sans-serif'; const txt = `Félicitations, ${P.winner} ! Personne ne t'a défié aujourd'hui… alors ce cadeau est pour toi !`; const lines = wrapText(c, txt, 380), w = Math.max(...lines.map(l => c.measureText(l).width)) + 36, h = lines.length * 30 + 22, bx = 330, by = -250; const kk = Math.min(1, (q - .7) / .2);
+        c.translate(bx - 120, by + h); c.scale(kk, kk); c.translate(-(bx - 120), -(by + h)); c.fillStyle = '#fff'; c.strokeStyle = '#2b1a10'; c.lineWidth = 3; c.beginPath(); c.roundRect(bx - w / 2, by, w, h, 18); c.fill(); c.stroke(); c.beginPath(); c.moveTo(bx - 150, by + h - 2); c.lineTo(110, by + h + 70); c.lineTo(bx - 100, by + h - 2); c.closePath(); c.fill(); c.stroke(); c.fillRect(bx - 148, by + h - 5, 46, 6);
+        c.fillStyle = '#2b1a10'; c.textAlign = 'center'; c.textBaseline = 'top'; lines.forEach((l, i) => c.fillText(l, bx, by + 12 + i * 30)); c.restore(); } }
+    // cadeau qui vole vers le joueur
+    if (t >= 9.4) { const q = Math.min(1, (t - 9.4) / .8), x = 60 + (0 - 60) * q, y = -120 + (300 - -120) * q - Math.sin(q * Math.PI) * 160; drawGift(c, x, y, 70, 60, '#c8242f', 4, 1, now); }
+    // joueur
+    { const top = drawPerson(c, 0, 360, 1.3, P.info[P.winner].color, { img: imgFor(P.winner), arms: t >= 10.2 ? 1 : 0, wave: t >= 10.2 ? now / 150 : null, bob: t >= 10.2 ? Math.abs(Math.sin(now / 160)) * 6 : 0 }); nameTag(c, P.winner, 0, top - 6, 1.2); }
+    if (stopped && t < 8.2) { const q = t - 6.6; c.save(); c.globalAlpha = Math.min(1, q / .2) * (q > 1.3 ? 1 - (q - 1.3) / .3 : 1); c.font = '900 70px "Playfair Display", serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineWidth = 10; c.strokeStyle = '#2b1a10'; c.strokeText('CASE BLANCHE !', 0, -40); c.fillStyle = '#fff'; c.fillText('CASE BLANCHE !', 0, -40); c.restore(); }
   }
-  // boules en vol
-  c.textAlign = 'center'; c.textBaseline = 'middle';
-  for (const th of P.throws) {
-    const q = t - (th.t - .7); if (q < 0 || q > .7) continue;
-    const a = { ...P.info[th.from], ...P.pos(th.from, th.t - .7) }, b = { ...P.info[th.to], ...P.pos(th.to, th.t) }, k = q / .7, tx = th.miss ? b.x + th.mx - (b.x - P.CX) * .12 : b.x, ty = (th.miss ? b.y + th.my - (b.y - P.CY) * .12 : b.y) - 40;
-    const x = a.x + (tx - a.x) * k, y = a.y - 60 + (ty - a.y + 60) * k - Math.sin(k * Math.PI) * 120;
-    if (th.special) { drawProjectile(c, a.coup.e, a.x, a.y - 60, tx, ty, k); continue; }
-    c.fillStyle = 'rgba(40,60,90,.18)'; c.beginPath(); c.ellipse(a.x + (tx - a.x) * k, a.y + (ty + 40 - a.y) * k, 6, 2.5, 0, 0, 6.283); c.fill();
-    c.fillStyle = '#fff'; c.strokeStyle = '#b8c8da'; c.lineWidth = 1.5; c.beginPath(); c.arc(x, y, th.kill ? 9 : 7, 0, 6.283); c.fill(); c.stroke();
-  }
-  for (const th of P.throws) if (th.kill) { const b = P.pos(th.to, th.t); drawOno(c, th.ono, b.x + 30, b.y - 100, t - th.t); }
-  // tempête qui rétrécit
-  const k = Math.min(1, t / P.Tf), rx = 900 - 380 * k, ry = 620 - 240 * k;
-  const gr = c.createRadialGradient(P.CX, P.CY, Math.min(rx, ry) * .8, P.CX, P.CY, Math.max(rx, ry) * 1.25); gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(1, `rgba(235,242,250,${.35 + .35 * k})`);
-  c.fillStyle = gr; c.fillRect(0, 0, 1600, 1080);
+  c.restore();
 }
 
 /* ===== Chaises musicales du sapin ===== */
