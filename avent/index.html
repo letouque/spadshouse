@@ -323,7 +323,7 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
     <div class="prize" id="mPrize"></div>
     <div class="note" id="mNote"></div>
     <div id="mBasic"></div>
-    <div class="actions"><button class="btn" id="mClose">Fermer</button></div>
+    <div class="actions"><button class="btn ghost" style="color:var(--ink)" id="mReplay" type="button" hidden>🏁 Revoir la course</button><button class="btn" id="mClose">Fermer</button></div>
   </div>
 </div>
 
@@ -405,6 +405,12 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
   <div class="race-stage"><canvas id="raceCv" width="1920" height="1080"></canvas><div class="podium" id="podium" hidden></div>
     <button class="btn small ghost race-skip" id="raceSkip" type="button">Passer ⏭</button></div>
   <div class="race-rot">📱 Tourne ton téléphone pour mieux voir la course</div>
+</div>
+ <div class="overlay" id="choose" role="dialog" aria-modal="true" aria-labelledby="chT">
+  <div class="modal"><div class="day" id="chT"></div><div class="big" style="font-size:1.6rem">Le Grand Prix t'attend !</div>
+    <p class="muted" style="margin:6px 0 0">Regarde la course pour découvrir le gagnant (environ 2 minutes, tu peux la passer à tout moment), ou va directement au résultat.</p>
+    <div class="actions" style="flex-direction:column"><button class="btn" id="chRace" type="button">🏁 Regarder la course</button><button class="btn ghost" style="color:var(--ink)" id="chDirect" type="button">⏭ Voir directement le résultat</button><button class="btn ghost small" style="color:var(--ink);opacity:.7" id="chCancel" type="button">Annuler</button></div>
+  </div>
 </div>
 <div class="overlay" id="crop" role="dialog" aria-modal="true" aria-labelledby="cropT">
   <div class="modal"><div class="day" id="cropT">Portrait</div><div class="muted" id="cropName"></div>
@@ -717,10 +723,14 @@ function render() {
       </button>`;
     cell.querySelector('.door').addEventListener('click', () => {
       if (!unlocked) { toast(`Patience ! Cette case s'ouvre le ${d} décembre.`); return; }
-      os.add(d); if (!simulating()) lsSet(LS_OPENED, [...opened]);
-      cell.classList.remove('ready'); cell.classList.add('open');
-      setTimeout(() => showDraw(d, r, 'direct'), 650);
-      setTimeout(render, 900);
+      const direct = () => {
+        os.add(d); if (!simulating()) lsSet(LS_OPENED, [...opened]);
+        cell.classList.remove('ready'); cell.classList.add('open');
+        setTimeout(() => showDraw(d, r, 'direct'), 650);
+        setTimeout(render, 900);
+      };
+      if (!r || r.vide) { direct(); return; }
+      askOpen(d, () => launchLive(d, simulating()), direct);
     });
     if (isOpen) {
       const ins = cell.querySelector('.inside');
@@ -761,6 +771,8 @@ function showDraw(d, r, mode, onDone) {
   const live = mode === 'live' || mode === 'reveal', animate = !!mode;
   const nm = $('#mName'), prize = $('#mPrize'), note = $('#mNote');
   $('#mDay').textContent = `${d} décembre`;
+  const mr = $('#mReplay'); mr.hidden = !r || r.vide || !!race;
+  mr.onclick = () => { $('#ov').classList.remove('show'); if (!matchMedia('(prefers-reduced-motion: reduce)').matches) startRace(d, r, () => showDraw(d, r, false), simulating() ? testCircuit : ''); };
   clearTimeout(spinTimer); prize.classList.remove('show'); prize.innerHTML = ''; note.textContent = '';
   const C = data.cadeaux[d - 1], cadHtml = C && C.nom ? `<div class="cadeau">${C.icone ? `<img src="${esc(C.icone)}" alt="" width="40" height="40">` : ''}<div><small>Cadeau du jour pour tous les inscrits</small><b>${esc(C.nom)}</b></div></div>` : '';
   $('#mBasic').innerHTML = '';
@@ -783,6 +795,15 @@ function showDraw(d, r, mode, onDone) {
   };
   finish();
 }
+function askOpen(d, race, direct) {
+  $('#chT').textContent = `Case du ${d} décembre`;
+  const close = () => $('#choose').classList.remove('show');
+  $('#chRace').onclick = () => { close(); race(); };
+  $('#chDirect').onclick = () => { close(); direct(); };
+  $('#chCancel').onclick = close;
+  $('#choose').classList.add('show'); $('#chRace').focus();
+}
+$('#choose').addEventListener('click', e => { if (e.target.id === 'choose') $('#choose').classList.remove('show'); });
 function closeModal() { clearTimeout(spinTimer); $('#ov').classList.remove('show'); if (liveReveal) liveReveal(); }
 
 /* ===== Grand Prix des rennes (circuit 3 tours) ===== */
@@ -1289,7 +1310,7 @@ function startRace(d, r, done, circ) {
   race = { plan, done, raf: 0, parts: [], t0: performance.now() + 3200 };
   race.raf = requestAnimationFrame(renderGP);
 }
-$('#raceSkip').onclick = () => { if (!race) return; if (race.podium) endRace(); else race.skip = true; };
+$('#raceSkip').onclick = () => { if (race) endRace(); };
 
 /* ===== Son ===== */
 const LS_MUTE = 'spads-avent-muet';
