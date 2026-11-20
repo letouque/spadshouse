@@ -4,54 +4,54 @@
   "messageInscription": "Pour participer, inscris-toi sur le Discord des SPADS ! Ton pseudo apparaîtra ici dès qu'il aura été ajouté.",
   "lots": [
     {
-      "nom": "Carotte de bonne fortune",
+      "nom": "Lit enfant magique",
       "desc": "",
-      "image": "lots/lot-01-mwl4mk8b.jpg"
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/052000/052463_hr1.tex"
     },
     {
-      "nom": "Lot 2",
+      "nom": "Carotte de la bonne fortune",
+      "desc": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/025000/025207_hr1.tex"
+    },
+    {
+      "nom": "L'Étiquette éorzéenne : Ricaner",
+      "desc": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026435_hr1.tex"
+    },
+    {
+      "nom": "Monture perroquet",
       "desc": "",
       "image": ""
     },
     {
-      "nom": "Lot 3",
+      "nom": "Monture Arveld",
       "desc": "",
       "image": ""
     },
     {
-      "nom": "Lot 4",
+      "nom": "Cor Phaéton",
       "desc": "",
-      "image": ""
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026038_hr1.tex"
     },
     {
-      "nom": "Lot 5",
+      "nom": "Clef d'activation de Gabriel v3",
       "desc": "",
-      "image": ""
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026014_hr1.tex"
     },
     {
-      "nom": "Lot 6",
+      "nom": "Coffre d'arme de rêve",
       "desc": "",
-      "image": ""
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026557_hr1.tex"
     },
     {
-      "nom": "Lot 7",
+      "nom": "Coffre d'arme de rêve",
       "desc": "",
-      "image": ""
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026557_hr1.tex"
     },
     {
-      "nom": "Lot 8",
+      "nom": "Carotte de la bonne fortune",
       "desc": "",
-      "image": ""
-    },
-    {
-      "nom": "Lot 9",
-      "desc": "",
-      "image": ""
-    },
-    {
-      "nom": "Lot 10",
-      "desc": "",
-      "image": ""
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/025000/025207_hr1.tex"
     },
     {
       "nom": "Lot 11",

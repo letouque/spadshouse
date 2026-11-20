@@ -151,7 +151,7 @@ input[type=number]{font:inherit;padding:6px 8px;border-radius:8px;border:1.5px s
 .cadrow img{width:36px;height:36px;border-radius:6px;background:#fffaf0}
 .cadrow input{width:100%}
 .cadrow .ic{grid-column:3;font-size:.78rem}
-.prize img{max-width:100%;max-height:240px;border-radius:12px;margin-top:8px;box-shadow:0 6px 18px rgba(0,0,0,.3);background:#fff8e8}
+.prize img{max-width:100%;max-height:240px;min-width:72px;border-radius:12px;margin-top:8px;box-shadow:0 6px 18px rgba(0,0,0,.3);background:#fff8e8}
 .prize .lot{display:inline-block;margin-top:10px;padding:8px 16px;border-radius:10px;background:var(--green);color:var(--cream);font-weight:800;font-size:1.1rem}
 .prize .desc{margin-top:8px;font-size:.92rem;white-space:pre-line}
 .modal .note{font-size:.88rem;margin-top:12px;opacity:.8}
@@ -521,7 +521,7 @@ function countUp(node, from, to) {
   requestAnimationFrame(step);
 }
 const lot = i => data.lots[i] || { nom: `Lot ${i + 1}`, desc: '', image: '' };
-const imgUrl = l => l && l.image ? `${RAW}/${l.image}` : '';
+const imgUrl = l => l && l.image ? (/^https?:/.test(l.image) ? l.image : `${RAW}/${l.image}`) : '';
 
 /* ===== Décor ===== */
 const ORN = {
