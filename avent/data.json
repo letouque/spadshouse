@@ -381,14 +381,14 @@
   ],
   "figes": {},
   "jackpot": {
-    "maj": "2026-11-20T02:37:02.286Z",
+    "maj": "2026-11-20T02:37:04.576Z",
     "items": [
       {
         "nom": "Anneau de récupération",
         "type": "anneau",
         "luxe": false,
         "prix": 8000,
-        "qte": 155
+        "qte": 55
       },
       {
         "nom": "Bracelet de récupération",
