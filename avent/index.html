@@ -139,6 +139,18 @@ input[type=number]{font:inherit;padding:6px 8px;border-radius:8px;border:1.5px s
 .modal .big.spin{color:#7d6040}
 .prize{opacity:0;transform:translateY(8px);transition:.45s}
 .prize.show{opacity:1;transform:none}
+.special{margin-top:6px;padding:14px 12px 12px;border-radius:14px;border:3px solid var(--gold);background:radial-gradient(circle at 50% 0,#fff6d6,#f1d48c);box-shadow:0 0 0 4px rgba(201,147,50,.25),0 10px 26px rgba(201,147,50,.45);animation:glow 2.2s ease-in-out infinite alternate}
+.special .ribbon{display:inline-block;padding:3px 14px;border-radius:99px;background:var(--red);color:var(--cream);font-weight:800;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase}
+@keyframes glow{to{box-shadow:0 0 0 6px rgba(201,147,50,.35),0 12px 34px rgba(201,147,50,.7)}}
+@media (prefers-reduced-motion: reduce){.special{animation:none}}
+.cadeau{display:flex;align-items:center;gap:10px;margin:12px auto 0;max-width:340px;padding:8px 12px;border-radius:12px;background:rgba(255,250,240,.7);border:1px dashed rgba(43,26,16,.3);text-align:left}
+.cadeau img{width:40px;height:40px;flex:none;border-radius:8px}
+.cadeau small{display:block;font-size:.72rem;opacity:.7;text-transform:uppercase;letter-spacing:.06em}
+.cadeau b{font-size:1rem}
+.cadrow{display:grid;grid-template-columns:28px 36px 1fr;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(43,26,16,.12)}
+.cadrow img{width:36px;height:36px;border-radius:6px;background:#fffaf0}
+.cadrow input{width:100%}
+.cadrow .ic{grid-column:3;font-size:.78rem}
 .prize img{max-width:100%;max-height:240px;border-radius:12px;margin-top:8px;box-shadow:0 6px 18px rgba(0,0,0,.3);background:#fff8e8}
 .prize .lot{display:inline-block;margin-top:10px;padding:8px 16px;border-radius:10px;background:var(--green);color:var(--cream);font-weight:800;font-size:1.1rem}
 .prize .desc{margin-top:8px;font-size:.92rem;white-space:pre-line}
@@ -251,6 +263,7 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
     <div class="big" id="mName"></div>
     <div class="prize" id="mPrize"></div>
     <div class="note" id="mNote"></div>
+    <div id="mBasic"></div>
     <div class="actions"><button class="btn" id="mClose">Fermer</button></div>
   </div>
 </div>
@@ -279,6 +292,7 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
   <nav class="tabs" id="tabs">
     <button data-p="pInscrits" class="on">Inscrits</button>
     <button data-p="pLots">Lots</button>
+    <button data-p="pCadeaux">Cadeaux</button>
     <button data-p="pJackpot">Jackpot</button>
     <button data-p="pTirages">Tirages</button>
     <button data-p="pTexte">Texte</button>
@@ -295,6 +309,10 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
     <p class="muted">Clique sur une vignette pour ajouter ou changer l'image. Chaque jour, un lot encore disponible est tiré au hasard.</p>
     <div id="lotsList"></div>
     <input type="file" id="imgInput" accept="image/*" hidden>
+  </div>
+  <div class="pane" id="pCadeaux">
+    <p class="muted">Le petit cadeau envoyé à tous les inscrits pour chaque jour. Il s'affiche dans la case ouverte, sous le cadeau spécial du gagnant. Icône : lien vers une image (XIVAPI ou autre).</p>
+    <div id="cadList"></div>
   </div>
   <div class="pane" id="pJackpot">
     <p class="muted">Trésors des sous-marins mis de côté pour le 25. Mets à jour les quantités au retour des sous-marins : le compteur public suit en direct. Valeur = prix de revente au PNJ.</p>
@@ -357,12 +375,14 @@ const JACKPOT_DEFAUT = [
   { nom: "Boucle d'oreille de récupération luxueuse", type: 'boucle', luxe: true, prix: 30000, qte: 45 },
   { nom: 'Collier de récupération luxueux', type: 'collier', luxe: true, prix: 34500, qte: 8 }
 ];
+const CADEAUX_DEFAUT = [{"nom": "Biscuit au gingembre", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024051_hr1.tex"}, {"nom": "Muffin au miel", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024004_hr1.tex"}, {"nom": "Biscuit aux glands", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024007_hr1.tex"}, {"nom": "Thé à la camomille", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024406_hr1.tex"}, {"nom": "Tarte aux pommes", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024054_hr1.tex"}, {"nom": "Bretzel noir", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024001_hr1.tex"}, {"nom": "Bûches de bois", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/052000/052113_hr1.tex"}, {"nom": "Pain de chevalier", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024002_hr1.tex"}, {"nom": "Pain de maïs", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024005_hr1.tex"}, {"nom": "Fromentée", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024102_hr1.tex"}, {"nom": "Thé épicé", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024405_hr1.tex"}, {"nom": "Goûter sombrelinçois", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/053000/053061_hr1.tex"}, {"nom": "Biscuit au sésame", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024007_hr1.tex"}, {"nom": "Galette des rois", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024057_hr1.tex"}, {"nom": "Café triple crème", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024407_hr1.tex"}, {"nom": "Goûter ishgardais", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/053000/053062_hr1.tex"}, {"nom": "Tarte aux lainuchairelles", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024078_hr1.tex"}, {"nom": "Marrons glacés", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024076_hr1.tex"}, {"nom": "Chocolat chaud", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024410_hr1.tex"}, {"nom": "Croissant amandé", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024013_hr1.tex"}, {"nom": "Crème brûlée", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024075_hr1.tex"}, {"nom": "Articles mignons", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/053000/053416_hr1.tex"}, {"nom": "Goûter de gourmand", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/053000/053037_hr1.tex"}, {"nom": "Gâteau d'anniversaire", "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/053000/053064_hr1.tex"}, {"nom": "", "icone": ""}];
 function defaultData() {
   return {
     annee: YEAR,
     graine: 'spads-' + Math.random().toString(36).slice(2, 10),
     messageInscription: "Pour participer, inscris-toi sur le Discord des SPADS ! Ton pseudo apparaîtra ici dès qu'il aura été ajouté.",
     lots: Array.from({ length: 25 }, (_, i) => ({ nom: `Lot ${i + 1}`, desc: '', image: '' })),
+    cadeaux: CADEAUX_DEFAUT.map(x => ({ ...x })),
     inscrits: [],
     figes: {},
     jackpot: { maj: '', items: JACKPOT_DEFAUT.map(x => ({ ...x })) }
@@ -376,6 +396,7 @@ function normalize(d) {
     if (typeof l === 'string') return { nom: l, desc: '', image: '' };
     return Object.assign({ nom: `Lot ${i + 1}`, desc: '', image: '' }, l || {});
   });
+  d.cadeaux = Array.from({ length: 25 }, (_, i) => Object.assign({ nom: '', icone: '' }, (d.cadeaux || [])[i] || {}));
   d.figes = d.figes || {}; d.inscrits = d.inscrits || [];
   if (!d.jackpot || !Array.isArray(d.jackpot.items)) d.jackpot = { maj: '', items: JACKPOT_DEFAUT.map(x => ({ ...x })) };
   return d;
@@ -623,14 +644,16 @@ function showDraw(d, r, animate) {
   const nm = $('#mName'), prize = $('#mPrize'), note = $('#mNote');
   $('#mDay').textContent = `${d} décembre`;
   clearTimeout(spinTimer); prize.classList.remove('show'); prize.innerHTML = ''; note.textContent = '';
+  const C = data.cadeaux[d - 1], cadHtml = C && C.nom ? `<div class="cadeau">${C.icone ? `<img src="${esc(C.icone)}" alt="" width="40" height="40">` : ''}<div><small>Cadeau du jour pour tous les inscrits</small><b>${esc(C.nom)}</b></div></div>` : '';
+  $('#mBasic').innerHTML = '';
   $('#ov').classList.add('show'); $('#mClose').focus();
-  if (!r || r.vide) { $('#mSub').textContent = ''; nm.textContent = 'Pas de tirage'; note.textContent = "Il n'y avait aucun inscrit (ou plus aucun lot) ce jour-là."; return; }
+  if (!r || r.vide) { $('#mBasic').innerHTML = ''; prize.innerHTML = cadHtml; prize.classList.add('show'); $('#mSub').textContent = ''; nm.textContent = 'Pas de tirage'; note.textContent = "Il n'y avait aucun inscrit (ou plus aucun lot) ce jour-là."; return; }
   $('#mSub').textContent = 'Le gagnant du jour est…';
   const L = lot(r.lot), u = imgUrl(L);
   const finish = () => {
     nm.classList.remove('spin'); nm.textContent = r.gagnant;
-    prize.innerHTML = (u ? `<img src="${esc(u)}" alt="${esc(L.nom)}">` : '') + `<div><span class="lot">🎁 ${esc(L.nom)}</span></div>` + (L.desc ? `<div class="desc">${esc(L.desc)}</div>` : '');
-    prize.classList.add('show');
+    prize.innerHTML = `<div class="special"><div class="ribbon">★ Cadeau spécial ★</div>` + (u ? `<img src="${esc(u)}" alt="${esc(L.nom)}">` : '') + `<div><span class="lot">🎁 ${esc(L.nom)}</span></div>` + (L.desc ? `<div class="desc">${esc(L.desc)}</div>` : '') + `</div>`;
+    prize.classList.add('show'); $('#mBasic').innerHTML = cadHtml;
     note.textContent = r.tour > 1 ? `Tous les inscrits avaient déjà gagné : ${r.tour}e tour de tirage !` : 'Félicitations !';
     if (d === 25) {
       const total = jpTotal(data), ben = jpBeneficiaires(data), part = ben.length ? Math.floor(total / ben.length) : 0;
@@ -717,7 +740,15 @@ function buildAdminStatic() {
   $('#simDay').value = simDay == null ? '' : String(simDay);
   $('#addDate').value = parisToday();
   $('#howtoEdit').value = data.messageInscription;
-  buildLots();
+  buildLots(); buildCadeaux();
+}
+function buildCadeaux() {
+  $('#cadList').innerHTML = data.cadeaux.map((c, i) => `
+    <div class="cadrow"><b>${i + 1}</b>${c.icone ? `<img src="${esc(c.icone)}" alt="">` : '<span></span>'}
+      <input type="text" value="${esc(c.nom)}" data-cn="${i}" placeholder="${i === 24 ? 'Jackpot (optionnel)' : 'Nom du cadeau'}" aria-label="Cadeau du ${i + 1}">
+      <input type="text" class="ic" value="${esc(c.icone)}" data-ci="${i}" placeholder="Lien de l'icône" aria-label="Icône du ${i + 1}"></div>`).join('');
+  $('#cadList').querySelectorAll('[data-cn]').forEach(inp => inp.onchange = () => mutate(d => { d.cadeaux[+inp.dataset.cn].nom = inp.value.trim(); }));
+  $('#cadList').querySelectorAll('[data-ci]').forEach(inp => inp.onchange = () => { mutate(d => { d.cadeaux[+inp.dataset.ci].icone = inp.value.trim(); }); buildCadeaux(); });
 }
 function setSim(v) { simDay = v; simOpened = new Set(); $('#simDay').value = v == null ? '' : String(v); render(); }
 $('#simDay').onchange = e => setSim(e.target.value === '' ? null : +e.target.value);

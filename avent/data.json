@@ -129,6 +129,108 @@
       "image": ""
     }
   ],
+  "cadeaux": [
+    {
+      "nom": "Biscuit au gingembre",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024051_hr1.tex"
+    },
+    {
+      "nom": "Muffin au miel",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024004_hr1.tex"
+    },
+    {
+      "nom": "Biscuit aux glands",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024007_hr1.tex"
+    },
+    {
+      "nom": "Thé à la camomille",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024406_hr1.tex"
+    },
+    {
+      "nom": "Tarte aux pommes",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024054_hr1.tex"
+    },
+    {
+      "nom": "Bretzel noir",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024001_hr1.tex"
+    },
+    {
+      "nom": "Bûches de bois",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/052000/052113_hr1.tex"
+    },
+    {
+      "nom": "Pain de chevalier",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024002_hr1.tex"
+    },
+    {
+      "nom": "Pain de maïs",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024005_hr1.tex"
+    },
+    {
+      "nom": "Fromentée",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024102_hr1.tex"
+    },
+    {
+      "nom": "Thé épicé",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024405_hr1.tex"
+    },
+    {
+      "nom": "Goûter sombrelinçois",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/053000/053061_hr1.tex"
+    },
+    {
+      "nom": "Biscuit au sésame",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024007_hr1.tex"
+    },
+    {
+      "nom": "Galette des rois",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024057_hr1.tex"
+    },
+    {
+      "nom": "Café triple crème",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024407_hr1.tex"
+    },
+    {
+      "nom": "Goûter ishgardais",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/053000/053062_hr1.tex"
+    },
+    {
+      "nom": "Tarte aux lainuchairelles",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024078_hr1.tex"
+    },
+    {
+      "nom": "Marrons glacés",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024076_hr1.tex"
+    },
+    {
+      "nom": "Chocolat chaud",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024410_hr1.tex"
+    },
+    {
+      "nom": "Croissant amandé",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024013_hr1.tex"
+    },
+    {
+      "nom": "Crème brûlée",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/024000/024075_hr1.tex"
+    },
+    {
+      "nom": "Articles mignons",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/053000/053416_hr1.tex"
+    },
+    {
+      "nom": "Goûter de gourmand",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/053000/053037_hr1.tex"
+    },
+    {
+      "nom": "Gâteau d'anniversaire",
+      "icone": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/053000/053064_hr1.tex"
+    },
+    {
+      "nom": "",
+      "icone": ""
+    }
+  ],
   "inscrits": [
     {
       "nom": "Cugell",
