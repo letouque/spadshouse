@@ -43,6 +43,29 @@ h1{font-family:"Playfair Display",serif;font-weight:800;font-size:clamp(2rem,5.5
 h1 em{color:var(--gold-l);font-style:italic}
 .status{display:inline-block;margin-top:10px;padding:8px 18px;border-radius:999px;background:rgba(0,0,0,.35);border:1px solid rgba(243,207,122,.35);font-weight:600}
 .status b{color:var(--gold-l)}
+.nextcd{margin:12px auto 0;text-align:center}
+.nextcd .nc-t{font-size:.9rem;opacity:.85;margin-bottom:6px}
+.nextcd .nc-t b{color:var(--gold-l)}
+.nextcd .nc-r{display:flex;gap:8px;justify-content:center}
+.nextcd .cdb{display:flex;flex-direction:column;align-items:center;min-width:58px;padding:6px 8px;border-radius:12px;background:rgba(0,0,0,.4);border:1px solid rgba(243,207,122,.4)}
+.nextcd .cdb b{font-family:"Playfair Display",serif;font-size:1.7rem;line-height:1;color:var(--gold-l);font-variant-numeric:tabular-nums}
+.nextcd .cdb small{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;opacity:.7;margin-top:2px}
+.nextcd.soon .cdb{border-color:#ff6b5a;box-shadow:0 0 14px rgba(255,107,90,.45)}
+.mega{position:relative;margin:22px auto 6px;max-width:760px;padding:18px 16px 16px;text-align:center;border-radius:20px;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 0,rgba(255,215,120,.35),transparent 70%),linear-gradient(160deg,#3a0f14,#5c1820 55%,#2a0a0e);border:2px solid var(--gold);box-shadow:0 0 0 4px rgba(201,147,50,.2),0 14px 40px rgba(0,0,0,.45),inset 0 0 40px rgba(255,200,90,.15)}
+.mega::before{content:"";position:absolute;inset:-50%;background:conic-gradient(from 0deg,transparent 0 20deg,rgba(255,220,140,.12) 20deg 30deg,transparent 30deg 60deg);animation:megarot 14s linear infinite;pointer-events:none}
+.mega>*{position:relative}
+.mega .mg-k{font-weight:800;letter-spacing:.12em;text-transform:uppercase;font-size:.8rem;color:#f3cf7a}
+.mega .mg-n{display:flex;align-items:baseline;justify-content:center;gap:10px;flex-wrap:wrap;margin:6px 0 2px}
+.mega .mg-plus{font-family:"Playfair Display",serif;font-style:italic;font-size:1.3rem;color:#f6e7c8}
+.mega .mg-v{font-family:"Playfair Display",serif;font-weight:800;font-size:clamp(2.4rem,9vw,4.4rem);line-height:1;font-variant-numeric:tabular-nums;
+  background:linear-gradient(180deg,#fff6d0,#f3cf7a 45%,#c99332);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(243,207,122,.55));animation:megaglow 2.4s ease-in-out infinite alternate}
+.mega .mg-u{font-family:"Playfair Display",serif;font-weight:800;font-size:1.5rem;color:#f3cf7a}
+.mega .mg-s{font-size:.95rem;color:#f6e7c8}
+.mega .mg-s b{color:#ffd36b}
+@keyframes megarot{to{transform:rotate(360deg)}}
+@keyframes megaglow{to{filter:drop-shadow(0 0 30px rgba(255,215,120,.9))}}
+@media (prefers-reduced-motion: reduce){.mega::before,.mega .mg-v{animation:none}}
 
 /* Barre admin */
 .adminbar{position:sticky;top:0;z-index:30;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;
@@ -244,7 +267,9 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
     <h1>Calendrier de l'Avent <em>des SPADS</em></h1>
     <div class="status" id="status">Chargement…</div>
   </header>
+  <div class="nextcd" id="nextcd" hidden aria-live="off"></div>
   <div class="simbanner" id="simbanner" hidden></div>
+  <section class="mega" id="mega" hidden aria-label="Valeur totale des lots"></section>
 
   <section class="board" id="board" aria-label="Cases du calendrier"><div class="loading" style="grid-column:1/-1">Chargement du calendrier…</div></section>
 
@@ -534,6 +559,23 @@ function jpIcon(it) {
   return `<svg viewBox="0 0 32 32" aria-hidden="true">${grad}${shapes[it.type] || shapes.anneau}</svg>`;
 }
 const CHEST = '<svg class="jp-chest" viewBox="0 0 64 64" aria-hidden="true"><path d="M8 28h48v26a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z" fill="#7a4a22"/><path d="M8 28c0-12 10-18 24-18s24 6 24 18z" fill="#9a5f2c"/><rect x="8" y="27" width="48" height="5" fill="#d9a441"/><rect x="28" y="24" width="8" height="12" rx="2" fill="#f3cf7a" stroke="#8a5d14"/><path d="M14 10l3-6 3 6m26-2l3-5 2 5M30 4l2-4 2 4" stroke="#fff3c9" stroke-width="2" fill="none"/><path d="M10 34v20M54 34v20" stroke="#d9a441" stroke-width="3"/></svg>';
+function renderMega() {
+  const el = $('#mega'), vals = data.lots.map(l => +l.prix || 0), total = vals.reduce((a, b) => a + b, 0);
+  const n = vals.filter(v => v > 0).length;
+  if (!total) { el.hidden = true; return; }
+  el.hidden = false;
+  const shown = n < data.lots.length ? Math.floor(total / 1e6) * 1e6 : total;
+  if (renderMega.last === shown) return;
+  el.innerHTML = `<div class="mg-k">💎 Cette année, les SPADS mettent en jeu 💎</div>
+    <div class="mg-n">${n < data.lots.length ? '<span class="mg-plus">plus de</span>' : ''}<span class="mg-v">${fmt(shown)}</span><span class="mg-u">gils</span></div>
+    <div class="mg-s">de lots à gagner ! ${data.lots.length} cases, ${data.lots.length} gagnants… <b>et si c'était toi ?</b></div>`;
+  const v = el.querySelector('.mg-v'), from = renderMega.last ?? 0; renderMega.last = shown;
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const t0 = performance.now(), dur = from ? 1200 : 2600;
+    const step = t => { const k = Math.min(1, (t - t0) / dur); v.textContent = fmt(from + (shown - from) * (1 - Math.pow(1 - k, 4))); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }
+}
 function renderJackpot() {
   const j = data.jackpot, el = $('#jackpot');
   const total = jpTotal(data), ben = jpBeneficiaires(data), part = ben.length ? Math.floor(total / ben.length) : 0;
@@ -600,10 +642,11 @@ const openedSet = () => simulating() ? simOpened : opened;
 function render() {
   if (!data) return;
   const od = openDay(), draws = computeDraws(data, od), t = parisToday();
+  if (liveHide != null) delete draws[liveHide];
 
   let st;
   if (simulating()) st = `Simulation : <b>${simDay ? simDay + ' décembre' : 'avant le 1er décembre'}</b>`;
-  else if (od === 0) { const n = Math.ceil((Date.parse(`${YEAR}-12-01`) - Date.parse(t)) / 864e5); st = `Ouverture de la première case dans <b>${n} jour${n > 1 ? 's' : ''}</b>`; }
+  else if (od === 0) st = `Première case le <b>1er décembre à minuit</b>, tirage en direct !`;
   else if (t > `${YEAR}-12-25`) st = `Le calendrier est terminé — <b>joyeuses fêtes !</b>`;
   else st = `Aujourd'hui, la case <b>${od}</b> est ouverte !`;
   $('#status').innerHTML = st;
@@ -669,13 +712,13 @@ function render() {
     ? names.map(n => `<span class="chip ${winners.has(n) ? 'won' : ''}">${winners.has(n) ? '★ ' : ''}${esc(n)}</span>`).join('')
     : '<span class="muted">Aucun inscrit pour le moment.</span>';
 
-  renderJackpot();
+  renderJackpot(); renderMega();
   if (isAdmin) renderAdmin();
 }
 
 /* ===== Modale ===== */
-let spinTimer = null;
-function showDraw(d, r, mode) {
+let spinTimer = null, liveHide = null, liveReveal = null;
+function showDraw(d, r, mode, onDone) {
   const live = mode === 'live', animate = !!mode;
   const nm = $('#mName'), prize = $('#mPrize'), note = $('#mNote');
   stopWheel(); $('#mWheel').hidden = true;
@@ -698,13 +741,14 @@ function showDraw(d, r, mode) {
     }
     if (animate) confetti();
     if (live) jingle();
+    if (onDone) onDone();
   };
   if (!live || matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return; }
   if (u) { const pre = new Image(); pre.src = u; }
   $('#mSub').textContent = 'La roue tourne…'; nm.textContent = '';
   spinWheel(d, r.pool && r.pool.length ? r.pool : [r.gagnant], r.gagnant, () => { $('#mSub').textContent = 'Le gagnant du jour est…'; finish(); });
 }
-function closeModal() { clearTimeout(spinTimer); stopWheel(); $('#ov').classList.remove('show'); }
+function closeModal() { clearTimeout(spinTimer); stopWheel(); $('#ov').classList.remove('show'); if (liveReveal) liveReveal(); }
 
 /* ===== Roue ===== */
 const WHEEL_COLORS = ['#a8232c', '#1f5b3a', '#c99332', '#6e1a22', '#2d7a4f', '#b8862c'];
@@ -774,6 +818,18 @@ addEventListener('pointerdown', () => { if (!muted) audio(); });
 updateMute();
 
 /* ===== Ouverture en direct à minuit ===== */
+function renderNext(n) {
+  const el = $('#nextcd');
+  if (!n || simulating()) { el.hidden = true; return; }
+  el.hidden = false;
+  let t = Math.max(0, Math.floor(n.ms / 1000));
+  const j = Math.floor(t / 86400); t %= 86400;
+  const h = Math.floor(t / 3600), m = Math.floor(t / 60) % 60, sec = t % 60;
+  const box = (v, u) => `<span class="cdb"><b>${pad(v)}</b><small>${u}</small></span>`;
+  const html = `<div class="nc-t">${n.ms <= 600000 ? '🎡 Tirage en direct à minuit' : '⏳ Prochaine case'} : <b>${n.day} décembre</b></div><div class="nc-r">${j ? box(j, j > 1 ? 'jours' : 'jour') : ''}${box(h, 'h')}${box(m, 'min')}${box(sec, 's')}</div>`;
+  if (el.innerHTML !== html) el.innerHTML = html;
+  el.classList.toggle('soon', n.ms <= 600000);
+}
 function parisClock() {
   const o = {}; new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Paris', hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
     .formatToParts(new Date()).forEach(x => o[x.type] = x.value);
@@ -782,11 +838,12 @@ function parisClock() {
 function nextLive() {
   const o = parisClock(), date = `${o.year}-${o.month}-${o.day}`;
   let day;
-  if (date === `${YEAR}-11-30`) day = 1;
-  else if (date >= `${YEAR}-12-01` && date <= `${YEAR}-12-24`) day = +o.day + 1;
+  if (date < `${YEAR}-12-01`) day = 1;
+  else if (date <= `${YEAR}-12-24`) day = +o.day + 1;
   else return null;
-  const ms = ((23 - +o.hour) * 3600 + (59 - +o.minute) * 60 + (60 - +o.second)) * 1000 - new Date().getMilliseconds();
-  return { day, ms };
+  const toMidnight = ((23 - +o.hour) * 3600 + (59 - +o.minute) * 60 + (60 - +o.second)) * 1000 - new Date().getMilliseconds();
+  const days = Math.round((Date.parse(`${YEAR}-12-${pad(day)}`) - Date.parse(date)) / 864e5);
+  return { day, ms: (days - 1) * 864e5 + toMidnight };
 }
 let pendingLive = null, lastBeep = null, prefetched = {}, testLive = null;
 function showCountdown(day, ms) {
@@ -800,33 +857,36 @@ function showCountdown(day, ms) {
 function hideCountdown() { $('#cd').hidden = true; lastBeep = null; }
 function launchLive(d, test) {
   closeModal(); beep(true);
-  if (!test) { opened.add(d); lsSet(LS_OPENED, [...opened]); } else if (simulating()) simOpened.add(d);
-  render();
+  liveHide = d; render();
   const r = computeDraws(data, d)[d];
   const cell = document.querySelector(`.cell[data-d="${d}"]`);
-  if (cell) { cell.classList.remove('ready', 'locked', 'open'); void cell.offsetWidth; cell.classList.add('open'); cell.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-  setTimeout(() => showDraw(d, r, 'live'), 900);
+  if (cell) cell.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  liveReveal = () => {
+    liveReveal = null; liveHide = null;
+    if (!test) { opened.add(d); lsSet(LS_OPENED, [...opened]); } else if (simulating()) simOpened.add(d);
+    render();
+    const c = document.querySelector(`.cell[data-d="${d}"]`);
+    if (c) { c.classList.remove('open'); c.classList.add('ready'); void c.offsetWidth; c.classList.remove('ready'); c.classList.add('open'); }
+  };
+  setTimeout(() => showDraw(d, r, 'live', () => { if (liveReveal) liveReveal(); }), 500);
 }
 setInterval(() => {
   if (testLive) {
     const ms = testLive.at - Date.now();
-    if (ms > 0) showCountdown(testLive.day, ms);
+    if (ms > 0) { if (liveHide !== testLive.day) { liveHide = testLive.day; render(); } showCountdown(testLive.day, ms); }
     else { const d = testLive.day; testLive = null; hideCountdown(); launchLive(d, true); }
     return;
   }
   if (simulating()) { if (!$('#cd').hidden) hideCountdown(); return; }
   const n = nextLive();
   if (n && n.ms <= 60000) {
-    pendingLive = n.day; showCountdown(n.day, n.ms);
+    pendingLive = n.day; liveHide = n.day; showCountdown(n.day, n.ms);
     if (n.ms < 40000 && !prefetched[n.day] && !isAdmin) { prefetched[n.day] = 1; loadData().then(d => { data = d; }).catch(() => {}); }
   } else if (pendingLive != null) {
     const d = pendingLive; pendingLive = null; hideCountdown();
-    if (realOpenDay() >= d) launchLive(d, false);
+    if (realOpenDay() >= d) launchLive(d, false); else { liveHide = null; render(); }
   }
-  if (n && n.ms <= 600000 && n.ms > 0) {
-    const m = Math.floor(n.ms / 60000), sec = Math.floor(n.ms / 1000) % 60;
-    $('#status').innerHTML = `🎡 Tirage du <b>${n.day} décembre</b> en direct à minuit — dans <b>${m}:${pad(sec)}</b>`;
-  }
+  renderNext(n);
 }, 200);
 $('#mClose').onclick = closeModal;
 $('#ov').addEventListener('click', e => { if (e.target.id === 'ov') closeModal(); });
