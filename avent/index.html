@@ -2002,7 +2002,7 @@ function drawEmballage(c, P, t, R, now, replay, roundAt, score, stageAt) {
 /* ===== Tableau solo : le Lutin du Trésor ===== */
 function planSolo(d, nom) {
   const info = { [nom]: { nom, color: playerColor(0) } }, rng = mkRng(d, 'solo');
-  const tiles = shuffleR(rng, ['⚔️', '💰', '🗝️', '⚔️', '❓', '💎', '⚔️', '🍀', '💰', '⚔️', '🗝️', '❓', '💎', '⚔️', '🍀']); const W = 6 + Math.floor(rng() * 8); tiles.splice(W, 0, 'blanc');
+  const tiles = shuffleR(rng, ['⚔️', '💰', '🗝️', '❓', '💎', '🍀', '⚔️', '💰', '❓', '💎', '🍀']); const W = 3 + Math.floor(rng() * 8); tiles.splice(W, 0, 'blanc');
   const ticker = [{ t: .3, txt: `🗺️ ${nom} déroule la carte au trésor du jour…` }, { t: 1.6, txt: '🎲 La roue des cases tourne…' }, { t: 6.6, txt: '⬜ CASE BLANCHE ! Pas d\'adversaire aujourd\'hui !' }, { t: 8, txt: `🏮 Le Lutin du Trésor sort du coffre pour ${nom} !` }, { t: 10.2, txt: `🎁 ${nom} reçoit son cadeau sans combattre !` }];
   const P = {
     d, title: 'Carte au trésor', panelTitle: 'Joueur', bg: '#2b1a10', players: [nom], info, tiles, W, ticker, bubbles: [], winner: nom, solo: true, noReplay: true, noPodium: true,
@@ -2016,7 +2016,7 @@ function planSolo(d, nom) {
       const idx = soloIdx(P, t); if (R.si !== idx && t < 6.6) { R.si = idx; tone(900, 0, .05, 'square', .05); }
       if (!R.s1 && t >= 6.6) { R.s1 = 1; [784, 988, 1175].forEach((f, i) => tone(f, i * .1, .25, 'triangle', .1)); }
       if (!R.s2 && t >= 7.8) { R.s2 = 1; boing(); }
-      if (!R.s3 && t >= 10.2) { R.s3 = 1; jingle(); crowd(); confettiBurst(R, 800, 760, 240); }
+      if (!R.s3 && t >= 10.2) { R.s3 = 1; jingle(); crowd(); confettiBurst(R, 290, 860, 240); }
       if (t >= 10.2 && t < 13 && now - (R.lastFw || 0) > 450) { R.lastFw = now; burst(R, 200 + Math.random() * 1200, 160 + Math.random() * 200); }
     }
   };
@@ -2053,50 +2053,66 @@ function drawLutin(c, x, y, s, now) {
   c.fillStyle = '#ffd36b'; c.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? 3 : 7; c.lineTo(-2 + Math.cos(a) * rr, -46 + Math.sin(a) * rr); } c.fill();
   c.restore();
 }
+const ORB_COL = { '⚔️': ['#ff8a7a', '#b0262c'], '💰': ['#ffe9a0', '#c98a1a'], '🗝️': ['#a8f0ff', '#1f8fb0'], '❓': ['#ffb0f0', '#b0309a'], '💎': ['#9fc8ff', '#2a56c0'], '🍀': ['#b8ff9a', '#2f9a3a'], blanc: ['#ffffff', '#cfd6e0'] };
+function drawRosace(c, R0, rot, now) {
+  c.save(); c.rotate(rot);
+  const g = c.createRadialGradient(0, 0, 10, 0, 0, R0); g.addColorStop(0, '#6f86a8'); g.addColorStop(.6, '#4a5f86'); g.addColorStop(1, '#2e3d5c'); c.fillStyle = g; c.beginPath(); c.arc(0, 0, R0, 0, 6.283); c.fill();
+  c.strokeStyle = 'rgba(255,214,120,.55)'; c.lineWidth = 2;
+  [1, .82, .62, .42, .24].forEach(k => { c.beginPath(); c.arc(0, 0, R0 * k, 0, 6.283); c.stroke(); });
+  for (let i = 0; i < 24; i++) { const a = i / 24 * 6.283; c.beginPath(); c.moveTo(Math.cos(a) * R0 * .24, Math.sin(a) * R0 * .24); c.lineTo(Math.cos(a) * R0 * .82, Math.sin(a) * R0 * .82); c.stroke(); }
+  c.fillStyle = 'rgba(255,214,120,.25)';
+  for (let i = 0; i < 12; i++) { const a = i / 12 * 6.283; c.save(); c.rotate(a); c.beginPath(); c.moveTo(0, -R0 * .62); c.quadraticCurveTo(R0 * .12, -R0 * .8, 0, -R0 * .98); c.quadraticCurveTo(-R0 * .12, -R0 * .8, 0, -R0 * .62); c.fill(); c.restore(); }
+  c.fillStyle = 'rgba(255,230,150,.9)'; c.beginPath(); for (let i = 0; i < 16; i++) { const a = i * Math.PI / 8, rr = i % 2 ? R0 * .1 : R0 * .22; c.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } c.closePath(); c.fill();
+  c.restore();
+  c.strokeStyle = '#c99332'; c.lineWidth = 10; c.beginPath(); c.arc(0, 0, R0 + 4, 0, 6.283); c.stroke();
+  c.strokeStyle = '#ffd36b'; c.lineWidth = 2; c.beginPath(); c.arc(0, 0, R0 + 10, 0, 6.283); c.stroke();
+}
+function drawOrb(c, x, y, r, tl, on, white, now) {
+  const [l, d] = ORB_COL[tl] || ORB_COL['❓'];
+  if (on) { const gg = c.createRadialGradient(x, y, r * .6, x, y, r * 1.9); gg.addColorStop(0, white ? 'rgba(255,255,255,.8)' : 'rgba(255,220,140,.7)'); gg.addColorStop(1, 'rgba(255,220,140,0)'); c.fillStyle = gg; c.beginPath(); c.arc(x, y, r * 1.9, 0, 6.283); c.fill(); }
+  c.fillStyle = '#5b3a1a'; c.beginPath(); c.arc(x, y, r + 9, 0, 6.283); c.fill();
+  const rim = c.createLinearGradient(x, y - r, x, y + r); rim.addColorStop(0, '#ffe39a'); rim.addColorStop(1, '#a8701e'); c.fillStyle = rim; c.beginPath(); c.arc(x, y, r + 6, 0, 6.283); c.fill();
+  const g = c.createRadialGradient(x - r * .3, y - r * .35, r * .1, x, y, r); g.addColorStop(0, '#fff'); g.addColorStop(.25, l); g.addColorStop(1, d); c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, 6.283); c.fill();
+  if (!on) { c.fillStyle = 'rgba(10,20,30,.35)'; c.beginPath(); c.arc(x, y, r, 0, 6.283); c.fill(); }
+  if (!white) { c.font = `${r * .9}px serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(tl, x, y + 3); }
+  else { c.strokeStyle = 'rgba(120,130,150,.6)'; c.lineWidth = 3; c.beginPath(); c.arc(x, y, r * .5, 0, 6.283); c.stroke(); }
+  c.fillStyle = 'rgba(255,255,255,.55)'; c.beginPath(); c.ellipse(x - r * .32, y - r * .42, r * .28, r * .14, -.5, 0, 6.283); c.fill();
+}
 function drawSolo(c, P, t, R, now) {
-  c.fillStyle = '#2b1a10'; c.fillRect(0, 0, 1600, 1080);
-  const k = Math.min(1, t / 1.2), mw = 1300 * (.15 + .85 * (1 - Math.pow(1 - k, 3))), mh = 820;
-  c.save(); c.translate(800, 580);
-  const g = c.createRadialGradient(0, 0, 100, 0, 0, 700); g.addColorStop(0, '#f1e0b5'); g.addColorStop(1, '#cfae72'); c.fillStyle = g; c.beginPath(); c.roundRect(-mw / 2, -mh / 2, mw, mh, 18); c.fill();
-  c.strokeStyle = '#8a5a35'; c.lineWidth = 6; c.stroke();
-  c.fillStyle = '#8a5a35'; c.beginPath(); c.roundRect(-mw / 2 - 18, -mh / 2 - 10, 26, mh + 20, 12); c.roundRect(mw / 2 - 8, -mh / 2 - 10, 26, mh + 20, 12); c.fill();
+  const bg = c.createRadialGradient(800, 575, 100, 800, 575, 950); bg.addColorStop(0, '#1d4a4f'); bg.addColorStop(.55, '#0f2a30'); bg.addColorStop(1, '#060f14'); c.fillStyle = bg; c.fillRect(0, 0, 1600, 1080);
+  // salle octogonale : piliers et lanternes vertes
+  c.save(); c.translate(800, 575);
+  for (let i = 0; i < 8; i++) { const a = i / 8 * 6.283 + Math.PI / 8; c.save(); c.rotate(a); c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(470, -40, 400, 80); c.fillStyle = 'rgba(201,147,50,.25)'; c.fillRect(470, -42, 400, 4); c.fillRect(470, 38, 400, 4); c.restore();
+    const lx = Math.cos(a) * 450, ly = Math.sin(a) * 420, fl = .75 + .25 * Math.sin(now / 300 + i * 1.7); const gg = c.createRadialGradient(lx, ly, 2, lx, ly, 46); gg.addColorStop(0, `rgba(140,255,190,${.9 * fl})`); gg.addColorStop(1, 'rgba(140,255,190,0)'); c.fillStyle = gg; c.beginPath(); c.arc(lx, ly, 46, 0, 6.283); c.fill(); }
+  const k = Math.min(1, t / 1.2), e = 1 - Math.pow(1 - k, 3);
+  c.globalAlpha = e; c.scale(.6 + .4 * e, .6 + .4 * e);
+  const n = P.tiles.length, idx = soloIdx(P, t), stopped = t >= 6.6, RR = 300;
+  drawRosace(c, 212, now / 9000 + (t < 6.6 ? t * .15 : 1), now);
+  P.tiles.forEach((tl, i) => { const a = -Math.PI / 2 + i / n * 6.283, x = Math.cos(a) * RR, y = Math.sin(a) * RR, white = tl === 'blanc'; drawOrb(c, x, y, 40, tl, k >= 1 && i === idx, white, now); if (white && stopped && i === idx && Math.floor(now / 200) % 2) { c.strokeStyle = '#fff'; c.lineWidth = 4; c.beginPath(); c.arc(x, y, 60, 0, 6.283); c.stroke(); } });
   if (k >= 1) {
-    c.strokeStyle = 'rgba(120,70,30,.25)'; c.lineWidth = 2; c.setLineDash([8, 10]); c.beginPath(); c.moveTo(-520, 260); c.bezierCurveTo(-300, 100, -120, 320, 0, 120); c.stroke(); c.setLineDash([]);
-    c.font = '900 46px serif'; c.fillStyle = 'rgba(200,36,47,.75)'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('✕', -540, 270);
-    c.save(); c.translate(500, -300); c.strokeStyle = 'rgba(120,70,30,.5)'; c.lineWidth = 2; c.beginPath(); c.arc(0, 0, 40, 0, 6.283); c.stroke(); c.font = '800 18px serif'; c.fillStyle = 'rgba(120,70,30,.7)'; c.fillText('N', 0, -54); c.beginPath(); c.moveTo(0, -36); c.lineTo(8, 0); c.lineTo(0, 36); c.lineTo(-8, 0); c.closePath(); c.fill(); c.restore();
-    // cercle de cases
-    const n = P.tiles.length, idx = soloIdx(P, t), stopped = t >= 6.6;
-    P.tiles.forEach((tl, i) => {
-      const a = -Math.PI / 2 + i / n * 6.283, x = Math.cos(a) * 360, y = Math.sin(a) * 250 - 30, on = i === idx, white = tl === 'blanc';
-      c.save(); c.translate(x, y);
-      if (on) { c.shadowColor = white && stopped ? '#fff' : '#ffd36b'; c.shadowBlur = 30; }
-      c.fillStyle = white ? (stopped && Math.floor(now / 200) % 2 ? '#ffffff' : '#f7f3ea') : on ? '#ffd36b' : '#8a5a35';
-      c.beginPath(); c.roundRect(-38, -30, 76, 60, 10); c.fill(); c.shadowBlur = 0; c.strokeStyle = on ? '#fff' : '#5b3a22'; c.lineWidth = on ? 5 : 3; c.stroke();
-      if (!white) { c.font = '30px serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(tl, 0, 2); }
-      c.restore();
-    });
-    // pion du joueur
-    { const a = -Math.PI / 2 + idx / n * 6.283, px = Math.cos(a) * 360, py = Math.sin(a) * 250 - 30 - 46 - Math.abs(Math.sin(now / 120)) * (stopped ? 0 : 8); const im = imgFor(P.winner); c.fillStyle = P.info[P.winner].color; c.beginPath(); c.arc(px, py, 20, 0, 6.283); c.fill(); if (imgOk(im)) { c.save(); c.beginPath(); c.arc(px, py, 18, 0, 6.283); c.clip(); c.drawImage(im, px - 18, py - 18, 36, 36); c.restore(); } c.strokeStyle = '#fff'; c.lineWidth = 3; c.beginPath(); c.arc(px, py, 20, 0, 6.283); c.stroke(); }
-    // coffre central
+    // pion du joueur sur l'orbe active
+    { const a = -Math.PI / 2 + idx / n * 6.283, px = Math.cos(a) * (RR + 78), py = Math.sin(a) * (RR + 78) - Math.abs(Math.sin(now / 120)) * (stopped ? 0 : 6); const im = imgFor(P.winner); c.fillStyle = P.info[P.winner].color; c.beginPath(); c.arc(px, py, 22, 0, 6.283); c.fill(); if (imgOk(im)) { c.save(); c.beginPath(); c.arc(px, py, 20, 0, 6.283); c.clip(); c.drawImage(im, px - 20, py - 20, 40, 40); c.restore(); } c.strokeStyle = '#fff'; c.lineWidth = 3; c.beginPath(); c.arc(px, py, 22, 0, 6.283); c.stroke(); }
+    // coffre au centre de la rosace
     const open = Math.min(1, Math.max(0, (t - 7.6) / .4));
-    c.save(); c.translate(0, 40);
-    c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(0, 52, 100, 16, 0, 0, 6.283); c.fill();
+    c.save(); c.translate(0, 50); c.scale(.85, .85);
+    c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(0, 52, 100, 16, 0, 0, 6.283); c.fill();
     c.fillStyle = '#7a4a2a'; c.fillRect(-90, -10, 180, 60); c.fillStyle = '#c99332'; c.fillRect(-90, -10, 180, 8); c.fillRect(-10, -10, 20, 60); c.fillRect(-90, 42, 180, 8);
-    if (open > 0) { const gg = c.createRadialGradient(0, -10, 10, 0, -10, 160); gg.addColorStop(0, `rgba(255,230,140,${.8 * open})`); gg.addColorStop(1, 'rgba(255,230,140,0)'); c.fillStyle = gg; c.beginPath(); c.arc(0, -10, 160, 0, 6.283); c.fill(); }
-    c.save(); c.translate(-90, -10); c.rotate(-open * 1.9); c.fillStyle = '#8a5a35'; c.beginPath(); c.roundRect(0, -40, 180, 40, [20, 20, 0, 0]); c.fill(); c.fillStyle = '#c99332'; c.fillRect(0, -6, 180, 6); c.fillRect(80, -40, 20, 40); c.restore();
+    if (open > 0) { const gg = c.createRadialGradient(0, -10, 10, 0, -10, 180); gg.addColorStop(0, `rgba(255,230,140,${.85 * open})`); gg.addColorStop(1, 'rgba(255,230,140,0)'); c.fillStyle = gg; c.beginPath(); c.arc(0, -10, 180, 0, 6.283); c.fill(); }
+    c.save(); c.translate(-90, -10); c.rotate(-open * 1.4); c.fillStyle = '#8a5a35'; c.beginPath(); c.roundRect(0, -40, 180, 40, [20, 20, 0, 0]); c.fill(); c.fillStyle = '#c99332'; c.fillRect(0, -6, 180, 6); c.fillRect(80, -40, 20, 40); c.restore();
     c.restore();
-    // lutin
-    if (t >= 7.7) { const q = t - 7.7, pop = Math.min(1, q / .45), ys = 40 - 150 * Math.sin(Math.min(1, q / .45) * Math.PI / 2); drawLutin(c, 0, ys - 60, .4 + .9 * pop + (q < .6 ? Math.sin(q * 20) * .05 : 0), now);
-      if (q > .7) { c.save(); c.font = '700 24px Inter, system-ui, sans-serif'; const txt = `Félicitations, ${P.winner} ! Personne ne t'a défié aujourd'hui… alors ce cadeau est pour toi !`; const lines = wrapText(c, txt, 380), w = Math.max(...lines.map(l => c.measureText(l).width)) + 36, h = lines.length * 30 + 22, bx = 330, by = -250; const kk = Math.min(1, (q - .7) / .2);
-        c.translate(bx - 120, by + h); c.scale(kk, kk); c.translate(-(bx - 120), -(by + h)); c.fillStyle = '#fff'; c.strokeStyle = '#2b1a10'; c.lineWidth = 3; c.beginPath(); c.roundRect(bx - w / 2, by, w, h, 18); c.fill(); c.stroke(); c.beginPath(); c.moveTo(bx - 150, by + h - 2); c.lineTo(110, by + h + 70); c.lineTo(bx - 100, by + h - 2); c.closePath(); c.fill(); c.stroke(); c.fillRect(bx - 148, by + h - 5, 46, 6);
-        c.fillStyle = '#2b1a10'; c.textAlign = 'center'; c.textBaseline = 'top'; lines.forEach((l, i) => c.fillText(l, bx, by + 12 + i * 30)); c.restore(); } }
-    // cadeau qui vole vers le joueur
-    if (t >= 9.4) { const q = Math.min(1, (t - 9.4) / .8), x = 60 + (0 - 60) * q, y = -120 + (300 - -120) * q - Math.sin(q * Math.PI) * 160; drawGift(c, x, y, 70, 60, '#c8242f', 4, 1, now); }
-    // joueur
-    { const top = drawPerson(c, 0, 360, 1.3, P.info[P.winner].color, { img: imgFor(P.winner), arms: t >= 10.2 ? 1 : 0, wave: t >= 10.2 ? now / 150 : null, bob: t >= 10.2 ? Math.abs(Math.sin(now / 160)) * 6 : 0 }); nameTag(c, P.winner, 0, top - 6, 1.2); }
-    if (stopped && t < 8.2) { const q = t - 6.6; c.save(); c.globalAlpha = Math.min(1, q / .2) * (q > 1.3 ? 1 - (q - 1.3) / .3 : 1); c.font = '900 70px "Playfair Display", serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineWidth = 10; c.strokeStyle = '#2b1a10'; c.strokeText('CASE BLANCHE !', 0, -40); c.fillStyle = '#fff'; c.fillText('CASE BLANCHE !', 0, -40); c.restore(); }
+    if (t >= 7.7) { const q = t - 7.7, pop = Math.min(1, q / .45), ys = 40 - 130 * Math.sin(pop * Math.PI / 2); drawLutin(c, 0, ys - 50, .4 + .8 * pop + (q < .6 ? Math.sin(q * 20) * .05 : 0), now); }
+    if (stopped && t < 8.2) { const q = t - 6.6; c.save(); c.globalAlpha = Math.min(1, q / .2) * (q > 1.3 ? 1 - (q - 1.3) / .3 : 1); c.font = '900 70px "Playfair Display", serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineWidth = 10; c.strokeStyle = '#0f2a30'; c.strokeText('CASE BLANCHE !', 0, -40); c.fillStyle = '#fff'; c.fillText('CASE BLANCHE !', 0, -40); c.restore(); }
   }
   c.restore();
+  if (k < 1) return;
+  // bulle du lutin
+  if (t >= 8.4) { const q = t - 8.4; c.save(); c.font = '700 24px Inter, system-ui, sans-serif'; const txt = `Félicitations, ${P.winner} ! Personne ne t'a défié aujourd'hui… alors ce cadeau est pour toi !`; const lines = wrapText(c, txt, 330), w = Math.max(...lines.map(l => c.measureText(l).width)) + 36, h = lines.length * 30 + 22, bx = 1340, by = 330; const kk = Math.min(1, q / .2);
+    c.translate(bx - w / 2, by + h); c.scale(kk, kk); c.translate(-(bx - w / 2), -(by + h)); c.fillStyle = '#fff'; c.strokeStyle = '#2b1a10'; c.lineWidth = 3; c.beginPath(); c.roundRect(bx - w / 2, by, w, h, 18); c.fill(); c.stroke(); c.beginPath(); c.moveTo(bx - w / 2 + 30, by + h - 2); c.lineTo(870, 500); c.lineTo(bx - w / 2 + 80, by + h - 2); c.closePath(); c.fill(); c.stroke(); c.fillRect(bx - w / 2 + 32, by + h - 5, 46, 6);
+    c.fillStyle = '#2b1a10'; c.textAlign = 'center'; c.textBaseline = 'top'; lines.forEach((l, i) => c.fillText(l, bx, by + 12 + i * 30)); c.restore(); }
+  // joueur en bas à gauche, le cadeau vole vers lui
+  const PX = 230, PY = 960;
+  if (t >= 9.4) { const q = Math.min(1, (t - 9.4) / .9), x = 800 + (PX + 60 - 800) * q, y = 500 + (PY - 40 - 500) * q - Math.sin(q * Math.PI) * 220; drawGift(c, x, y, 70, 60, '#c8242f', 4, 1, now); }
+  const top = drawPerson(c, PX, PY, 1.4, P.info[P.winner].color, { img: imgFor(P.winner), arms: t >= 10.2 ? 1 : 0, wave: t >= 10.2 ? now / 150 : null, bob: t >= 10.2 ? Math.abs(Math.sin(now / 160)) * 6 : 0 }); nameTag(c, P.winner, PX, top - 6, 1.3);
 }
 
 /* ===== Chaises musicales du sapin ===== */
