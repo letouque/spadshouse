@@ -190,6 +190,9 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
 .lotrow .thumb .n{position:absolute;top:-8px;left:-8px;background:var(--red);color:var(--cream);border-radius:99px;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:.8rem}
 .lotrow input[type=text]{width:100%;font-weight:700}
 .lotrow textarea{min-height:46px;margin-top:6px;font-size:.88rem}
+.lotrow .prixrow{display:flex;gap:8px;margin-top:6px;font-size:.78rem;flex-wrap:wrap}
+.lotrow .prixrow label{display:flex;flex-direction:column;gap:2px;flex:1;min-width:110px}
+.lotrow .prixrow input{width:100%}
 .lotrow .rm{font-size:.75rem;border:0;background:none;color:var(--red);cursor:pointer;padding:2px 0;font-weight:700}
 .toast{position:fixed;z-index:70;left:50%;bottom:24px;transform:translateX(-50%) translateY(30px);opacity:0;background:var(--green-d);color:var(--cream);padding:10px 18px;border-radius:10px;font-weight:700;transition:.3s;pointer-events:none;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%)}
@@ -307,6 +310,8 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
   </div>
   <div class="pane" id="pLots">
     <p class="muted">Clique sur une vignette pour ajouter ou changer l'image. Chaque jour, un lot encore disponible est tiré au hasard.</p>
+    <p class="muted">💰 <b>Valeur (admin seulement)</b> : au 2e tour, moins un inscrit a gagné en valeur au 1er tour, plus il a de chances d'être tiré. Mets l'ID de l'objet pour récupérer le prix sur Universalis (prix le plus bas sur le centre de données Light) ; sans ID ou sans annonce, saisis le prix à la main.</p>
+    <div class="row"><button class="btn small green" id="univBtn">Mettre à jour les prix (Universalis)</button> <span class="muted" id="univState"></span></div>
     <div id="lotsList"></div>
     <input type="file" id="imgInput" accept="image/*" hidden>
   </div>
@@ -323,7 +328,7 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
   </div>
   <div class="pane" id="pTirages">
     <p class="muted">Résultats calculés jusqu'au 25 avec les inscrits actuels. 🔒 = jour passé, résultat définitif. Les jours à venir peuvent encore changer si des inscrits s'ajoutent.</p>
-    <table><thead><tr><th>Jour</th><th>Gagnant</th><th>Lot</th><th>Tour</th></tr></thead><tbody id="admDraws"></tbody></table>
+    <table><thead><tr><th>Jour</th><th>Gagnant</th><th>Lot</th><th>Valeur</th><th>Tour</th></tr></thead><tbody id="admDraws"></tbody></table>
     <div class="row" style="margin-top:12px"><button class="btn small ghost" id="resetOpened">Refermer mes cases (vraie date)</button></div>
   </div>
   <div class="pane" id="pTexte">
@@ -341,6 +346,7 @@ const YEAR = 2026;
 const API = `https://api.github.com/repos/${REPO.owner}/${REPO.repo}/contents/${REPO.dir}`;
 const RAW = `https://raw.githubusercontent.com/${REPO.owner}/${REPO.repo}/${REPO.branch}/${REPO.dir}`;
 const LS_TOKEN = 'spads-avent-token';
+const UNIV_WORLD = 'Lich', UNIV_DC = 'Light';
 const LS_OPENED = 'spads-avent-ouvertes-' + YEAR;
 
 const $ = s => document.querySelector(s);
@@ -394,7 +400,7 @@ function normalize(d) {
   d.lots = Array.from({ length: 25 }, (_, i) => {
     const l = d.lots[i];
     if (typeof l === 'string') return { nom: l, desc: '', image: '' };
-    return Object.assign({ nom: `Lot ${i + 1}`, desc: '', image: '' }, l || {});
+    return Object.assign({ nom: `Lot ${i + 1}`, desc: '', image: '', prix: 0, itemId: '' }, l || {});
   });
   d.cadeaux = Array.from({ length: 25 }, (_, i) => Object.assign({ nom: '', icone: '' }, (d.cadeaux || [])[i] || {}));
   d.figes = d.figes || {}; d.inscrits = d.inscrits || [];
@@ -449,13 +455,18 @@ function computeDraws(c, upto) {
   const res = {};
   const lotsLeft = c.lots.map((_, i) => i);
   let won = new Set(), tour = 1;
+  // Valeur estimée des lots (admin) : au 2e tour et suivants, moins tu as gagné en valeur, plus tu as de chances.
+  const known = c.lots.map(l => +l.prix || 0).filter(v => v > 0).sort((a, b) => a - b);
+  const median = known.length ? known[Math.floor(known.length / 2)] : 1;
+  const valeur = i => (+(c.lots[i] || {}).prix || 0) || median;
+  const gains = {};
   for (let d = 1; d <= upto; d++) {
     const f = c.figes[d];
     if (f) {
       if (f.vide) { res[d] = { vide: true, fige: true }; continue; }
       if (f.tour > tour) { tour = f.tour; won = new Set(); }
       const i = lotsLeft.indexOf(f.lot); if (i >= 0) lotsLeft.splice(i, 1);
-      won.add(f.gagnant); res[d] = { ...f, fige: true }; continue;
+      won.add(f.gagnant); gains[f.gagnant] = (gains[f.gagnant] || 0) + valeur(f.lot); res[d] = { ...f, fige: true }; continue;
     }
     const dateD = `${c.annee}-12-${pad(d)}`;
     const eligible = [...new Set(c.inscrits.filter(p => p.date < dateD).map(p => p.nom))].sort((a, b) => a.localeCompare(b, 'fr'));
@@ -463,9 +474,17 @@ function computeDraws(c, upto) {
     let pool = eligible.filter(n => !won.has(n));
     if (!pool.length) { tour++; won = new Set(); pool = eligible.slice(); }
     const rng = mulberry32(cyrb53(c.graine + '|jour|' + d));
-    const gagnant = pool[Math.floor(rng() * pool.length)];
+    let gagnant;
+    if (tour === 1) gagnant = pool[Math.floor(rng() * pool.length)];
+    else {
+      const plancher = median / 10;
+      const w = pool.map(n => 1 / Math.max(gains[n] || 0, plancher));
+      let x = rng() * w.reduce((a, b) => a + b, 0), k = 0;
+      while (k < pool.length - 1 && (x -= w[k]) > 0) k++;
+      gagnant = pool[k];
+    }
     const lot = lotsLeft.splice(Math.floor(rng() * lotsLeft.length), 1)[0];
-    won.add(gagnant); res[d] = { gagnant, lot, tour };
+    won.add(gagnant); gains[gagnant] = (gains[gagnant] || 0) + valeur(lot); res[d] = { gagnant, lot, tour };
   }
   return res;
 }
@@ -481,6 +500,7 @@ function freezePast(c) {
 }
 /* ===== Jackpot ===== */
 const fmt = n => Math.round(n).toLocaleString('fr-FR');
+const fmtM = n => n >= 1e6 ? (n / 1e6).toLocaleString('fr-FR', { maximumFractionDigits: 1 }) + ' M' : Math.round(n / 1e3) + ' k';
 const jpTotal = c => c.jackpot.items.reduce((s, it) => s + (+it.prix || 0) * (+it.qte || 0), 0);
 function jpBeneficiaires(c) {
   if (c.jackpot.beneficiaires) return c.jackpot.beneficiaires;
@@ -778,8 +798,8 @@ function renderAdmin() {
   const all = computeDraws(data, 25), real = realOpenDay();
   $('#admDraws').innerHTML = Array.from({ length: 25 }, (_, i) => {
     const d = i + 1, r = all[d], past = d <= real, st = past ? '' : ' style="opacity:.6"';
-    if (!r || r.vide) return `<tr${st}><td>${d}${past ? ' 🔒' : ''}</td><td colspan="3" class="muted">Pas de tirage</td></tr>`;
-    return `<tr${st}><td>${d}${past ? ' 🔒' : ''}</td><td>${esc(r.gagnant)}</td><td>${esc(lot(r.lot).nom)}</td><td>${r.tour}</td></tr>`;
+    if (!r || r.vide) return `<tr${st}><td>${d}${past ? ' 🔒' : ''}</td><td colspan="4" class="muted">Pas de tirage</td></tr>`;
+    return `<tr${st}><td>${d}${past ? ' 🔒' : ''}</td><td>${esc(r.gagnant)}</td><td>${esc(lot(r.lot).nom)}</td><td>${+lot(r.lot).prix ? fmtM(lot(r.lot).prix) : '?'}</td><td>${r.tour}</td></tr>`;
   }).join('');
 }
 
@@ -813,10 +833,13 @@ function buildLots() {
       <div><div class="thumb ${l.image ? 'has' : ''}" data-img="${i}" role="button" tabindex="0" style="${l.image ? `background-image:url('${esc(imgUrl(l))}')` : ''}"><span class="n">${i + 1}</span>${l.image ? '' : '+ image'}</div>
         ${l.image ? `<button class="rm" data-rm="${i}">Retirer l'image</button>` : ''}</div>
       <div><input type="text" value="${esc(l.nom)}" data-nom="${i}" aria-label="Nom du lot ${i + 1}" placeholder="Nom du lot">
-        <textarea data-desc="${i}" placeholder="Description (optionnelle)" aria-label="Description du lot ${i + 1}">${esc(l.desc)}</textarea></div>
+        <textarea data-desc="${i}" placeholder="Description (optionnelle)" aria-label="Description du lot ${i + 1}">${esc(l.desc)}</textarea>
+        <div class="prixrow"><label>ID objet <input type="text" inputmode="numeric" value="${esc(l.itemId)}" data-iid="${i}"></label><label>Valeur (gils) <input type="number" min="0" step="1000" value="${+l.prix || 0}" data-prix="${i}"></label></div></div>
     </div>`).join('');
   const L = $('#lotsList');
   L.querySelectorAll('[data-nom]').forEach(inp => inp.onchange = () => mutate(d => { d.lots[+inp.dataset.nom].nom = inp.value.trim() || `Lot ${+inp.dataset.nom + 1}`; }));
+  L.querySelectorAll('[data-iid]').forEach(inp => inp.onchange = () => mutate(d => { d.lots[+inp.dataset.iid].itemId = inp.value.trim(); }));
+  L.querySelectorAll('[data-prix]').forEach(inp => inp.onchange = () => mutate(d => { d.lots[+inp.dataset.prix].prix = Math.max(0, Math.round(+inp.value || 0)); }));
   L.querySelectorAll('[data-desc]').forEach(inp => inp.onchange = () => mutate(d => { d.lots[+inp.dataset.desc].desc = inp.value.trim(); }));
   L.querySelectorAll('[data-img]').forEach(th => {
     const go = () => { imgTarget = +th.dataset.img; $('#imgInput').value = ''; $('#imgInput').click(); };
@@ -824,6 +847,25 @@ function buildLots() {
   });
   L.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { mutate(d => { d.lots[+b.dataset.rm].image = ''; }); buildLots(); });
 }
+
+$('#univBtn').onclick = async () => {
+  const ids = [...new Set(data.lots.map(l => String(l.itemId || '').trim()).filter(x => /^\d+$/.test(x)))];
+  if (!ids.length) { toast('Aucun ID objet renseigné'); return; }
+  $('#univState').textContent = 'Chargement…';
+  try {
+    const r = await fetch(`https://universalis.app/api/v2/aggregated/${UNIV_WORLD}/${ids.join(',')}`);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json(), prix = {};
+    for (const x of j.results || []) {
+      const q = x.nq || {}, h = x.hq || {};
+      const v = [q.minListing?.dc?.price, h.minListing?.dc?.price, q.recentPurchase?.dc?.price, q.averageSalePrice?.dc?.price].find(v => v > 0);
+      if (v) prix[x.itemId] = Math.round(v);
+    }
+    let n = 0;
+    mutate(d => d.lots.forEach(l => { const v = prix[String(l.itemId).trim()]; if (v) { l.prix = v; n++; } }));
+    buildLots(); $('#univState').textContent = `${n} prix mis à jour`;
+  } catch (e) { $('#univState').textContent = 'Échec : ' + e.message; }
+};
 
 let imgTarget = null;
 async function resizeImage(file) {

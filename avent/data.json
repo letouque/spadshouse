@@ -6,127 +6,177 @@
     {
       "nom": "Lit enfant magique",
       "desc": "",
-      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/052000/052463_hr1.tex"
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/052000/052463_hr1.tex",
+      "itemId": "40390",
+      "prix": 7849999
     },
     {
       "nom": "Carotte de la bonne fortune",
       "desc": "",
-      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/025000/025207_hr1.tex"
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/025000/025207_hr1.tex",
+      "itemId": "48096",
+      "prix": 3994998
     },
     {
       "nom": "L'Étiquette éorzéenne : Ricaner",
       "desc": "",
-      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026435_hr1.tex"
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026435_hr1.tex",
+      "itemId": "52292",
+      "prix": 689999
     },
     {
       "nom": "Sifflet colibri silencieux",
       "desc": "",
-      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/004000/004350_hr1.tex"
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/004000/004350_hr1.tex",
+      "itemId": "52264",
+      "prix": 3496994
     },
     {
       "nom": "Cor charrette de l'équipe de soutien",
       "desc": "",
-      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/004000/004323_hr1.tex"
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/004000/004323_hr1.tex",
+      "itemId": "46834",
+      "prix": 20997986
     },
     {
       "nom": "Cor Phaéton",
       "desc": "",
-      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026038_hr1.tex"
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026038_hr1.tex",
+      "itemId": "39490",
+      "prix": 4399899
     },
     {
       "nom": "Clef d'activation de Gabriel v3",
       "desc": "",
-      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026014_hr1.tex"
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026014_hr1.tex",
+      "itemId": "32846",
+      "prix": 436992
     },
     {
       "nom": "Coffre d'arme de rêve",
       "desc": "",
-      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026557_hr1.tex"
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026557_hr1.tex",
+      "itemId": "45070",
+      "prix": 3049998
     },
     {
       "nom": "Coffre d'arme de rêve",
       "desc": "",
-      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026557_hr1.tex"
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026557_hr1.tex",
+      "itemId": "45070",
+      "prix": 3049998
     },
     {
       "nom": "Carotte de la bonne fortune",
       "desc": "",
-      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/025000/025207_hr1.tex"
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/025000/025207_hr1.tex",
+      "itemId": "48096",
+      "prix": 3994998
     },
     {
       "nom": "Lot 11",
       "desc": "",
-      "image": ""
+      "image": "",
+      "itemId": "",
+      "prix": 0
     },
     {
       "nom": "Lot 12",
       "desc": "",
-      "image": ""
+      "image": "",
+      "itemId": "",
+      "prix": 0
     },
     {
       "nom": "Lot 13",
       "desc": "",
-      "image": ""
+      "image": "",
+      "itemId": "",
+      "prix": 0
     },
     {
       "nom": "Lot 14",
       "desc": "",
-      "image": ""
+      "image": "",
+      "itemId": "",
+      "prix": 0
     },
     {
       "nom": "Lot 15",
       "desc": "",
-      "image": ""
+      "image": "",
+      "itemId": "",
+      "prix": 0
     },
     {
       "nom": "Lot 16",
       "desc": "",
-      "image": ""
+      "image": "",
+      "itemId": "",
+      "prix": 0
     },
     {
       "nom": "Lot 17",
       "desc": "",
-      "image": ""
+      "image": "",
+      "itemId": "",
+      "prix": 0
     },
     {
       "nom": "Lot 18",
       "desc": "",
-      "image": ""
+      "image": "",
+      "itemId": "",
+      "prix": 0
     },
     {
       "nom": "Lot 19",
       "desc": "",
-      "image": ""
+      "image": "",
+      "itemId": "",
+      "prix": 0
     },
     {
       "nom": "Lot 20",
       "desc": "",
-      "image": ""
+      "image": "",
+      "itemId": "",
+      "prix": 0
     },
     {
       "nom": "Lot 21",
       "desc": "",
-      "image": ""
+      "image": "",
+      "itemId": "",
+      "prix": 0
     },
     {
       "nom": "Lot 22",
       "desc": "",
-      "image": ""
+      "image": "",
+      "itemId": "",
+      "prix": 0
     },
     {
       "nom": "Lot 23",
       "desc": "",
-      "image": ""
+      "image": "",
+      "itemId": "",
+      "prix": 0
     },
     {
       "nom": "Lot 24",
       "desc": "",
-      "image": ""
+      "image": "",
+      "itemId": "",
+      "prix": 0
     },
     {
       "nom": "Lot 25",
       "desc": "",
-      "image": ""
+      "image": "",
+      "itemId": "",
+      "prix": 0
     }
   ],
   "cadeaux": [
