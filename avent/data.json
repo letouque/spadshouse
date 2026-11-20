@@ -381,7 +381,7 @@
   ],
   "figes": {},
   "jackpot": {
-    "maj": "2026-11-20T02:36:56.800Z",
+    "maj": "2026-11-20T02:36:58.410Z",
     "items": [
       {
         "nom": "Anneau de récupération",
@@ -409,7 +409,7 @@
         "type": "collier",
         "luxe": false,
         "prix": 13000,
-        "qte": 166
+        "qte": 66
       },
       {
         "nom": "Anneau de récupération luxueux",
