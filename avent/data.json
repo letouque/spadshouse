@@ -381,7 +381,7 @@
   ],
   "figes": {},
   "jackpot": {
-    "maj": "2026-11-20T02:36:23.382Z",
+    "maj": "2026-11-20T02:36:25.665Z",
     "items": [
       {
         "nom": "Anneau de récupération",
@@ -402,7 +402,7 @@
         "type": "boucle",
         "luxe": false,
         "prix": 10000,
-        "qte": 45
+        "qte": 145
       },
       {
         "nom": "Collier de récupération",
