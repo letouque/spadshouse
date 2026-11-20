@@ -392,6 +392,10 @@
   "portraits": {
     "Myaou": "portraits/myaou-mwogat9y.jpg"
   },
-  "coups": {},
+  "coups": {
+    "Eleiyn": {
+      "n": "Kaméhamémog"
+    }
+  },
   "phrases": {}
 }
