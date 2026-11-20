@@ -140,6 +140,7 @@ input[type=number]{font:inherit;padding:6px 8px;border-radius:8px;border:1.5px s
 .prize{opacity:0;transform:translateY(8px);transition:.45s}
 .prize.show{opacity:1;transform:none}
 .special{margin-top:6px;padding:14px 12px 12px;border-radius:14px;border:3px solid var(--gold);background:radial-gradient(circle at 50% 0,#fff6d6,#f1d48c);box-shadow:0 0 0 4px rgba(201,147,50,.25),0 10px 26px rgba(201,147,50,.45);animation:glow 2.2s ease-in-out infinite alternate}
+.special img{display:block;margin:10px auto 0}
 .special .ribbon{display:inline-block;padding:3px 14px;border-radius:99px;background:var(--red);color:var(--cream);font-weight:800;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase}
 @keyframes glow{to{box-shadow:0 0 0 6px rgba(201,147,50,.35),0 12px 34px rgba(201,147,50,.7)}}
 @media (prefers-reduced-motion: reduce){.special{animation:none}}
@@ -154,6 +155,17 @@ input[type=number]{font:inherit;padding:6px 8px;border-radius:8px;border:1.5px s
 .prize img{max-width:100%;max-height:240px;min-width:72px;border-radius:12px;margin-top:8px;box-shadow:0 6px 18px rgba(0,0,0,.3);background:#fff8e8}
 .prize .lot{display:inline-block;margin-top:10px;padding:8px 16px;border-radius:10px;background:var(--green);color:var(--cream);font-weight:800;font-size:1.1rem}
 .prize .desc{margin-top:8px;font-size:.92rem;white-space:pre-line}
+.wheelbox{position:relative;width:min(320px,78vw);margin:10px auto 4px}
+.wheelbox canvas{width:100%;height:auto;display:block;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35))}
+.wheelbox .pointer{position:absolute;left:50%;top:-6px;transform:translateX(-50%);width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-top:30px solid var(--red);filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
+.countdown{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(20,10,6,.72);backdrop-filter:blur(3px);color:var(--cream);text-align:center;pointer-events:none}
+.countdown[hidden]{display:none}
+.countdown .cd-t{font-family:"Playfair Display",serif;font-size:clamp(1.2rem,4vw,2rem);font-weight:800;letter-spacing:.06em;color:#f3cf7a}
+.countdown .cd-n{font-family:"Playfair Display",serif;font-weight:800;font-size:clamp(6rem,28vw,14rem);line-height:1;text-shadow:0 0 30px rgba(243,207,122,.6)}
+.countdown.last .cd-n{color:#ff6b5a;animation:cdpulse 1s ease-in-out infinite}
+.countdown .cd-s{font-size:.85rem;opacity:.7}
+@keyframes cdpulse{0%{transform:scale(1.15)}100%{transform:scale(1)}}
+.mutebtn{position:fixed;left:14px;bottom:14px;z-index:55;width:44px;height:44px;border-radius:99px;border:2px solid var(--gold);background:rgba(43,26,16,.75);font-size:1.2rem;cursor:pointer}
 .modal .note{font-size:.88rem;margin-top:12px;opacity:.8}
 .modal .actions{margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .btn{font:inherit;font-weight:800;border:0;border-radius:10px;padding:10px 18px;cursor:pointer;background:var(--red);color:var(--cream);box-shadow:0 3px 0 var(--red-d)}
@@ -263,6 +275,7 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
   <div class="modal">
     <div class="day" id="mDay"></div>
     <div class="muted" id="mSub"></div>
+    <div class="wheelbox" id="mWheel" hidden><canvas id="wheel" width="640" height="640" aria-hidden="true"></canvas><div class="pointer"></div></div>
     <div class="big" id="mName"></div>
     <div class="prize" id="mPrize"></div>
     <div class="note" id="mNote"></div>
@@ -329,7 +342,7 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
   <div class="pane" id="pTirages">
     <p class="muted">Résultats calculés jusqu'au 25 avec les inscrits actuels. 🔒 = jour passé, résultat définitif. Les jours à venir peuvent encore changer si des inscrits s'ajoutent.</p>
     <table><thead><tr><th>Jour</th><th>Gagnant</th><th>Lot</th><th>Valeur</th><th>Tour</th></tr></thead><tbody id="admDraws"></tbody></table>
-    <div class="row" style="margin-top:12px"><button class="btn small ghost" id="resetOpened">Refermer mes cases (vraie date)</button></div>
+    <div class="row" style="margin-top:12px"><button class="btn small green" id="testLive">🎡 Tester le direct</button> <button class="btn small ghost" id="resetOpened">Refermer mes cases (vraie date)</button></div>
   </div>
   <div class="pane" id="pTexte">
     <h3>Texte « Comment participer »</h3>
@@ -337,6 +350,8 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
   </div>
 </aside>
 <div class="toast" id="toast"></div>
+<button class="mutebtn" id="muteBtn" type="button">🔊</button>
+<div class="countdown" id="cd" hidden role="status" aria-live="polite"><div class="cd-t">Tirage en direct du <span id="cdDay"></span> décembre</div><div class="cd-n" id="cdNum"></div><div class="cd-s">Clique n'importe où pour activer le son 🔊</div></div>
 
 <script>
 /* ===== Réglages du dépôt ===== */
@@ -462,14 +477,14 @@ function computeDraws(c, upto) {
   const gains = {};
   for (let d = 1; d <= upto; d++) {
     const f = c.figes[d];
+    const dateD = `${c.annee}-12-${pad(d)}`;
+    const eligible = [...new Set(c.inscrits.filter(p => p.date < dateD).map(p => p.nom))].sort((a, b) => a.localeCompare(b, 'fr'));
     if (f) {
       if (f.vide) { res[d] = { vide: true, fige: true }; continue; }
       if (f.tour > tour) { tour = f.tour; won = new Set(); }
       const i = lotsLeft.indexOf(f.lot); if (i >= 0) lotsLeft.splice(i, 1);
-      won.add(f.gagnant); gains[f.gagnant] = (gains[f.gagnant] || 0) + valeur(f.lot); res[d] = { ...f, fige: true }; continue;
+      won.add(f.gagnant); gains[f.gagnant] = (gains[f.gagnant] || 0) + valeur(f.lot); res[d] = { ...f, fige: true, pool: eligible.includes(f.gagnant) ? eligible : [...eligible, f.gagnant] }; continue;
     }
-    const dateD = `${c.annee}-12-${pad(d)}`;
-    const eligible = [...new Set(c.inscrits.filter(p => p.date < dateD).map(p => p.nom))].sort((a, b) => a.localeCompare(b, 'fr'));
     if (!eligible.length || !lotsLeft.length) { res[d] = { vide: true }; continue; }
     let pool = eligible.filter(n => !won.has(n));
     if (!pool.length) { tour++; won = new Set(); pool = eligible.slice(); }
@@ -484,7 +499,7 @@ function computeDraws(c, upto) {
       gagnant = pool[k];
     }
     const lot = lotsLeft.splice(Math.floor(rng() * lotsLeft.length), 1)[0];
-    won.add(gagnant); gains[gagnant] = (gains[gagnant] || 0) + valeur(lot); res[d] = { gagnant, lot, tour };
+    won.add(gagnant); gains[gagnant] = (gains[gagnant] || 0) + valeur(lot); res[d] = { gagnant, lot, tour, pool: pool.slice() };
   }
   return res;
 }
@@ -598,7 +613,7 @@ function render() {
   const board = $('#board'); board.innerHTML = '';
   const os = openedSet();
   ORDER.forEach((d, idx) => {
-    const cell = document.createElement('div');
+    const cell = document.createElement('div'); cell.dataset.d = d;
     const size = d === 25 ? 'big' : d === 24 ? 'wide' : d === 1 ? 'tall' : '';
     const unlocked = d <= od, isOpen = unlocked && (os.has(d) || (simulating() && simAll));
     cell.className = `cell ${size} ${COLORS[(idx * 3 + d) % 4]} ${unlocked ? (isOpen ? 'open' : 'ready') : 'locked'}`;
@@ -622,7 +637,7 @@ function render() {
       if (!unlocked) { toast(`Patience ! Cette case s'ouvre le ${d} décembre.`); return; }
       os.add(d); if (!simulating()) lsSet(LS_OPENED, [...opened]);
       cell.classList.remove('ready'); cell.classList.add('open');
-      setTimeout(() => showDraw(d, r, true), 650);
+      setTimeout(() => showDraw(d, r, 'direct'), 650);
       setTimeout(render, 900);
     });
     if (isOpen) {
@@ -660,8 +675,10 @@ function render() {
 
 /* ===== Modale ===== */
 let spinTimer = null;
-function showDraw(d, r, animate) {
+function showDraw(d, r, mode) {
+  const live = mode === 'live', animate = !!mode;
   const nm = $('#mName'), prize = $('#mPrize'), note = $('#mNote');
+  stopWheel(); $('#mWheel').hidden = true;
   $('#mDay').textContent = `${d} décembre`;
   clearTimeout(spinTimer); prize.classList.remove('show'); prize.innerHTML = ''; note.textContent = '';
   const C = data.cadeaux[d - 1], cadHtml = C && C.nom ? `<div class="cadeau">${C.icone ? `<img src="${esc(C.icone)}" alt="" width="40" height="40">` : ''}<div><small>Cadeau du jour pour tous les inscrits</small><b>${esc(C.nom)}</b></div></div>` : '';
@@ -680,15 +697,137 @@ function showDraw(d, r, animate) {
       prize.insertAdjacentHTML('beforeend', `<div class="jpmodal">🎉 Et le jackpot des sous-marins pour tout le monde :<div class="jp-total">${fmt(total)}<small>gils</small></div>soit <b>${fmt(part)} gils</b> pour chacun des ${ben.length} inscrits !</div>`);
     }
     if (animate) confetti();
+    if (live) jingle();
   };
-  const names = [...new Set(data.inscrits.map(p => p.nom))];
-  if (!animate || names.length < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return; }
+  if (!live || matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return; }
   if (u) { const pre = new Image(); pre.src = u; }
-  nm.classList.add('spin'); let delay = 50;
-  const roll = () => { nm.textContent = names[Math.floor(Math.random() * names.length)]; delay *= 1.11; spinTimer = setTimeout(delay < 380 ? roll : finish, delay < 380 ? delay : 300); };
-  roll();
+  $('#mSub').textContent = 'La roue tourne…'; nm.textContent = '';
+  spinWheel(d, r.pool && r.pool.length ? r.pool : [r.gagnant], r.gagnant, () => { $('#mSub').textContent = 'Le gagnant du jour est…'; finish(); });
 }
-function closeModal() { clearTimeout(spinTimer); $('#ov').classList.remove('show'); }
+function closeModal() { clearTimeout(spinTimer); stopWheel(); $('#ov').classList.remove('show'); }
+
+/* ===== Roue ===== */
+const WHEEL_COLORS = ['#a8232c', '#1f5b3a', '#c99332', '#6e1a22', '#2d7a4f', '#b8862c'];
+let wheelRaf = null, wheelDone = null;
+function stopWheel() { if (wheelRaf) cancelAnimationFrame(wheelRaf); wheelRaf = null; wheelDone = null; }
+function drawWheel(cv, names, rot) {
+  const ctx = cv.getContext('2d'), W = cv.width, R = W / 2 - 14, n = names.length, a = 2 * Math.PI / n;
+  ctx.clearRect(0, 0, W, W); ctx.save(); ctx.translate(W / 2, W / 2); ctx.rotate(rot);
+  const fs = Math.max(15, Math.min(34, 300 / n + 12));
+  for (let i = 0; i < n; i++) {
+    let col = WHEEL_COLORS[i % WHEEL_COLORS.length];
+    if (i === n - 1 && n > 1 && i % WHEEL_COLORS.length === 0) col = WHEEL_COLORS[2];
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, R, i * a, (i + 1) * a); ctx.closePath();
+    ctx.fillStyle = col; ctx.fill(); ctx.strokeStyle = '#f6e7c8'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.save(); ctx.rotate(i * a + a / 2); ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.font = `800 ${fs}px "Inter", system-ui, sans-serif`; ctx.fillStyle = '#fff8ea'; ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 4;
+    const nm = names[i].length > 14 ? names[i].slice(0, 13) + '…' : names[i];
+    ctx.fillText(nm, R - 20, 0); ctx.restore();
+  }
+  ctx.restore();
+  ctx.beginPath(); ctx.arc(W / 2, W / 2, R + 4, 0, 2 * Math.PI); ctx.lineWidth = 10; ctx.strokeStyle = '#d9a845'; ctx.stroke();
+  for (let i = 0; i < 24; i++) { const t = i / 24 * 2 * Math.PI; ctx.beginPath(); ctx.arc(W / 2 + Math.cos(t) * (R + 4), W / 2 + Math.sin(t) * (R + 4), 4, 0, 2 * Math.PI); ctx.fillStyle = i % 2 ? '#fff4c9' : '#ffd36b'; ctx.fill(); }
+  ctx.beginPath(); ctx.arc(W / 2, W / 2, 40, 0, 2 * Math.PI); ctx.fillStyle = '#c99332'; ctx.fill(); ctx.lineWidth = 5; ctx.strokeStyle = '#fff4c9'; ctx.stroke();
+  ctx.font = '34px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('🎁', W / 2, W / 2 + 2);
+}
+function spinWheel(d, pool, winner, done) {
+  const rng = mulberry32(cyrb53(data.graine + '|roue|' + d));
+  const names = pool.slice();
+  for (let i = names.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [names[i], names[j]] = [names[j], names[i]]; }
+  const cv = $('#wheel'), n = names.length, a = 2 * Math.PI / n, k = names.indexOf(winner);
+  $('#mWheel').hidden = false;
+  const TAU = 2 * Math.PI, norm = x => ((x % TAU) + TAU) % TAU;
+  const rot0 = rng() * TAU, target = -Math.PI / 2 - (k * a + a / 2) + (rng() - .5) * a * .7;
+  const total = norm(target - rot0) + TAU * 7, DUR = 8500, t0 = performance.now();
+  const under = rot => Math.floor(norm(-Math.PI / 2 - rot) / a);
+  let last = under(rot0); wheelDone = done;
+  const frame = now => {
+    const p = Math.min(1, (now - t0) / DUR), e = 1 - Math.pow(1 - p, 4), rot = rot0 + total * e;
+    drawWheel(cv, names, rot);
+    const u = under(rot); if (u !== last) { last = u; tick(); }
+    if (p < 1) wheelRaf = requestAnimationFrame(frame);
+    else { wheelRaf = null; const cb = wheelDone; wheelDone = null; setTimeout(() => cb && cb(), 450); }
+  };
+  drawWheel(cv, names, rot0); wheelRaf = requestAnimationFrame(frame);
+}
+
+/* ===== Son ===== */
+const LS_MUTE = 'spads-avent-muet';
+let muted = lsGet(LS_MUTE, false), actx = null;
+function audio() {
+  if (muted) return null;
+  try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); return actx; } catch (e) { return null; }
+}
+function tone(freq, start, dur, type = 'triangle', vol = .12) {
+  const a = audio(); if (!a) return;
+  const o = a.createOscillator(), g = a.createGain(), t = a.currentTime + start;
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + .02);
+}
+const tick = () => tone(1500, 0, .035, 'square', .05);
+const beep = hi => tone(hi ? 1320 : 880, 0, hi ? .5 : .15, 'sine', .15);
+function jingle() { [784, 988, 1175, 1568].forEach((f, i) => tone(f, i * .12, .3)); [1047, 1319, 1568].forEach(f => tone(f, .55, .9, 'triangle', .08)); }
+function updateMute() { $('#muteBtn').textContent = muted ? '🔇' : '🔊'; $('#muteBtn').title = muted ? 'Activer le son' : 'Couper le son'; }
+$('#muteBtn').onclick = () => { muted = !muted; lsSet(LS_MUTE, muted); updateMute(); if (!muted) tone(1047, 0, .15); };
+addEventListener('pointerdown', () => { if (!muted) audio(); });
+updateMute();
+
+/* ===== Ouverture en direct à minuit ===== */
+function parisClock() {
+  const o = {}; new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Paris', hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    .formatToParts(new Date()).forEach(x => o[x.type] = x.value);
+  return o;
+}
+function nextLive() {
+  const o = parisClock(), date = `${o.year}-${o.month}-${o.day}`;
+  let day;
+  if (date === `${YEAR}-11-30`) day = 1;
+  else if (date >= `${YEAR}-12-01` && date <= `${YEAR}-12-24`) day = +o.day + 1;
+  else return null;
+  const ms = ((23 - +o.hour) * 3600 + (59 - +o.minute) * 60 + (60 - +o.second)) * 1000 - new Date().getMilliseconds();
+  return { day, ms };
+}
+let pendingLive = null, lastBeep = null, prefetched = {}, testLive = null;
+function showCountdown(day, ms) {
+  const cd = $('#cd'); if (cd.hidden) cd.hidden = false;
+  $('#cdDay').textContent = day;
+  const sec = Math.max(0, Math.ceil(ms / 1000));
+  $('#cdNum').textContent = sec;
+  cd.classList.toggle('last', sec <= 5);
+  if (sec <= 5 && sec > 0 && lastBeep !== sec) { lastBeep = sec; beep(false); }
+}
+function hideCountdown() { $('#cd').hidden = true; lastBeep = null; }
+function launchLive(d, test) {
+  closeModal(); beep(true);
+  if (!test) { opened.add(d); lsSet(LS_OPENED, [...opened]); } else if (simulating()) simOpened.add(d);
+  render();
+  const r = computeDraws(data, d)[d];
+  const cell = document.querySelector(`.cell[data-d="${d}"]`);
+  if (cell) { cell.classList.remove('ready', 'locked', 'open'); void cell.offsetWidth; cell.classList.add('open'); cell.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  setTimeout(() => showDraw(d, r, 'live'), 900);
+}
+setInterval(() => {
+  if (testLive) {
+    const ms = testLive.at - Date.now();
+    if (ms > 0) showCountdown(testLive.day, ms);
+    else { const d = testLive.day; testLive = null; hideCountdown(); launchLive(d, true); }
+    return;
+  }
+  if (simulating()) { if (!$('#cd').hidden) hideCountdown(); return; }
+  const n = nextLive();
+  if (n && n.ms <= 60000) {
+    pendingLive = n.day; showCountdown(n.day, n.ms);
+    if (n.ms < 40000 && !prefetched[n.day] && !isAdmin) { prefetched[n.day] = 1; loadData().then(d => { data = d; }).catch(() => {}); }
+  } else if (pendingLive != null) {
+    const d = pendingLive; pendingLive = null; hideCountdown();
+    if (realOpenDay() >= d) launchLive(d, false);
+  }
+  if (n && n.ms <= 600000 && n.ms > 0) {
+    const m = Math.floor(n.ms / 60000), sec = Math.floor(n.ms / 1000) % 60;
+    $('#status').innerHTML = `🎡 Tirage du <b>${n.day} décembre</b> en direct à minuit — dans <b>${m}:${pad(sec)}</b>`;
+  }
+}, 200);
 $('#mClose').onclick = closeModal;
 $('#ov').addEventListener('click', e => { if (e.target.id === 'ov') closeModal(); });
 addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); $('#login').classList.remove('show'); $('#drawer').classList.remove('show'); } });
@@ -784,6 +923,7 @@ $('#tabs').addEventListener('click', e => {
   document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
   document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.id === b.dataset.p));
 });
+$('#testLive').onclick = () => { const d = Math.max(1, openDay()); $('#drawer').classList.remove('show'); testLive = { day: d, at: Date.now() + 6000 }; };
 $('#resetOpened').onclick = () => { opened = new Set(); lsSet(LS_OPENED, []); render(); toast('Cases refermées sur ce navigateur'); };
 
 function renderAdmin() {
