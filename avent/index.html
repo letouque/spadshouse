@@ -859,14 +859,40 @@ function buildBackground() {
     if (deco) { for (let k = 0; k < 14; k++) { c.fillStyle = ['#e8322c', '#f3cf7a', '#4fa3e0'][k % 3]; c.beginPath(); c.arc(x + (rng() - .5) * h * .6, y - h * .2 - rng() * h * .6, h * .028, 0, 6.283); c.fill(); }
       c.fillStyle = '#ffd36b'; c.beginPath(); for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? h * .04 : h * .09; c.lineTo(x + Math.cos(a) * rr, y - h * 1.02 + Math.sin(a) * rr); } c.fill(); }
   };
+  // chalets de formes variées
+  const chalet = (X, Y, type, k) => {
+    c.save(); c.translate(X, Y); c.scale(k, k);
+    c.fillStyle = 'rgba(40,60,90,.22)'; c.beginPath(); c.ellipse(12, 40, 80, 12, 0, 0, 6.283); c.fill();
+    const wood = ['#8a5a35', '#7a4a2a', '#9a6840', '#6b4226', '#a0703f'][type], roof = ['#c8242f', '#2f5a8a', '#3d6b45', '#6b2a50', '#8a3a1e'][type];
+    const win = (x, y, w, h) => { c.fillStyle = '#ffd36b'; c.fillRect(x, y, w, h); c.strokeStyle = '#4a2c16'; c.lineWidth = 2; c.strokeRect(x, y, w, h); c.beginPath(); c.moveTo(x + w / 2, y); c.lineTo(x + w / 2, y + h); c.moveTo(x, y + h / 2); c.lineTo(x + w, y + h / 2); c.stroke(); };
+    const snowRoof = pts => { c.fillStyle = roof; c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.closePath(); c.fill(); c.fillStyle = 'rgba(255,255,255,.92)'; c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(p[0], p[1] - (i === 1 ? 0 : 0)) : c.moveTo(p[0], p[1])); c.closePath(); c.save(); c.clip(); c.fillRect(-200, -200, 400, (Math.min(...pts.map(p => p[1])) + 200) + 14); c.restore(); };
+    const chimney = (x, y) => { c.fillStyle = '#7d6a5c'; c.fillRect(x, y, 14, 26); c.fillStyle = '#fff'; c.fillRect(x - 2, y - 4, 18, 6); c.fillStyle = 'rgba(220,225,235,.7)'; [[7, -14, 7], [12, -28, 9], [6, -44, 11]].forEach(([dx, dy, r]) => { c.beginPath(); c.arc(x + dx, y + dy, r, 0, 6.283); c.fill(); }); };
+    if (type === 0) { // chalet classique
+      c.fillStyle = wood; c.fillRect(-55, -25, 110, 65); chimney(22, -66); snowRoof([[-72, -20], [0, -72], [72, -20]]); win(-38, -5, 24, 20); win(14, -5, 24, 20);
+    } else if (type === 1) { // A-frame
+      chimney(18, -86); snowRoof([[-58, 40], [0, -90], [58, 40]]); c.fillStyle = wood; c.beginPath(); c.moveTo(-36, 40); c.lineTo(0, -48); c.lineTo(36, 40); c.closePath(); c.fill(); win(-14, -6, 28, 26); c.fillStyle = '#4a2c16'; c.fillRect(-9, 22, 18, 18);
+    } else if (type === 2) { // chalet à étage
+      c.fillStyle = wood; c.fillRect(-50, -60, 100, 100); c.fillStyle = 'rgba(0,0,0,.12)'; for (let yy = -55; yy < 40; yy += 10) c.fillRect(-50, yy, 100, 2);
+      chimney(-34, -110); snowRoof([[-66, -55], [0, -105], [66, -55]]); win(-34, -38, 22, 18); win(12, -38, 22, 18); win(-34, 4, 22, 18); c.fillStyle = '#4a2c16'; c.fillRect(12, 8, 20, 32);
+      c.fillStyle = '#5b3a22'; c.fillRect(-56, -16, 112, 6);
+    } else if (type === 3) { // cabane en rondins
+      c.fillStyle = wood; c.fillRect(-60, -10, 120, 50); c.fillStyle = 'rgba(255,255,255,.18)'; for (let yy = -6; yy < 40; yy += 9) { c.beginPath(); c.roundRect(-62, yy, 124, 7, 3.5); c.fill(); }
+      snowRoof([[-74, -6], [-40, -44], [40, -44], [74, -6]]); win(-20, 4, 26, 20); c.fillStyle = '#4a2c16'; c.fillRect(24, 8, 18, 32);
+      c.fillStyle = '#5b3a22'; for (let q = 0; q < 3; q++) c.fillRect(-80 + q * 6, 26 - q * 8, 22, 8);
+    } else { // grand chalet à toit asymétrique + balcon
+      c.fillStyle = wood; c.fillRect(-70, -30, 140, 70); chimney(40, -88); snowRoof([[-88, -24], [-20, -84], [88, -24]]);
+      win(-56, -14, 24, 22); win(-20, -14, 24, 22); win(30, -14, 24, 22); c.fillStyle = '#5b3a22'; c.fillRect(-76, 10, 152, 5); for (let q = -72; q < 76; q += 12) c.fillRect(q, 15, 3, 14); c.fillRect(-76, 28, 152, 3);
+      c.fillStyle = '#e8322c'; for (let q = -64; q < 70; q += 14) { c.beginPath(); c.arc(q, -24, 3, 0, 6.283); c.fill(); }
+    }
+    c.restore();
+  };
+  const chalets = [];
+  [[1240, 800, 0, 1], [300, 360, 1, .9], [1000, 740, 2, .9], [560, 760, 3, 1], [1400, 520, 4, .85], [980, 330, 1, .75], [1100, 250, 3, .7], [800, 620, 0, .75], [120, 440, 2, .8], [1530, 980, 3, .8], [260, 1020, 0, .75], [1500, 80, 4, .7]]
+    .forEach(([x, y, ty, k]) => { if (chalets.length < 8 && distToTrack(T, x, y) > TRACK_W / 2 + 95 * k && !chalets.some(q => Math.hypot(q[0] - x, q[1] - y) < 170) && !(x > 380 && x < 560 && y > 280 && y < 470)) chalets.push([x, y, ty, k]); });
   const trees = [];
-  for (let i = 0; i < 260; i++) { const x = 30 + rng() * 1540, y = 90 + rng() * 960; if (distToTrack(T, x, y) > TRACK_W / 2 + 46 && !(x > 440 && x < 1140 && y > 980) && !(x > 280 && x < 640 && y > 280 && y < 470) && !(x > 1150 && x < 1340 && y > 700 && y < 880)) trees.push([x, y, 34 + rng() * 34]); }
+  for (let i = 0; i < 260; i++) { const x = 30 + rng() * 1540, y = 90 + rng() * 960; if (distToTrack(T, x, y) > TRACK_W / 2 + 46 && !(x > 440 && x < 1140 && y > 980) && !(x > 280 && x < 640 && y > 280 && y < 470) && !chalets.some(q => Math.abs(x - q[0]) < 95 * q[3] && y > q[1] - 110 * q[3] && y < q[1] + 70 * q[3])) trees.push([x, y, 34 + rng() * 34]); }
   trees.push([460, 440, 190, 1]);
-  trees.sort((a, b) => a[1] - b[1]).forEach(t => tree(t[0], t[1], t[2], t[3]));
-  // chalet
-  { const X = 1240, Y = 800; c.fillStyle = 'rgba(40,60,90,.22)'; c.fillRect(X - 52, Y + 34, 130, 12);
-  c.fillStyle = '#8a5a35'; c.fillRect(X - 60, Y - 30, 120, 70); c.fillStyle = '#c8242f'; c.beginPath(); c.moveTo(X - 75, Y - 25); c.lineTo(X, Y - 75); c.lineTo(X + 75, Y - 25); c.fill(); c.fillStyle = '#fff'; c.fillRect(X - 75, Y - 30, 150, 8);
-  c.fillStyle = '#ffd36b'; c.fillRect(X - 40, Y - 8, 24, 20); c.fillRect(X + 14, Y - 8, 24, 20); c.fillStyle = '#2b1a10'; c.font = '700 14px Inter, system-ui, sans-serif'; c.textAlign = 'center'; c.fillText('VIN CHAUD', X, Y + 60); }
+  [...trees.map(t => ['t', ...t]), ...chalets.map(q => ['c', ...q])].sort((a, b) => a[2] - b[2]).forEach(o => o[0] === 't' ? tree(o[1], o[2], o[3], o[4]) : chalet(o[1], o[2], o[3], o[4]));
   // panneau de droite
   c.fillStyle = 'rgba(43,26,16,.9)'; c.fillRect(1600, 0, 320, 1080);
   BG = cv; return BG;
