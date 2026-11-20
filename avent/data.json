@@ -388,5 +388,9 @@
         "qte": 25
       }
     ]
-  }
+  },
+  "portraits": {
+    "Myaou": "portraits/myaou-mwoezsx2.jpg"
+  },
+  "coups": {}
 }
