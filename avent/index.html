@@ -248,6 +248,14 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
 .lotrow .prixrow{display:flex;gap:8px;margin-top:6px;font-size:.78rem;flex-wrap:wrap}
 .lotrow .prixrow label{display:flex;flex-direction:column;gap:2px;flex:1;min-width:110px}
 .lotrow .prixrow input{width:100%}
+.objets{margin-top:8px;font-size:.8rem;background:rgba(43,26,16,.05);border-radius:8px;padding:6px 8px}
+.objets .oh,.objets .orow{display:grid;grid-template-columns:1fr 54px 1fr 22px 22px;gap:6px;align-items:center}
+.objets .oh{font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;opacity:.65;margin-bottom:3px}
+.objets .orow{margin:3px 0}
+.objets input{width:100%;padding:4px 6px;font-size:.82rem}
+.objets a{text-decoration:none;font-size:.85rem;text-align:center}
+.objets .ofoot{display:flex;justify-content:space-between;align-items:center;margin-top:5px;font-weight:800}
+.objets .add{border:0;background:none;color:var(--green);font-weight:800;cursor:pointer;padding:2px 0;font:inherit;font-size:.8rem}
 .lotrow .rm{font-size:.75rem;border:0;background:none;color:var(--red);cursor:pointer;padding:2px 0;font-weight:700}
 .toast{position:fixed;z-index:70;left:50%;bottom:24px;transform:translateX(-50%) translateY(30px);opacity:0;background:var(--green-d);color:var(--cream);padding:10px 18px;border-radius:10px;font-weight:700;transition:.3s;pointer-events:none;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%)}
@@ -482,13 +490,24 @@ function defaultData() {
     jackpot: { maj: '', items: JACKPOT_DEFAUT.map(x => ({ ...x })) }
   };
 }
+// Un lot peut contenir plusieurs objets (ex. tenue complète = 5 pièces) : sa valeur = somme des objets.
+function syncLot(l) {
+  if (!l.objets.length) return l;
+  l.prix = l.objets.reduce((s, x) => s + x.prix * x.qte, 0);
+  l.itemId = l.objets[0].itemId;
+  return l;
+}
 function normalize(d) {
   const base = defaultData();
   d = Object.assign(base, d || {});
   d.lots = Array.from({ length: 25 }, (_, i) => {
     const l = d.lots[i];
     if (typeof l === 'string') return { nom: l, desc: '', image: '' };
-    return Object.assign({ nom: `Lot ${i + 1}`, desc: '', image: '', prix: 0, itemId: '' }, l || {});
+    const o = Object.assign({ nom: `Lot ${i + 1}`, desc: '', image: '', prix: 0, itemId: '' }, l || {});
+    if (!Array.isArray(o.objets)) o.objets = (o.itemId || +o.prix) ? [{ itemId: String(o.itemId || ''), qte: 1, prix: +o.prix || 0 }] : [];
+    o.objets = o.objets.map(x => ({ itemId: String(x.itemId || '').trim(), qte: Math.max(1, Math.round(+x.qte || 1)), prix: Math.max(0, Math.round(+x.prix || 0)) }));
+    syncLot(o);
+    return o;
   });
   d.cadeaux = Array.from({ length: 25 }, (_, i) => Object.assign({ nom: '', icone: '' }, (d.cadeaux || [])[i] || {}));
   d.figes = d.figes || {}; d.inscrits = d.inscrits || []; d.portraits = d.portraits || {}; d.coups = d.coups || {}; d.phrases = d.phrases || {}; d.liens = d.liens || {}; d.membres = d.membres || [];
@@ -2529,12 +2548,39 @@ function buildLots() {
         ${l.image ? `<button class="rm" data-rm="${i}">Retirer l'image</button>` : ''}</div>
       <div><input type="text" value="${esc(l.nom)}" data-nom="${i}" aria-label="Nom du lot ${i + 1}" placeholder="Nom du lot">
         <textarea data-desc="${i}" placeholder="Description (optionnelle)" aria-label="Description du lot ${i + 1}">${esc(l.desc)}</textarea>
-        <div class="prixrow"><label>ID objet <input type="text" inputmode="numeric" value="${esc(l.itemId)}" data-iid="${i}"></label><label>Valeur (gils) <input type="number" min="0" step="1000" value="${+l.prix || 0}" data-prix="${i}"></label></div></div>
+        <div class="objets">
+          <div class="oh"><span>ID objet</span><span>Qté</span><span>Prix unit. (gils)</span><span></span><span></span></div>
+          ${(l.objets.length ? l.objets : [{ itemId: '', qte: 1, prix: 0 }]).map((x, k) => `<div class="orow">
+            <input type="text" inputmode="numeric" value="${esc(x.itemId)}" data-o="${i}:${k}:itemId" aria-label="ID objet ${k + 1} du lot ${i + 1}">
+            <input type="number" min="1" value="${x.qte}" data-o="${i}:${k}:qte" aria-label="Quantité">
+            <input type="number" min="0" step="1000" value="${x.prix}" data-o="${i}:${k}:prix" aria-label="Prix unitaire">
+            ${/^\d+$/.test(x.itemId) ? `<a href="https://universalis.app/market/${esc(x.itemId)}" target="_blank" rel="noopener" title="Voir sur Universalis">↗</a>` : '<span></span>'}
+            <button class="x" data-orm="${i}:${k}" title="Retirer cet objet">×</button></div>`).join('')}
+          <div class="ofoot"><button class="add" data-oadd="${i}">+ objet</button><span>Valeur du lot : ${fmt(+l.prix || 0)} gils${l.objets.length > 1 ? ` (${l.objets.length} objets)` : ''}</span></div>
+        </div></div>
     </div>`).join('');
   const L = $('#lotsList');
   L.querySelectorAll('[data-nom]').forEach(inp => inp.onchange = () => mutate(d => { d.lots[+inp.dataset.nom].nom = inp.value.trim() || `Lot ${+inp.dataset.nom + 1}`; }));
-  L.querySelectorAll('[data-iid]').forEach(inp => inp.onchange = () => mutate(d => { d.lots[+inp.dataset.iid].itemId = inp.value.trim(); }));
-  L.querySelectorAll('[data-prix]').forEach(inp => inp.onchange = () => mutate(d => { d.lots[+inp.dataset.prix].prix = Math.max(0, Math.round(+inp.value || 0)); }));
+  L.querySelectorAll('[data-o]').forEach(inp => inp.onchange = () => {
+    const [i, k, f] = inp.dataset.o.split(':');
+    mutate(d => {
+      const l = d.lots[+i];
+      while (l.objets.length <= +k) l.objets.push({ itemId: '', qte: 1, prix: 0 });
+      l.objets[+k][f] = f === 'itemId' ? inp.value.trim() : Math.max(f === 'qte' ? 1 : 0, Math.round(+inp.value || 0));
+      if (!l.objets.some(x => x.itemId || x.prix)) { l.objets = []; l.prix = 0; l.itemId = ''; } else syncLot(l);
+    });
+    const l = data.lots[+i], foot = inp.closest('.objets').querySelector('.ofoot span');
+    foot.textContent = `Valeur du lot : ${fmt(+l.prix || 0)} gils${l.objets.length > 1 ? ` (${l.objets.length} objets)` : ''}`;
+  });
+  L.querySelectorAll('[data-oadd]').forEach(b => b.onclick = () => {
+    mutate(d => { const l = d.lots[+b.dataset.oadd]; if (!l.objets.length) l.objets.push({ itemId: '', qte: 1, prix: 0 }); l.objets.push({ itemId: '', qte: 1, prix: 0 }); });
+    buildLots();
+  });
+  L.querySelectorAll('[data-orm]').forEach(b => b.onclick = () => {
+    const [i, k] = b.dataset.orm.split(':').map(Number);
+    mutate(d => { const l = d.lots[i]; l.objets.splice(k, 1); if (!l.objets.length) { l.prix = 0; l.itemId = ''; } else syncLot(l); });
+    buildLots();
+  });
   L.querySelectorAll('[data-desc]').forEach(inp => inp.onchange = () => mutate(d => { d.lots[+inp.dataset.desc].desc = inp.value.trim(); }));
   L.querySelectorAll('[data-img]').forEach(th => {
     const go = () => { imgTarget = +th.dataset.img; $('#imgInput').value = ''; $('#imgInput').click(); };
@@ -2544,7 +2590,7 @@ function buildLots() {
 }
 
 $('#univBtn').onclick = async () => {
-  const ids = [...new Set(data.lots.map(l => String(l.itemId || '').trim()).filter(x => /^\d+$/.test(x)))];
+  const ids = [...new Set(data.lots.flatMap(l => l.objets.map(x => x.itemId)).filter(x => /^\d+$/.test(x)))];
   if (!ids.length) { toast('Aucun ID objet renseigné'); return; }
   $('#univState').textContent = 'Chargement…';
   try {
@@ -2557,7 +2603,7 @@ $('#univBtn').onclick = async () => {
       if (v) prix[x.itemId] = Math.round(v);
     }
     let n = 0;
-    mutate(d => d.lots.forEach(l => { const v = prix[String(l.itemId).trim()]; if (v) { l.prix = v; n++; } }));
+    mutate(d => d.lots.forEach(l => { l.objets.forEach(x => { const v = prix[x.itemId]; if (v) { x.prix = v; n++; } }); syncLot(l); }));
     buildLots(); $('#univState').textContent = `${n} prix mis à jour`;
   } catch (e) { $('#univState').textContent = 'Échec : ' + e.message; }
 };
