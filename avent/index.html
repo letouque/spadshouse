@@ -248,6 +248,11 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
 .lotrow .prixrow{display:flex;gap:8px;margin-top:6px;font-size:.78rem;flex-wrap:wrap}
 .lotrow .prixrow label{display:flex;flex-direction:column;gap:2px;flex:1;min-width:110px}
 .lotrow .prixrow input{width:100%}
+.lotbar{position:sticky;top:-16px;z-index:2;background:#f8efdc;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:10px 0;border-bottom:2px solid var(--gold);font-size:.85rem;font-weight:700}
+.lotbar label{display:flex;gap:5px;align-items:center}
+.lotbar input[type=number]{width:70px;padding:4px 6px}
+.lotbar select{padding:4px 6px}
+.lotsum{width:100%;font-weight:600;opacity:.8}
 .objets{margin-top:8px;font-size:.8rem;background:rgba(43,26,16,.05);border-radius:8px;padding:6px 8px}
 .objets .oh,.objets .orow{display:grid;grid-template-columns:1fr 54px 1fr 22px 22px;gap:6px;align-items:center}
 .objets .oh{font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;opacity:.65;margin-bottom:3px}
@@ -382,6 +387,15 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
     <p class="muted">Clique sur une vignette pour ajouter ou changer l'image. Chaque jour, un lot encore disponible est tiré au hasard.</p>
     <p class="muted">💰 <b>Valeur (admin seulement)</b> : au 2e tour, moins un inscrit a gagné en valeur au 1er tour, plus il a de chances d'être tiré. Mets l'ID de l'objet pour récupérer le prix sur Universalis (prix le plus bas sur le centre de données Light) ; sans ID ou sans annonce, saisis le prix à la main.</p>
     <div class="row"><button class="btn small green" id="univBtn">Mettre à jour les prix (Universalis)</button> <span class="muted" id="univState"></span></div>
+    <div class="lotbar">
+      <label>Trier <select id="lotSort">
+        <option value="num">Par numéro</option><option value="desc">Prix décroissant</option><option value="asc">Prix croissant</option><option value="nom">Par nom</option>
+      </select></label>
+      <label>Prix entre <input type="number" min="0" step="0.1" id="lotMin" placeholder="0"> et <input type="number" min="0" step="0.1" id="lotMax" placeholder="∞"> M</label>
+      <label><input type="checkbox" id="lotNoPrice"> Sans prix seulement</label>
+      <button class="btn small ghost" id="lotReset" type="button">Réinitialiser</button>
+      <div class="lotsum" id="lotSum"></div>
+    </div>
     <div id="lotsList"></div>
     <input type="file" id="imgInput" accept="image/*" hidden>
   </div>
@@ -2541,8 +2555,33 @@ function updateJpSum() {
 }
 $('#jpAdd').onclick = () => mutate(d => { d.jackpot.items.push({ nom: 'Nouvel objet', type: 'anneau', luxe: false, prix: 0, qte: 0 }); d.jackpot.maj = new Date().toISOString(); });
 
+const lotView = { sort: 'num', min: '', max: '', noPrice: false };
+function visibleLots() {
+  const v = lotView, min = v.min === '' ? null : +v.min * 1e6, max = v.max === '' ? null : +v.max * 1e6;
+  let idx = data.lots.map((_, i) => i).filter(i => {
+    const p = +data.lots[i].prix || 0;
+    if (v.noPrice) return !p;
+    return (min == null || p >= min) && (max == null || p <= max);
+  });
+  const P = i => +data.lots[i].prix || 0;
+  if (v.sort === 'desc') idx.sort((a, b) => P(b) - P(a) || a - b);
+  else if (v.sort === 'asc') idx.sort((a, b) => P(a) - P(b) || a - b);
+  else if (v.sort === 'nom') idx.sort((a, b) => data.lots[a].nom.localeCompare(data.lots[b].nom, 'fr') || a - b);
+  return idx;
+}
+function updateLotSum() {
+  const idx = visibleLots(), tot = idx.reduce((s, i) => s + (+data.lots[i].prix || 0), 0), nb = idx.filter(i => !+data.lots[i].prix).length;
+  $('#lotSum').textContent = `${idx.length} lot${idx.length > 1 ? 's' : ''} affiché${idx.length > 1 ? 's' : ''} sur 25 · valeur totale ${fmt(tot)} gils${nb ? ` · ${nb} sans prix` : ''}`;
+}
+[['#lotSort', 'sort', 'value'], ['#lotMin', 'min', 'value'], ['#lotMax', 'max', 'value'], ['#lotNoPrice', 'noPrice', 'checked']].forEach(([sel, k, prop]) =>
+  $(sel).addEventListener(prop === 'checked' ? 'change' : 'input', e => { lotView[k] = e.target[prop]; buildLots(); }));
+$('#lotReset').onclick = () => { Object.assign(lotView, { sort: 'num', min: '', max: '', noPrice: false }); $('#lotSort').value = 'num'; $('#lotMin').value = ''; $('#lotMax').value = ''; $('#lotNoPrice').checked = false; buildLots(); };
+
 function buildLots() {
-  $('#lotsList').innerHTML = data.lots.map((l, i) => `
+  updateLotSum();
+  const idx = visibleLots();
+  if (!idx.length) { $('#lotsList').innerHTML = '<p class="muted" style="padding:14px 0">Aucun lot ne correspond au filtre.</p>'; return; }
+  $('#lotsList').innerHTML = idx.map(i => [data.lots[i], i]).map(([l, i]) => `
     <div class="lotrow" data-i="${i}">
       <div><div class="thumb ${l.image ? 'has' : ''}" data-img="${i}" role="button" tabindex="0" style="${l.image ? `background-image:url('${esc(imgUrl(l))}')` : ''}"><span class="n">${i + 1}</span>${l.image ? '' : '+ image'}</div>
         ${l.image ? `<button class="rm" data-rm="${i}">Retirer l'image</button>` : ''}</div>
@@ -2571,6 +2610,7 @@ function buildLots() {
     });
     const l = data.lots[+i], foot = inp.closest('.objets').querySelector('.ofoot span');
     foot.textContent = `Valeur du lot : ${fmt(+l.prix || 0)} gils${l.objets.length > 1 ? ` (${l.objets.length} objets)` : ''}`;
+    updateLotSum();
   });
   L.querySelectorAll('[data-oadd]').forEach(b => b.onclick = () => {
     mutate(d => { const l = d.lots[+b.dataset.oadd]; if (!l.objets.length) l.objets.push({ itemId: '', qte: 1, prix: 0 }); l.objets.push({ itemId: '', qte: 1, prix: 0 }); });
