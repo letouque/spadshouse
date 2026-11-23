@@ -8,175 +8,260 @@
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/052000/052463_hr1.tex",
       "prix": 7849999,
-      "itemId": "40390"
+      "itemId": "40390",
+      "objets": [
+        {
+          "itemId": "40390",
+          "qte": 1,
+          "prix": 7849999
+        }
+      ]
     },
     {
       "nom": "Carotte de la bonne fortune",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/025000/025207_hr1.tex",
       "prix": 3899999,
-      "itemId": "48096"
+      "itemId": "48096",
+      "objets": [
+        {
+          "itemId": "48096",
+          "qte": 1,
+          "prix": 3899999
+        }
+      ]
     },
     {
       "nom": "L'Étiquette éorzéenne : Ricaner",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026435_hr1.tex",
       "prix": 689999,
-      "itemId": "52292"
+      "itemId": "52292",
+      "objets": [
+        {
+          "itemId": "52292",
+          "qte": 1,
+          "prix": 689999
+        }
+      ]
     },
     {
       "nom": "Sifflet colibri silencieux",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/004000/004350_hr1.tex",
       "prix": 3496988,
-      "itemId": "52264"
+      "itemId": "52264",
+      "objets": [
+        {
+          "itemId": "52264",
+          "qte": 1,
+          "prix": 3496988
+        }
+      ]
     },
     {
       "nom": "Cor charrette de l'équipe de soutien",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/004000/004323_hr1.tex",
       "prix": 20997986,
-      "itemId": "46834"
+      "itemId": "46834",
+      "objets": [
+        {
+          "itemId": "46834",
+          "qte": 1,
+          "prix": 20997986
+        }
+      ]
     },
     {
       "nom": "Cor Phaéton",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026038_hr1.tex",
       "prix": 4399899,
-      "itemId": "39490"
+      "itemId": "39490",
+      "objets": [
+        {
+          "itemId": "39490",
+          "qte": 1,
+          "prix": 4399899
+        }
+      ]
     },
     {
       "nom": "Clef d'activation de Gabriel v3",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026014_hr1.tex",
       "prix": 436990,
-      "itemId": "32846"
+      "itemId": "32846",
+      "objets": [
+        {
+          "itemId": "32846",
+          "qte": 1,
+          "prix": 436990
+        }
+      ]
     },
     {
       "nom": "Coffre d'arme de rêve",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026557_hr1.tex",
       "prix": 3049998,
-      "itemId": "45070"
+      "itemId": "45070",
+      "objets": [
+        {
+          "itemId": "45070",
+          "qte": 1,
+          "prix": 3049998
+        }
+      ]
     },
     {
       "nom": "Coffre d'arme de rêve",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026557_hr1.tex",
       "prix": 3049998,
-      "itemId": "45070"
+      "itemId": "45070",
+      "objets": [
+        {
+          "itemId": "45070",
+          "qte": 1,
+          "prix": 3049998
+        }
+      ]
     },
     {
       "nom": "Carotte de la bonne fortune",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/025000/025207_hr1.tex",
       "prix": 3899999,
-      "itemId": "48096"
+      "itemId": "48096",
+      "objets": [
+        {
+          "itemId": "48096",
+          "qte": 1,
+          "prix": 3899999
+        }
+      ]
     },
     {
       "nom": "Lot 11",
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": ""
+      "itemId": "",
+      "objets": []
     },
     {
       "nom": "Lot 12",
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": ""
+      "itemId": "",
+      "objets": []
     },
     {
       "nom": "Lot 13",
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": ""
+      "itemId": "",
+      "objets": []
     },
     {
       "nom": "Lot 14",
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": ""
+      "itemId": "",
+      "objets": []
     },
     {
       "nom": "Lot 15",
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": ""
+      "itemId": "",
+      "objets": []
     },
     {
       "nom": "Lot 16",
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": ""
+      "itemId": "",
+      "objets": []
     },
     {
       "nom": "Lot 17",
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": ""
+      "itemId": "",
+      "objets": []
     },
     {
       "nom": "Lot 18",
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": ""
+      "itemId": "",
+      "objets": []
     },
     {
       "nom": "Lot 19",
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": ""
+      "itemId": "",
+      "objets": []
     },
     {
       "nom": "Lot 20",
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": ""
+      "itemId": "",
+      "objets": []
     },
     {
       "nom": "Lot 21",
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": ""
+      "itemId": "",
+      "objets": []
     },
     {
       "nom": "Lot 22",
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": ""
+      "itemId": "",
+      "objets": []
     },
     {
       "nom": "Lot 23",
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": ""
+      "itemId": "",
+      "objets": []
     },
     {
       "nom": "Lot 24",
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": ""
+      "itemId": "",
+      "objets": []
     },
     {
       "nom": "Lot 25",
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": ""
+      "itemId": "",
+      "objets": []
     }
   ],
   "cadeaux": [
@@ -381,7 +466,11 @@
       "n": "Kaméhamémog"
     }
   },
-  "phrases": {},
+  "phrases": {
+    "Evilnaga": [
+      "Mort Mort Mort !"
+    ]
+  },
   "membres": [
     [
       "Cugell L'astucieux",
