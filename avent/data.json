@@ -45,6 +45,12 @@
           "nom": "L'Étiquette éorzéenne : Ricaner",
           "qte": 1,
           "prix": 694977
+        },
+        {
+          "itemId": "",
+          "nom": "",
+          "qte": 1,
+          "prix": 0
         }
       ]
     },
@@ -94,7 +100,7 @@
       ]
     },
     {
-      "nom": "Clef d'activation de Gabriel v3",
+      "nom": "Lot 7",
       "desc": "",
       "image": "",
       "prix": 0,
@@ -312,12 +318,19 @@
       ]
     },
     {
-      "nom": "Lot 18",
+      "nom": "Cosmo-Planche",
       "desc": "",
-      "image": "",
-      "prix": 0,
-      "itemId": "",
-      "objets": []
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026082_hr1.tex",
+      "prix": 1209999,
+      "itemId": "47336",
+      "objets": [
+        {
+          "itemId": "47336",
+          "nom": "Cosmo-planche",
+          "qte": 1,
+          "prix": 1209999
+        }
+      ]
     },
     {
       "nom": "Sifflet dhalmel de l'espace",
@@ -353,14 +366,14 @@
       "nom": "Sifflet ornithorynque porteur",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026039_hr1.tex",
-      "prix": 5291589,
+      "prix": 5290990,
       "itemId": "52266",
       "objets": [
         {
           "itemId": "52266",
           "nom": "Sifflet ornithorynque porteur",
           "qte": 1,
-          "prix": 5291589
+          "prix": 5290990
         }
       ]
     },
