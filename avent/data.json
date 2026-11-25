@@ -37,7 +37,7 @@
       "nom": "L'Étiquette éorzéenne : Ricaner + Sifflet dhalmel de l'espace",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026435_hr1.tex",
-      "prix": 1104957,
+      "prix": 1104956,
       "itemId": "52292",
       "objets": [
         {
@@ -50,7 +50,7 @@
           "itemId": "46825",
           "nom": "Sifflet dhalmel de l'espace",
           "qte": 1,
-          "prix": 409980
+          "prix": 409979
         }
       ]
     },
@@ -103,14 +103,14 @@
       "nom": "Méthode de coiffure “Carré avec demi-chignon”",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026178_hr1.tex",
-      "prix": 2464540,
+      "prix": 2504482,
       "itemId": "51747",
       "objets": [
         {
           "itemId": "51747",
           "nom": "Méthode de coiffure “Carré avec demi-chignon”",
           "qte": 1,
-          "prix": 1749999
+          "prix": 1789941
         },
         {
           "itemId": "33706",
@@ -187,7 +187,7 @@
       "nom": "Lot de néons muraux",
       "desc": "2 néons verticaux, 1 néon horizontal, 1 néon Belhamel et un distributeur",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/051000/051598_hr1.tex",
-      "prix": 3064789,
+      "prix": 3064791,
       "itemId": "49847",
       "objets": [
         {
@@ -212,7 +212,7 @@
           "itemId": "44119",
           "nom": "Néon mural horizontal",
           "qte": 1,
-          "prix": 2196996
+          "prix": 2196998
         }
       ]
     },
@@ -304,7 +304,7 @@
       "nom": "Pelle + Clef d'activation de Gabriel v3 + Clef d'activation d'arme blindée cosmique",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/058000/058056_hr1.tex",
-      "prix": 1077213,
+      "prix": 1496202,
       "itemId": "52288",
       "objets": [
         {
@@ -323,7 +323,7 @@
           "itemId": "50442",
           "nom": "Clef d'activation d'arme blindée cosmique",
           "qte": 1,
-          "prix": 0
+          "prix": 418989
         }
       ]
     },
@@ -364,14 +364,14 @@
       "nom": "Cosmo-planche",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026082_hr1.tex",
-      "prix": 1209999,
+      "prix": 1205000,
       "itemId": "47336",
       "objets": [
         {
           "itemId": "47336",
           "nom": "Cosmo-planche",
           "qte": 1,
-          "prix": 1209999
+          "prix": 1205000
         }
       ]
     },
@@ -379,14 +379,14 @@
       "nom": "Lot de mascottes",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/059000/059947_hr1.tex",
-      "prix": 0,
+      "prix": 689960,
       "itemId": "47965",
       "objets": [
         {
           "itemId": "47965",
           "nom": "Bébé chat-pardeur",
           "qte": 1,
-          "prix": 0
+          "prix": 689960
         }
       ]
     },
