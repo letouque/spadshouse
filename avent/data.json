@@ -272,6 +272,12 @@
           "nom": "Clef d'activation d'arme blindée cosmique",
           "qte": 1,
           "prix": 0
+        },
+        {
+          "itemId": "52272",
+          "nom": "Clef d'activation de déblayeuse cosmique grise",
+          "qte": 1,
+          "prix": 0
         }
       ]
     },
