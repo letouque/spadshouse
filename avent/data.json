@@ -265,8 +265,15 @@
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": "",
-      "objets": []
+      "itemId": "50442",
+      "objets": [
+        {
+          "itemId": "50442",
+          "nom": "Clef d'activation d'arme blindée cosmique",
+          "qte": 1,
+          "prix": 0
+        }
+      ]
     },
     {
       "nom": "Clef d'activation de mécano cosmique de série",
