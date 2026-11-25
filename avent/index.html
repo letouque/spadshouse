@@ -1849,11 +1849,11 @@ function planBucheron(d, pool, winner) {
   const n = players.length, info = {};
   players.forEach((nom, i) => info[nom] = { nom, color: playerColor(i), outR: 0 });
   const sizes = roundSizes(n), rounds = [], ticker = [], say = (t, txt) => ticker.push({ t, txt });
-  let alive = players.slice(), t = 1.5;
+  let alive = players.slice(), t = 0;
   const others = shuffleR(rng, players.filter(x => x !== winner));
   const plan = [...sizes.map(k => ({ keep: [winner, ...others.slice(0, k - 1)] })), { keep: [winner], final: true }];
   plan.forEach((pr, ri) => {
-    const final = !!pr.final, a = t, start = a + 2.2, L = buLayout(alive, rng);
+    const final = !!pr.final, a = t, start = a + (ri === 0 ? 7.5 : 5.5), L = buLayout(alive, rng);
     const surv = alive.filter(x => pr.keep.includes(x)), lose = alive.filter(x => !pr.keep.includes(x));
     const order = final ? [winner, ...shuffleR(rng, alive.filter(x => x !== winner))] : shuffleR(rng, surv.slice());
     const fin = {};
@@ -1874,11 +1874,12 @@ function planBucheron(d, pool, winner) {
     // premier sapin qui tangue
     const tg = alive.map(nom => [nom, P[nom].hits[BU_TANGUE - 1]]).filter(x => x[1]).sort((x, y) => x[1] - y[1])[0];
     if (tg) say(tg[1] + .1, `🌲 Le sapin de ${tg[0]} commence à tanguer… plus que ${BU_COUPS - BU_TANGUE} coups !`);
-    say(a, final ? `🪓 FINALE : ${alive.join(', ')} — ${BU_COUPS} coups pour abattre le sapin géant !` : `🪓 Manche ${ri + 1} : ${alive.length} bûcherons, ${pr.keep.length} places · ${BU_COUPS} coups pour abattre son sapin`);
+    say(start - 1.2, final ? `🪓 FINALE : ${alive.join(', ')} — ${BU_COUPS} coups pour abattre le sapin géant !` : `🪓 Manche ${ri + 1} : ${alive.length} bûcherons, ${pr.keep.length} places · ${BU_COUPS} coups pour abattre son sapin`);
     order.forEach((nom, k) => { if (fin[nom]) say(fin[nom], final ? `🌲 TIMBERRR !!! ${winner} abat le sapin géant et remporte la coupe !` : `🌲 ÇA TOMBE ! ${nom} abat son sapin · qualifié${k === 0 ? ' en premier' : ''} !`); });
     if (!final) say(end - 1.4, `🪵 Éliminé${lose.length > 1 ? 's' : ''} : ${lose.join(', ')}`);
+    if (ri === 0) say(0, `🌲 Bienvenue à la coupe de sapin ! ${alive.length} bûcherons, un seul vainqueur…`);
     lose.forEach(nom => { info[nom].outR = ri + 1; info[nom].outT = end; });
-    rounds.push({ i: ri, final, a, start, end, scale: final ? 1.35 : 1, alive: alive.slice(), keep: pr.keep, P, L, wf: fin[winner] });
+    rounds.push({ i: ri, final, a, start, end, scale: final ? 1.35 : 1, alive: alive.slice(), keep: pr.keep, P, L, wf: fin[winner], places: final ? 1 : pr.keep.length, falls: alive.filter(x => fin[x]).map(x => fin[x]).sort((u, v) => u - v) });
     alive = surv; t = end;
   });
   ticker.sort((x, y) => x.t - y.t);
@@ -2038,7 +2039,42 @@ function drawBucheron(c, P, t, R, now, replay, roundAt, hitsAt) {
     if (!felled && hits >= BU_TANGUE && !pz) { c.font = `800 ${13 * sc}px Inter, system-ui, sans-serif`; c.textAlign = 'center'; c.fillStyle = '#c4232c'; c.globalAlpha = fade * (.6 + .4 * Math.sin(now / 120)); c.fillText('ÇA TANGUE !', x, y - 196 * sc * r.scale - 34 * sc * (r.final ? 1.25 : 1)); c.globalAlpha = fade; }
     c.restore();
   }
-  if (!replay) P.rounds.forEach(rr => bigBanner(c, rr.final ? 'FINALE !' : `MANCHE ${rr.i + 1}`, t - rr.a));
+  if (!replay) {
+    // indicateur : qualifiés et places restantes
+    if (t >= r.start - .5) {
+      const q = r.falls.filter(f => f <= t).length, left = Math.max(0, r.places - q);
+      const txt = r.final ? (q ? '🏆 Le vainqueur est connu !' : '🏆 Une seule place : le premier sapin à terre gagne !') : `🌲 Qualifiés : ${q} / ${r.places}      🎟️ Places restantes : ${left}`;
+      c.font = '800 30px Inter, system-ui, sans-serif'; const w = c.measureText(txt).width + 56;
+      c.fillStyle = left === 0 && !r.final ? 'rgba(31,90,58,.92)' : 'rgba(43,26,16,.85)'; c.beginPath(); c.roundRect(800 - w / 2, 1000, w, 56, 28); c.fill();
+      c.fillStyle = '#fff8ea'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(txt, 800, 1029);
+    }
+    // carte de présentation (avant la manche 1) et de transition (avant chaque manche et la finale)
+    const k = smooth(r.a, r.a + .6, t) * (1 - smooth(r.start - .9, r.start - .2, t));
+    if (k > 0) buCard(c, P, r, k, t);
+  }
+}
+function buCard(c, P, r, k, t) {
+  c.save(); c.globalAlpha = k;
+  c.fillStyle = 'rgba(20,12,6,.55)'; c.fillRect(0, 0, 1600, 1080);
+  const w = 1100, h = r.i === 0 ? 560 : 470, x0 = 800 - w / 2, y0 = 540 - h / 2 + (1 - k) * 40;
+  c.fillStyle = '#f6ead2'; c.strokeStyle = '#d9a441'; c.lineWidth = 8; c.beginPath(); c.roundRect(x0, y0, w, h, 28); c.fill(); c.stroke();
+  c.textAlign = 'center'; c.textBaseline = 'middle';
+  let y = y0 + 70;
+  if (r.i === 0) { c.font = '900 34px Inter, system-ui, sans-serif'; c.fillStyle = '#a3222a'; c.fillText('🪓 ÉPREUVE DU JOUR 🪓', 800, y); y += 74; c.font = '900 84px "Playfair Display", serif'; c.fillStyle = '#2b1a10'; c.fillText('La coupe de sapin', 800, y); y += 76;
+    c.font = '600 30px Inter, system-ui, sans-serif'; c.fillStyle = '#4a2c16'; c.fillText(`${BU_COUPS} coups de hache pour abattre son sapin · il tangue au ${BU_TANGUE}e`, 800, y); y += 44; c.fillText('Les premiers sapins à terre sont qualifiés !', 800, y); y += 58;
+    c.font = '800 30px Inter, system-ui, sans-serif'; c.fillStyle = '#1f5a3a'; c.fillText(`${r.alive.length} bûcherons · ${r.places} places pour la suite`, 800, y); y += 62; }
+  else { c.font = '900 92px "Playfair Display", serif'; c.fillStyle = r.final ? '#a3222a' : '#2b1a10'; c.fillText(r.final ? 'FINALE !' : `Manche ${r.i + 1}`, 800, y + 20); y += 112;
+    c.font = '600 30px Inter, system-ui, sans-serif'; c.fillStyle = '#4a2c16'; c.fillText(r.final ? 'Des sapins géants · le premier à terre remporte la coupe !' : `${r.alive.length} qualifiés · ${r.places} places pour la suite`, 800, y); y += 70; }
+  c.font = '800 26px Inter, system-ui, sans-serif';
+  const chips = r.alive.map(n => ({ n, w: c.measureText(n).width + 44 })), lines = [[]]; let lw = 0;
+  chips.forEach(ch => { if (lw + ch.w > w - 80 && lines[lines.length - 1].length) { lines.push([]); lw = 0; } lines[lines.length - 1].push(ch); lw += ch.w + 12; });
+  let idx = 0;
+  lines.forEach(ln => { const tw = ln.reduce((s2, ch) => s2 + ch.w + 12, -12); let cx = 800 - tw / 2;
+    ln.forEach(ch => { const ap = smooth(r.a + .5 + idx * .15, r.a + .8 + idx * .15, t); idx++; c.globalAlpha = k * ap; c.fillStyle = P.info[ch.n].color; c.beginPath(); c.roundRect(cx, y - 22 + (1 - ap) * 12, ch.w, 44, 22); c.fill(); c.fillStyle = '#fff'; c.fillText(ch.n, cx + ch.w / 2, y + (1 - ap) * 12); cx += ch.w + 12; });
+    y += 56; });
+  c.globalAlpha = k; const cd = Math.ceil(r.start - t);
+  if (cd <= 3 && cd >= 1) { c.font = '900 40px Inter, system-ui, sans-serif'; c.fillStyle = '#a3222a'; c.fillText(`Départ dans ${cd}…`, 800, y0 + h - 40); }
+  c.restore();
 }
 
 /* ===== Emballage de cadeaux ===== */
