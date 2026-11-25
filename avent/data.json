@@ -206,8 +206,15 @@
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": "",
-      "objets": []
+      "itemId": "47983",
+      "objets": [
+        {
+          "itemId": "47983",
+          "nom": "L'Étiquette éorzéenne : Pirouette",
+          "qte": 1,
+          "prix": 0
+        }
+      ]
     },
     {
       "nom": "Monture Sourieur cosmique",
