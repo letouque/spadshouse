@@ -316,8 +316,15 @@
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": "",
-      "objets": []
+      "itemId": "41494",
+      "objets": [
+        {
+          "itemId": "41494",
+          "nom": "Sifflet pampa de la luna",
+          "qte": 1,
+          "prix": 0
+        }
+      ]
     },
     {
       "nom": "Sifflet ornithorynque porteur",
