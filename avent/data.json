@@ -234,7 +234,7 @@
     {
       "nom": "Tenue Shishû",
       "desc": "Tenue complète",
-      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/056000/056580_hr1.tex",
+      "image": "",
       "prix": 1799991,
       "itemId": "40441",
       "objets": [
@@ -369,7 +369,7 @@
     {
       "nom": "Tenue de videur",
       "desc": "",
-      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/056000/056355_hr1.tex",
+      "image": "",
       "prix": 1056001,
       "itemId": "47921",
       "objets": [
