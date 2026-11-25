@@ -393,6 +393,12 @@
           "nom": "Mini-belhamel",
           "qte": 1,
           "prix": 0
+        },
+        {
+          "itemId": "50824",
+          "nom": "Lamantin prismatique",
+          "qte": 1,
+          "prix": 0
         }
       ]
     },
