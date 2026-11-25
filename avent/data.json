@@ -379,7 +379,7 @@
       "nom": "Lot de mascottes",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/059000/059947_hr1.tex",
-      "prix": 689960,
+      "prix": 3456919,
       "itemId": "47965",
       "objets": [
         {
@@ -392,13 +392,13 @@
           "itemId": "47964",
           "nom": "Mini-belhamel",
           "qte": 1,
-          "prix": 0
+          "prix": 1479959
         },
         {
           "itemId": "50824",
           "nom": "Lamantin prismatique",
           "qte": 1,
-          "prix": 0
+          "prix": 1287000
         }
       ]
     },
