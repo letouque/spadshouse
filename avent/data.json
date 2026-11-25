@@ -417,10 +417,17 @@
     {
       "nom": "Lot 24",
       "desc": "",
-      "image": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026014_hr1.tex",
       "prix": 0,
-      "itemId": "",
-      "objets": []
+      "itemId": "39491",
+      "objets": [
+        {
+          "itemId": "39491",
+          "nom": "Clef d'activation de Pinky",
+          "qte": 1,
+          "prix": 0
+        }
+      ]
     },
     {
       "nom": "Lot 25",
