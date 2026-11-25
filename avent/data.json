@@ -201,10 +201,10 @@
       ]
     },
     {
-      "nom": "L'Étiquette éorzéenne : Pirouette",
+      "nom": "L'Étiquette éorzéenne : Pirouette + Fourche",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026435_hr1.tex",
-      "prix": 777773,
+      "prix": 1126771,
       "itemId": "47983",
       "objets": [
         {
@@ -212,6 +212,12 @@
           "nom": "L'Étiquette éorzéenne : Pirouette",
           "qte": 1,
           "prix": 777773
+        },
+        {
+          "itemId": "51744",
+          "nom": "Fourche",
+          "qte": 1,
+          "prix": 348998
         }
       ]
     },
