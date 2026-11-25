@@ -369,7 +369,7 @@
     {
       "nom": "Tenue de videur",
       "desc": "",
-      "image": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/057000/057243_hr1.tex",
       "prix": 1056001,
       "itemId": "47921",
       "objets": [
@@ -398,8 +398,8 @@
           "prix": 263000
         },
         {
-          "itemId": "",
-          "nom": "",
+          "itemId": "48741",
+          "nom": "Tenue de videur",
           "qte": 1,
           "prix": 0
         }
