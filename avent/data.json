@@ -129,6 +129,12 @@
           "nom": "Méthode de coiffure “Chignon tressé”",
           "qte": 1,
           "prix": 0
+        },
+        {
+          "itemId": "24233",
+          "nom": "Méthode de coiffure “Tresse bandeau”",
+          "qte": 1,
+          "prix": 0
         }
       ]
     },
@@ -351,7 +357,7 @@
     {
       "nom": "Jackpot de Noël",
       "desc": "",
-      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/053000/053273_hr1.tex",
+      "image": "",
       "prix": 0,
       "itemId": "",
       "objets": []
