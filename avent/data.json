@@ -378,6 +378,18 @@
           "nom": "Mitaines de videur",
           "qte": 1,
           "prix": 0
+        },
+        {
+          "itemId": "47923",
+          "nom": "Chaussures d'apparat de videur",
+          "qte": 1,
+          "prix": 0
+        },
+        {
+          "itemId": "",
+          "nom": "",
+          "qte": 1,
+          "prix": 0
         }
       ]
     },
