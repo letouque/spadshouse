@@ -165,6 +165,12 @@
           "nom": "Néon mural belhamel",
           "qte": 1,
           "prix": 0
+        },
+        {
+          "itemId": "44120",
+          "nom": "Néon mural vertical",
+          "qte": 1,
+          "prix": 0
         }
       ]
     },
