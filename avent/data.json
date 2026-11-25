@@ -243,7 +243,7 @@
       "nom": "Pelle + Clef d'activation d'arme blindée cosmique 2.0",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/058000/058056_hr1.tex",
-      "prix": 645214,
+      "prix": 945214,
       "itemId": "52288",
       "objets": [
         {
@@ -256,7 +256,7 @@
           "itemId": "52041",
           "nom": "Carte arme blindée cosmique 2.0",
           "qte": 1,
-          "prix": 0
+          "prix": 300000
         }
       ]
     },
