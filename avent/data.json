@@ -335,21 +335,8 @@
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/053000/053273_hr1.tex",
       "prix": 0,
-      "itemId": "24908",
-      "objets": [
-        {
-          "itemId": "24908",
-          "nom": "Vieille pièce sale",
-          "qte": 1,
-          "prix": 0
-        },
-        {
-          "itemId": "24502",
-          "nom": "Sac de pièces",
-          "qte": 1,
-          "prix": 0
-        }
-      ]
+      "itemId": "",
+      "objets": []
     },
     {
       "nom": "Sifflet dhalmel de l'espace",
