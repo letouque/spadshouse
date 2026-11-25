@@ -177,6 +177,12 @@
           "nom": "Distributeur de Solution Neuf",
           "qte": 1,
           "prix": 0
+        },
+        {
+          "itemId": "44119",
+          "nom": "Néon mural horizontal",
+          "qte": 1,
+          "prix": 0
         }
       ]
     },
