@@ -102,10 +102,17 @@
     {
       "nom": "Lot 7",
       "desc": "",
-      "image": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026178_hr1.tex",
       "prix": 0,
-      "itemId": "",
-      "objets": []
+      "itemId": "51747",
+      "objets": [
+        {
+          "itemId": "51747",
+          "nom": "Méthode de coiffure “Carré avec demi-chignon”",
+          "qte": 1,
+          "prix": 0
+        }
+      ]
     },
     {
       "nom": "Coffre d'arme de rêve",
