@@ -1760,119 +1760,233 @@ function drawPeche(c, P, t, R, now, replay, roundAt, kgAt) {
   if (!replay) roundHud(c, P, r, t);
 }
 
-/* ===== La banquise ===== */
+/* ===== La banquise =====
+   Une seule partie : tout le monde sur une grande banquise qui se détache morceau par morceau. Le dernier debout gagne.
+   Incidents : fissure qui s'ouvre (prévenue ~3 s avant), glissade, saut raté, et poussées (réussies ou ratées).
+   Le zoom se resserre à mesure que la glace rétrécit. */
 function planBanquise(d, pool, winner) {
   const rng = mkRng(d, 'banquise'), players = pool.includes(winner) ? pool.slice() : [...pool, winner];
   players.sort((a, b) => a.localeCompare(b, 'fr'));
-  const n = players.length, info = {}, CX = 800, CY = 590, RX = 450, RY = 285, CS = 56;
-  players.forEach((nom, i) => info[nom] = { nom, color: playerColor(i), coup: coupDe(nom), outT: 1e9, raft: -1 });
-  // cellules
+  const n = players.length, info = {}, CX = 800, CY = 600, CS = 64, RX = 560, RY = 330, SQ = .62;
+  players.forEach((nom, i) => info[nom] = { nom, color: playerColor(i), outT: 1e9, rank: 0 });
+  // --- cellules hexagonales
   const cells = [];
-  for (let gy = -6; gy <= 6; gy++) for (let gx = -9; gx <= 9; gx++) { const x = CX + gx * CS, y = CY + gy * CS * .82, dn = ((x - CX) / RX) ** 2 + ((y - CY) / RY) ** 2 + (rng() - .5) * .18; if (dn < 1) cells.push({ x, y, d: dn, a: Math.atan2((y - CY) / RY, (x - CX) / RX), tb: 1e9, chunk: -1 }); }
+  for (let gy = -8; gy <= 8; gy++) for (let gx = -11; gx <= 11; gx++) {
+    const x = CX + (gx + (gy & 1) * .5) * CS, y = CY + gy * CS * SQ, dn = ((x - CX) / RX) ** 2 + ((y - CY) / RY) ** 2 + (rng() - .5) * .1;
+    if (dn < 1) cells.push({ x, y, d: dn, a: Math.atan2((y - CY) / RY, (x - CX) / RX), tb: 1e9 });
+  }
   cells.sort((a, b) => a.d - b.d);
-  const core = cells.slice(0, 3); core.forEach(cl => cl.core = true);
-  const rest = cells.slice(3).sort((a, b) => b.d - a.d), chunks = [];
-  for (let i = 0; i < rest.length;) { const band = rest.slice(i, i + 22).sort((a, b) => a.a - b.a); i += 22; for (let j = 0; j < band.length;) { const sz = 3 + Math.floor(rng() * 4), ch = band.slice(j, j + sz); j += sz; chunks.push(ch); } }
-  // le dernier morceau doit toucher le coeur
-  const lastChunk = chunks.pop(), Tf = Math.max(30, Math.min(64, 22 + n * 2.6)), times = chunks.map((_, k) => 4 + (k + .3 + rng() * .4) * (Tf - 6) / chunks.length);
-  chunks.push(lastChunk); times.push(Tf);
-  chunks.forEach((ch, k) => { const cx = ch.reduce((s, cl) => s + cl.x, 0) / ch.length, cy = ch.reduce((s, cl) => s + cl.y, 0) / ch.length; ch.forEach(cl => { cl.tb = times[k]; cl.chunk = k; }); ch.cx = cx; ch.cy = cy; ch.t = times[k]; const l = Math.hypot(cx - CX, cy - CY) || 1; ch.dx = (cx - CX) / l; ch.dy = (cy - CY) / l; ch.rot = (rng() - .5) * .8; });
-  // éliminations
-  const order = shuffleR(rng, players.filter(x => x !== winner)), loser = order.pop();
-  const evIdx = []; for (let k = 0; k < order.length; k++) evIdx.push(Math.floor((k + .5 + (rng() - .5) * .6) * (chunks.length - 1) / Math.max(1, order.length)));
-  evIdx.sort((a, b) => a - b);
-  const elim = order.map((nom, k) => ({ nom, ch: Math.min(chunks.length - 2, Math.max(0, evIdx[k])) }));
-  if (loser) elim.push({ nom: loser, ch: chunks.length - 1 });
-  let raftN = 0;
-  elim.sort((a, b) => chunks[a.ch].t - chunks[b.ch].t).forEach(e => { info[e.nom].outT = chunks[e.ch].t + .6; info[e.nom].ch = e.ch; info[e.nom].raft = raftN++; });
-  // chemins (points de passage)
-  const safeCells = t => cells.filter(cl => cl.tb > t);
-  players.forEach((nom, i) => {
-    const inf = info[nom], wp = []; let t = 0, cl = safeCells(t + 8)[Math.floor(rng() * safeCells(t + 8).length)];
-    wp.push({ t: 0, cl });
-    const end = inf.outT < 1e9 ? chunks[inf.ch].t - 2.4 : Tf + 6;
-    while (true) { t += 3 + rng() * 3; if (t >= end - .5) break; const cand = safeCells(Math.min(end, t + 6) + 1.2); if (!cand.length) break; const near = cand.filter(c2 => Math.hypot(c2.x - cl.x, c2.y - cl.y) < 200); cl = (near.length ? near : cand)[Math.floor(rng() * (near.length ? near : cand).length)]; wp.push({ t, cl }); }
-    if (inf.outT < 1e9) { const ch = chunks[inf.ch]; wp.push({ t: Math.max(wp[wp.length - 1].t + .3, end), cl: ch[Math.floor(rng() * ch.length)] }); }
-    else wp.push({ t: Math.max(wp[wp.length - 1].t + .3, Tf - 3.5), cl: core[i % core.length] });
-    inf.wp = wp; inf.jx = (rng() - .5) * 22; inf.jy = (rng() - .5) * 14;
+  const nCore = Math.max(5, Math.round(cells.length * .05)), core = cells.slice(0, nCore);
+  const rest = cells.slice(nCore).sort((a, b) => b.d - a.d), chunks = [];
+  // nombre de morceaux réglé sur la durée : un morceau qui craque toutes les ~3 s environ
+  const dur0 = (n - 1) * (n > 12 ? 4.8 : n > 7 ? 5.6 : 6.5) + 1, nCh = Math.max(4, Math.floor(dur0 / 3)), sz0 = Math.ceil(rest.length / nCh), bandN = sz0 * 3;
+  for (let i = 0; i < rest.length;) { const band = rest.slice(i, i + bandN).sort((a, b) => a.a - b.a); i += bandN; for (let j = 0; j < band.length;) { const ch = band.slice(j, j + sz0); j += sz0; if (ch.length) chunks.push(ch); } }
+  cells.forEach((c, i) => c.id = i);
+  const start = 7.5, E = n - 1, gap = n > 12 ? 4.8 : n > 7 ? 5.6 : 6.5;
+  const elimT = Array.from({ length: E }, (_, k) => start + 7 + k * gap + (k ? (rng() - .5) * 1.2 : 0)), wt = elimT[E - 1] ?? start + 8;
+  chunks.forEach((ch, k) => { ch.t = start + 5 + (k + .5) * (Math.max(10, wt - start - 6)) / chunks.length; });
+  chunks.forEach((ch, k) => { ch.k = k; ch.cx = ch.reduce((s, c) => s + c.x, 0) / ch.length; ch.cy = ch.reduce((s, c) => s + c.y, 0) / ch.length; const l = Math.hypot((ch.cx - CX) / RX, (ch.cy - CY) / RY) || 1; ch.ox = (ch.cx - CX) / RX / l; ch.oy = (ch.cy - CY) / RY / l; });
+  const outDir = (x, y) => { const vx = (x - CX) / RX, vy = (y - CY) / RY, l = Math.hypot(vx, vy) || 1; return { x: vx / l, y: vy / l }; };
+  // --- ordre des éliminations et types d'incidents
+  const order = shuffleR(rng, players.filter(x => x !== winner)), alive = new Set(players), acts = {}; players.forEach(p => acts[p] = []);
+  const busy = (p, t) => acts[p].some(a => Math.abs(a.T - t) < 3.6);
+  const usedChunks = new Set(), ticker = [], say = (t, txt) => ticker.push({ t, txt });
+  const pickChunk = T => { let best = null; chunks.forEach(ch => { if (usedChunks.has(ch.k)) return; if (!best || Math.abs(ch.t - T) < Math.abs(best.t - T)) best = ch; }); if (best) { usedChunks.add(best.k); best.t = T; } return best; };
+  const edgeCell = (T, avoid) => { const cand = cells.filter(c => !c.core && cellTb(c) > T + 9 && !avoid.has(c.id)).sort((a, b) => cellTb(a) - cellTb(b)); return cand[Math.floor(rng() * Math.min(4, cand.length))] || core[0]; };
+  core.forEach(c => c.core = true);
+  const cellTb = c => { if (c.core) return 1e9; const ch = chunks.find(h => h.includes(c)); return ch ? ch.t : 1e9; };
+  const taken = new Set();
+  order.forEach((victim, k) => {
+    const T = elimT[k], last = k === E - 1;
+    let type = last ? 'poussee' : (() => { const r = rng(); return r < .34 ? 'fissure' : r < .52 ? 'saut' : r < .72 ? 'glissade' : 'poussee'; })();
+    let pusher = null;
+    if (type === 'poussee') { const cand = [...alive].filter(p => p !== victim && !busy(p, T)); pusher = last ? winner : cand[Math.floor(rng() * cand.length)]; if (!pusher) type = 'glissade'; }
+    if (type === 'fissure' || type === 'saut') { const ch = pickChunk(T); if (!ch) type = 'glissade'; else { const cell = ch[Math.floor(rng() * ch.length)]; acts[victim].push({ T, type, cell, ch, die: true }); } }
+    if (type === 'glissade') { const cell = edgeCell(T, taken); taken.add(cell.id); acts[victim].push({ T, type, cell, die: true }); }
+    if (type === 'poussee') { const cell = edgeCell(T, taken); taken.add(cell.id); acts[victim].push({ T, type, cell, die: true, pusher }); acts[pusher].push({ T, type: 'pousse', cell, victim, ok: true }); }
+    alive.delete(victim); info[victim].rank = n - k; info[victim].how = type;
   });
-  const ticker = [], say = (t, txt) => ticker.push({ t, txt });
-  say(.5, `🧊 ${n} joueurs sur la banquise… et la glace commence à craquer !`);
-  const ONO = ['PLOUF !', 'SPLASH !', 'GLOUPS !', 'PLOUF !!'], coups = [];
-  elim.forEach((e, k) => { const t = chunks[e.ch].t, last = k === elim.length - 1;
-    if (!last && rng() < .3 && players.length > 2) { const from = shuffleR(rng, players.filter(x => x !== e.nom && info[x].outT > t + 1))[0]; if (from) { coups.push({ from, to: e.nom, t: t - .7 }); say(t - 1.2, `${info[from].coup.e} ${from} pousse ${e.nom} avec « ${info[from].coup.n} » !`); } }
-    e.ono = ONO[Math.floor(rng() * ONO.length)];
-    say(t + .5, last ? `🏆 La glace cède sous ${e.nom}… ${winner} est le dernier sur la banquise !!` : [`💦 ${e.nom} tombe à l'eau !`, `🐧 ${e.nom} fait un plongeon, les pingouins applaudissent !`, `🧊 Le morceau part… avec ${e.nom} dessus !`][Math.floor(rng() * 3)]); });
-  if (elim.length > 2) say(chunks[elim[elim.length - 2].ch].t + 1.8, `😰 Plus que deux sur la glace : ${winner} et ${loser} !`);
-  ticker.sort((a, b) => a.t - b.t);
-  const posOf = (nom, t) => {
-    const inf = info[nom], wp = inf.wp;
-    let i = 0; while (i < wp.length - 1 && wp[i + 1].t <= t) i++;
-    const a = wp[i], b = wp[i + 1];
-    let x = a.cl.x + inf.jx, y = a.cl.y + inf.jy, walk = false;
-    if (b) { const k = smooth(b.t - 1.3, b.t, t); if (k > 0) { x += (b.cl.x - a.cl.x) * k; y += (b.cl.y - a.cl.y) * k; walk = k < 1; } }
-    if (inf.outT < 1e9) { const ch = chunks[inf.ch], q = t - ch.t;
-      if (q >= 0) { const u = Math.min(q, 4); x += ch.dx * 40 * u; y += ch.dy * 40 * u;
-        if (q >= .6) { const raft = { x: 130 + (inf.raft % 12) * 62, y: 1015 - Math.floor(inf.raft / 12) * 34 }, k = smooth(1.6, 4.5, q); return { x: x + (raft.x - x) * k, y: y + (raft.y - y) * k, water: q < 4.5, raft: q >= 4.5, q }; }
-        return { x, y, wobble: Math.sin(q * 30) * .5 * (q / .6) }; } }
-    return { x, y, walk, step: t * 12 };
+  // --- incidents sans élimination : poussées ratées, glissades rattrapées, sauts réussis par-dessus une fissure
+  const alive0 = t => players.filter(p => info[p].outT > t);
+  const extraN = Math.max(2, Math.round(E * .7));
+  for (let k = 0; k < extraN; k++) {
+    const T = start + 6 + rng() * Math.max(4, wt - start - 9); if (elimT.some(x => Math.abs(x - T) < 2.2)) continue;
+    const r = rng(), aliveNow = players.filter(p => !acts[p].some(a => a.die && a.T <= T + 2) && !busy(p, T));
+    if (aliveNow.length < 2) continue;
+    const v = aliveNow[Math.floor(rng() * aliveNow.length)];
+    if (r < .45) { const pu = aliveNow.filter(p => p !== v)[Math.floor(rng() * (aliveNow.length - 1))]; if (!pu) continue; const cell = edgeCell(T, taken); taken.add(cell.id); acts[v].push({ T, type: 'esquive', cell, pusher: pu }); acts[pu].push({ T, type: 'pousse', cell, victim: v, ok: false }); }
+    else if (r < .75) { const cell = edgeCell(T, taken); taken.add(cell.id); acts[v].push({ T, type: 'glisse_ok', cell }); }
+    else { const ch = chunks.filter(h => !usedChunks.has(h.k) && h.t > T + 1 && h.t < T + 6)[0]; if (!ch) continue; usedChunks.add(ch.k); acts[v].push({ T: ch.t, type: 'saut_ok', cell: ch[Math.floor(rng() * ch.length)], ch }); }
+  }
+  // --- trajectoires : segments de déplacement (marche, course, saut, glissade, chute)
+  const safeNear = (from, tMin, t0) => { const cand = cells.filter(c => cellTb(c) > tMin && !c.taken0); const near = cand.filter(c => Math.hypot(c.x - from.x, c.y - from.y) < 230); const pool2 = near.length ? near : cand; return pool2[Math.floor(rng() * pool2.length)] || core[0]; };
+  const initial = shuffleR(rng, cells.filter(c => cellTb(c) > start + 14));
+  players.forEach((p, i) => {
+    const segs = [], inf = info[p]; let cur = { x: initial[i % initial.length].x, y: initial[i % initial.length].y, tb: cellTb(initial[i % initial.length]) }, tcur = 0;
+    const jx = (rng() - .5) * 16, jy = (rng() - .5) * 8;
+    const move = (t0, t1, to, kind) => { segs.push({ t0, t1, a: { x: cur.x, y: cur.y }, b: { x: to.x, y: to.y }, kind }); cur = { x: to.x, y: to.y, tb: to.tb ?? cellTb(to) }; tcur = t1; };
+    const wander = until => { while (true) { let tn = Math.min(tcur + 4 + rng() * 3.5, cur.tb - 4.2); if (tn < tcur + 1.4) tn = tcur + 1.4; if (tn > until) break; const nc = safeNear(cur, tn + 9, tn); move(tn - 1.3, tn, { x: nc.x + jx, y: nc.y + jy, tb: cellTb(nc) }, 'walk'); } };
+    const list = acts[p].sort((a, b) => a.T - b.T);
+    for (const a of list) {
+      const T = a.T, c0 = a.cell, od = outDir(c0.x, c0.y);
+      if (a.type === 'pousse') {
+        const px = c0.x - od.x * 58, py = c0.y - od.y * 36;
+        wander(T - 3.2); move(Math.max(tcur, T - 2.2), T - .6, { x: px, y: py, tb: 1e9 }, 'run');
+        if (a.ok) { move(T - .6, T - .1, { x: c0.x - od.x * 22, y: c0.y - od.y * 12, tb: 1e9 }, 'push'); move(T + .4, T + 1.4, { x: px, y: py, tb: cellTb(c0) }, 'walk'); }
+        else { move(T - .6, T + .25, { x: c0.x + od.x * 20, y: c0.y + od.y * 10, tb: 1e9 }, 'push'); move(T + .25, T + .8, { x: c0.x + od.x * 34, y: c0.y + od.y * 18, tb: cellTb(c0) }, 'slip'); }
+        cur.tb = Math.min(cur.tb, cellTb(c0)); continue;
+      }
+      wander(T - 4.2);
+      const arrive = a.type === 'fissure' || a.type === 'saut' || a.type === 'saut_ok' ? T - 3.6 : T - 1.8;
+      move(Math.max(tcur, arrive - 1.4), arrive, { x: c0.x + jx * .5, y: c0.y + jy * .5, tb: a.die ? 1e9 : T + 9 }, 'walk');
+      if (a.type === 'fissure') { segs.push({ t0: T, t1: T + 1.3, kind: 'drift', ch: a.ch, a: { x: cur.x, y: cur.y } }); inf.outT = T + 1.3; inf.splash = { x: cur.x + a.ch.ox * 150, y: cur.y + a.ch.oy * 90 }; break; }
+      if (a.type === 'saut') { const tgt = core[0], dx = tgt.x - cur.x, dy = tgt.y - cur.y, l = Math.hypot(dx, dy) || 1, land = { x: cur.x + a.ch.ox * 70 + dx / l * 60, y: cur.y + a.ch.oy * 42 + dy / l * 36 }; segs.push({ t0: T + .1, t1: T + .8, kind: 'jumpfail', a: { x: cur.x + a.ch.ox * 50, y: cur.y + a.ch.oy * 30 }, b: land, ch: a.ch }); inf.outT = T + .8; inf.splash = land; break; }
+      if (a.type === 'saut_ok') { const nc = safeNear(cur, T + 12); move(T - .9, T - .2, { x: nc.x + jx, y: nc.y + jy, tb: cellTb(nc) }, 'jump'); a.done = 1; continue; }
+      if (a.type === 'glissade') { const to = { x: cur.x + od.x * 120, y: cur.y + od.y * 72 }; segs.push({ t0: T, t1: T + 1.1, kind: 'slide', a: { x: cur.x, y: cur.y }, b: to }); inf.outT = T + 1.1; inf.splash = to; break; }
+      if (a.type === 'glisse_ok') { move(T, T + .9, { x: cur.x + od.x * 34, y: cur.y + od.y * 20, tb: cur.tb }, 'slideok'); continue; }
+      if (a.type === 'poussee') { const to = { x: cur.x + od.x * 140, y: cur.y + od.y * 84 }; segs.push({ t0: T - .1, t1: T + .9, kind: 'pushed', a: { x: cur.x, y: cur.y }, b: to }); inf.outT = T + .9; inf.splash = to; break; }
+      if (a.type === 'esquive') { const side = { x: -od.y, y: od.x }; move(T - .4, T - .05, { x: cur.x + side.x * 46, y: cur.y + side.y * 28, tb: cur.tb }, 'dodge'); continue; }
+    }
+    if (inf.outT >= 1e9) { wander(wt - 1); if (p === winner) { move(Math.max(tcur, wt + 1.2), wt + 2.6, { x: CX, y: CY - 10, tb: 1e9 }, 'walk'); } }
+    inf.segs = segs; inf.x0 = segs.length ? segs[0].a.x : cur.x; inf.y0 = segs.length ? segs[0].a.y : cur.y;
+  });
+  // messages
+  say(0, `🧊 Bienvenue sur la banquise ! ${n} joueurs, un seul restera debout…`);
+  say(start - 1, `🧊 La glace commence à craquer… restez au centre !`);
+  players.forEach(p => acts[p].forEach(a => {
+    const T = a.T;
+    if (a.type === 'fissure') say(T - 3, `⚠️ Une fissure s'ouvre sous ${p} !`), say(T + 1.3, `💦 PLOUF ! ${p} part à la dérive et tombe à l'eau !`);
+    if (a.type === 'saut') say(T - 3, `⚠️ La glace craque sous ${p}…`), say(T + .8, `💦 ${p} tente de sauter… raté ! PLOUF !`);
+    if (a.type === 'saut_ok') say(T - 3, `⚠️ La glace craque sous ${p}…`), say(T - .2, `😮‍💨 ${p} saute au dernier moment ! Ouf !`);
+    if (a.type === 'glissade') say(T, `🧊 ${p} glisse… glisse… et PLOUF !`);
+    if (a.type === 'glisse_ok') say(T, `🧊 ${p} glisse vers le bord… et se rattrape de justesse !`);
+    if (a.type === 'pousse' && a.ok) say(T - .6, `💥 ${p} fonce sur ${a.victim}… et le pousse à l'eau !`);
+    if (a.type === 'pousse' && !a.ok) say(T - .6, `💨 ${p} tente de pousser ${a.victim}… qui esquive !`);
+  }));
+  say(wt + .9, `🏆 ${winner} est le dernier debout sur la banquise !`);
+  ticker.sort((x, y) => x.t - y.t);
+  // rayon de banquise restant → zoom
+  const radiusAt = t => { let m = Math.sqrt(core.reduce((s, c) => Math.max(s, c.d), 0)); for (const c of cells) if (cellTb(c) > t) m = Math.max(m, Math.sqrt(Math.max(0, c.d))); return m; };
+  const breaks = [...new Set(chunks.map(h => h.t))].sort((a, b) => a - b);
+  const zoomAt = t => { let r = radiusAt(t + 1e-3), prev = r; const b = breaks.filter(x => x <= t).pop(); if (b != null && t - b < 2) { prev = radiusAt(b - 1e-3); r = prev + (r - prev) * smooth(0, 2, t - b); } return Math.min(1.75, 1 / Math.max(.5, r * 1.02)); };
+  cells.forEach(c => c.tb = cellTb(c));
+  const posAt = (p, t) => {
+    const inf = info[p]; let pos = { x: inf.x0, y: inf.y0, kind: 'idle', q: 0 };
+    for (const s of inf.segs) {
+      if (t < s.t0) break;
+      const q = Math.min(1, (t - s.t0) / (s.t1 - s.t0));
+      if (s.kind === 'drift') { const dq = Math.min(1, (t - s.t0) / 2.2); pos = { x: s.a.x + s.ch.ox * 150 * (1 - Math.pow(1 - dq, 2)), y: s.a.y + s.ch.oy * 90 * (1 - Math.pow(1 - dq, 2)), kind: t < s.t1 ? 'drift' : 'water', q, dx: s.ch.ox, dy: s.ch.oy }; continue; }
+      const e = s.kind === 'jumpfail' || s.kind === 'jump' ? q : s.kind === 'walk' || s.kind === 'run' ? smooth(0, 1, q) : 1 - Math.pow(1 - q, 2);
+      pos = { x: s.a.x + (s.b.x - s.a.x) * e, y: s.a.y + (s.b.y - s.a.y) * e, kind: t < s.t1 ? s.kind : (['slide', 'pushed', 'jumpfail'].includes(s.kind) ? 'water' : 'idle'), q, dx: s.b.x - s.a.x, dy: s.b.y - s.a.y };
+      if (s.kind === 'jump' || s.kind === 'jumpfail') pos.h = Math.sin(Math.min(1, q) * Math.PI) * (s.kind === 'jumpfail' ? 50 : 60);
+    }
+    return pos;
   };
-  const bubbles = gameBubbles(rng, players, Object.assign((k, nb) => 4 + k * (Tf - 8) / nb + rng() * 2, { alive: (nom, t) => info[nom].outT > t + 4 }));
-  const P = {
-    d, title: GAMES.banquise, panelTitle: 'Sur la glace', bg: '#0d3557', players, info, cells, chunks, coups, elim, bubbles, ticker, winner, CX, CY, CS, posOf, Tf,
-    slowA: Tf - .6, slowB: Tf + 1.4, Tend: Tf + 4, replayA: Tf - 1.6, replayB: Tf + 1.6, replayText: `${winner}, dernier sur la banquise !`,
-    podium: [winner, ...elim.slice().reverse().map(e => e.nom)].slice(0, 3).map(nm => info[nm]),
+  const r0 = { i: 0, a: 0, start, alive: players, places: 1, final: false };
+  const bubbles = gameBubbles(rng, players, Object.assign((k, nb) => start + 3 + k * (wt - start - 6) / nb + rng() * 2, { alive: (nom, tt) => info[nom].outT > tt + 4 }));
+  const Pl = {
+    d, title: GAMES.banquise, panelTitle: 'Sur la glace', bg: '#0e3a5c', players, info, ticker, bubbles, winner, cells, chunks, core, CX, CY, CS, SQ, r0, start, wt, posAt, zoomAt,
+    intro: { kicker: '🧊 ÉPREUVE DU JOUR 🧊', title: 'La banquise', lines: ['La glace se détache morceau par morceau…', 'Glissades, fissures et poussées : le dernier debout gagne !'], unit: 'joueurs', sub: `${n} joueurs sur la glace · un seul restera debout` },
+    slowA: wt - 1.2, slowB: wt + 1.2, Tend: wt + 6, replayA: wt - 2.2, replayB: wt + 1.4, replayText: `${winner} reste seul sur la banquise !`,
+    podium: [winner, ...order.slice().reverse()].slice(0, 3).map(nm => info[nm]),
     podTitle: `🏆 Podium de la banquise · ${d} décembre`,
-    focus: () => ({ x: CX, y: CY - 30 }),
-    status: t => { const alive = players.filter(nm => info[nm].outT > t).length; return t >= Tf + .6 ? { txt: '🏆 DERNIER DEBOUT !', hot: true } : { txt: `${alive} SUR LA GLACE`, hot: alive <= 2 }; },
-    anchor: (nom, t) => { const p = posOf(nom, t); return p.water || p.raft ? null : { x: p.x, y: p.y - 70 }; },
-    panel: t => players.map(nm => ({ nom: nm, color: info[nm].color, out: info[nm].outT < t, win: nm === winner && t >= Tf + .6, sub: info[nm].outT < t ? 'à l\'eau 💦' : 'sur la glace', o: info[nm].outT })).sort((a, b) => (a.out - b.out) || (a.out ? b.o - a.o : a.nom.localeCompare(b.nom, 'fr'))),
-    shake: t => { for (const ch of chunks) { const q = t - ch.t; if (q >= 0 && q < .3) return 5 * (1 - q / .3); } return 0; },
-    draw: (c, t, Rr, now, replay) => drawBanquise(c, P, t, Rr, now, replay),
-    sound: (t, Rr, replay, now) => {
+    focus: () => { const z = zoomAt(wt), p = posAt(winner, wt); return { x: 800 + (p.x - CX) * z, y: 600 + (p.y - CY) * z - 60 }; },
+    status: tt => { const k = players.filter(p => info[p].outT > tt).length; return tt >= wt + .9 ? { txt: '🏆 DERNIER DEBOUT !', hot: true } : k === 2 ? { txt: 'DUEL FINAL', hot: true } : { txt: `${k} SUR LA GLACE` }; },
+    anchor: (nom, tt) => { if (info[nom].outT <= tt) return null; const z = zoomAt(tt), p = posAt(nom, tt); return { x: 800 + (p.x - CX) * z, y: 600 + (p.y - CY) * z - 110 * z }; },
+    panel: tt => players.map(nm => { const o = info[nm].outT <= tt; return { nom: nm, color: info[nm].color, out: o, win: nm === winner && tt >= wt + .9, sub: o ? `à l'eau · ${info[nm].rank}e` : nm === winner && tt >= wt + .9 ? 'DERNIER DEBOUT !' : 'sur la glace', v: o ? -info[nm].rank : 100 }; }).sort((a, b) => (a.out - b.out) || (b.v - a.v) || a.nom.localeCompare(b.nom, 'fr')),
+    shake: tt => chunks.some(h => tt >= h.t && tt < h.t + .25) ? 4 : 0,
+    draw: (c, tt, R, now, replay) => drawBanquise(c, Pl, tt, R, now, replay),
+    sound: (tt, R, replay, now) => {
       if (replay) return;
-      chunks.forEach((ch, k) => { if (!Rr['cr' + k] && t >= ch.t - 1.4) { Rr['cr' + k] = 1; tone(140, 0, .2, 'sawtooth', .05); } if (!Rr['br' + k] && t >= ch.t) { Rr['br' + k] = 1; tone(90, 0, .35, 'square', .06); } });
-      elim.forEach((e, k) => { if (!Rr['pl' + k] && t >= info[e.nom].outT) { Rr['pl' + k] = 1; plouf(); if (k === elim.length - 1) { jingle(); crowd(); confettiBurst(Rr, CX, CY - 80, 240); } } });
-      coups.forEach((cp, k) => { if (!Rr['cp' + k] && t >= cp.t - .7) { Rr['cp' + k] = 1; whoosh(); } if (!Rr['cq' + k] && t >= cp.t) { Rr['cq' + k] = 1; boing(); } });
-      if (t >= Tf + .6 && t < Tf + 4 && now - (Rr.lastFw || 0) > 420) { Rr.lastFw = now; burst(Rr, 200 + Math.random() * 1200, 160 + Math.random() * 250); }
+      chunks.forEach(h => { if (!R['cw' + h.k] && tt >= h.t - 3 && h.t < 1e8) { R['cw' + h.k] = 1; tone(160, 0, .25, 'sawtooth', .04); } if (!R['cb' + h.k] && tt >= h.t) { R['cb' + h.k] = 1; tone(90, 0, .35, 'square', .05); } });
+      players.forEach(p => { const o = info[p].outT; if (o < 1e9 && !R['sp' + p] && tt >= o) { R['sp' + p] = 1; plouf(); } });
+      players.forEach(p => info[p].segs.forEach((s, i) => { if (s.kind === 'push' && !R['pu' + p + i] && tt >= s.t1) { R['pu' + p + i] = 1; paf(); } }));
+      if (!R.go && tt >= start) { R.go = 1; beep(true); }
+      if (!R.win && tt >= wt + .9) { R.win = 1; jingle(); crowd(); }
+      if (tt >= wt + 1.2 && tt < wt + 4.5 && now - (R.lastFw || 0) > 420) { R.lastFw = now; burst(R, 200 + Math.random() * 1200, 140 + Math.random() * 180); }
     }
   };
-  return P;
+  // voisins (pour dessiner les fissures sur les bords des morceaux)
+  cells.forEach(c => { c.nb = cells.filter(o => o !== c && Math.hypot(o.x - c.x, (o.y - c.y) / SQ * .866) < CS * 1.05); });
+  return Pl;
 }
+
+/* --- Décor : mer polaire, icebergs, manchots --- */
+function baSea() {
+  if (baSea.cv) return baSea.cv;
+  const cv = document.createElement('canvas'); cv.width = 1600; cv.height = 1080; const c = cv.getContext('2d'), rng = mulberry32(31);
+  let g = c.createLinearGradient(0, 0, 0, 260); g.addColorStop(0, '#7fa9d6'); g.addColorStop(1, '#d8e6f3'); c.fillStyle = g; c.fillRect(0, 0, 1600, 260);
+  c.fillStyle = 'rgba(255,255,255,.7)'; for (let k = 0; k < 6; k++) { const x = rng() * 1600, y = 40 + rng() * 120; for (let i = 0; i < 4; i++) { c.beginPath(); c.ellipse(x + i * 40, y + Math.sin(i) * 8, 50, 16, 0, 0, 6.283); c.fill(); } }
+  g = c.createLinearGradient(0, 230, 0, 1080); g.addColorStop(0, '#2f78a8'); g.addColorStop(.4, '#1b5a86'); g.addColorStop(1, '#0d3557'); c.fillStyle = g; c.fillRect(0, 230, 1600, 850);
+  // icebergs lointains avec manchots
+  const berg = (x, y, w, h, peng) => { c.fillStyle = '#e9f3fb'; c.beginPath(); c.moveTo(x - w, y); c.lineTo(x - w * .6, y - h * .7); c.lineTo(x - w * .2, y - h); c.lineTo(x + w * .3, y - h * .8); c.lineTo(x + w * .7, y - h * .4); c.lineTo(x + w, y); c.closePath(); c.fill(); c.fillStyle = '#b5d3ea'; c.beginPath(); c.moveTo(x - w * .2, y - h); c.lineTo(x + w * .3, y - h * .8); c.lineTo(x + w * .7, y - h * .4); c.lineTo(x + w, y); c.lineTo(x + w * .1, y); c.closePath(); c.fill(); c.fillStyle = 'rgba(255,255,255,.35)'; c.fillRect(x - w, y, w * 2, 3);
+    for (let i = 0; i < peng; i++) { const px = x - w * .5 + i * 14, py = y - h * .25 - (i % 2) * 6; c.fillStyle = '#1d2330'; c.beginPath(); c.ellipse(px, py, 5, 9, 0, 0, 6.283); c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.ellipse(px + 1, py + 1, 3, 6, 0, 0, 6.283); c.fill(); c.fillStyle = '#ffb030'; c.fillRect(px + 2, py - 6, 4, 2); } };
+  berg(120, 250, 110, 80, 3); berg(420, 238, 70, 50, 0); berg(1180, 245, 90, 70, 2); berg(1480, 255, 140, 110, 4); berg(820, 236, 50, 34, 0);
+  for (let k = 0; k < 70; k++) { const y = 260 + Math.pow(rng(), 1.4) * 820, w = 20 + (y - 260) / 820 * 90; c.strokeStyle = `rgba(255,255,255,${.08 + rng() * .12})`; c.lineWidth = 2; c.beginPath(); const x = rng() * 1600; c.moveTo(x - w, y); c.quadraticCurveTo(x, y - 6, x + w, y); c.stroke(); }
+  return (baSea.cv = cv);
+}
+function hexPath(c, x, y, r, sq) { c.beginPath(); for (let i = 0; i < 6; i++) { const a = Math.PI / 6 + i * Math.PI / 3; const px = x + Math.cos(a) * r, py = y + Math.sin(a) * r * sq; i ? c.lineTo(px, py) : c.moveTo(px, py); } c.closePath(); }
 function drawBanquise(c, P, t, R, now, replay) {
-  const g = c.createLinearGradient(0, 0, 0, 1080); g.addColorStop(0, '#0b2d4d'); g.addColorStop(1, '#0a4a72'); c.fillStyle = g; c.fillRect(0, 0, 1600, 1080);
-  c.strokeStyle = 'rgba(255,255,255,.12)'; c.lineWidth = 2; for (let y = 120; y < 1080; y += 46) { c.beginPath(); for (let x = 0; x <= 1600; x += 20) { const yy = y + Math.sin(x / 70 + now / 600 + y) * 5; x ? c.lineTo(x, yy) : c.moveTo(x, yy); } c.stroke(); }
-  // petits blocs avec pingouins
-  const clap = P.elim.some(e => { const q = t - P.info[e.nom].outT; return q >= 0 && q < 2; });
-  [[180, 300, 70], [1430, 320, 80], [1440, 820, 60], [170, 760, 64]].forEach(([x, y, r], i) => { const b = Math.sin(now / 700 + i) * 4; c.fillStyle = 'rgba(0,0,0,.2)'; c.beginPath(); c.ellipse(x + 6, y + 14 + b, r, r * .45, 0, 0, 6.283); c.fill(); c.fillStyle = '#eef6fd'; c.beginPath(); c.ellipse(x, y + b, r, r * .45, 0, 0, 6.283); c.fill();
-    for (let q = 0; q < 3; q++) { const px = x - 24 + q * 24, py = y - 8 + b - (clap ? Math.abs(Math.sin(now / 120 + q)) * 6 : 0); c.fillStyle = '#1f2633'; c.beginPath(); c.ellipse(px, py, 8, 13, 0, 0, 6.283); c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.ellipse(px, py + 2, 5, 9, 0, 0, 6.283); c.fill(); c.fillStyle = '#f2a33c'; c.beginPath(); c.moveTo(px - 2, py - 8); c.lineTo(px + 6, py - 7); c.lineTo(px - 2, py - 5); c.fill(); if (clap) { c.strokeStyle = '#1f2633'; c.lineWidth = 3; c.beginPath(); c.moveTo(px - 7, py); c.lineTo(px - 3 + Math.sin(now / 80) * 3, py - 8); c.moveTo(px + 7, py); c.lineTo(px + 3 - Math.sin(now / 80) * 3, py - 8); c.stroke(); } } });
-  // aileron
-  { const a = now / 3000, fx = 800 + Math.cos(a) * 640, fy = 600 + Math.sin(a) * 420; c.fillStyle = '#2b3440'; c.beginPath(); c.moveTo(fx - 14, fy); c.lineTo(fx + 4, fy - 34); c.lineTo(fx + 16, fy); c.fill(); c.strokeStyle = 'rgba(255,255,255,.5)'; c.lineWidth = 2; c.beginPath(); c.ellipse(fx, fy + 2, 22, 5, 0, 0, 6.283); c.stroke(); }
-  // radeau de secours
-  c.fillStyle = '#8a5a35'; c.fillRect(90, 1028, 800, 16); c.fillStyle = '#c8242f'; c.font = '800 16px Inter, system-ui, sans-serif'; c.textAlign = 'left'; c.fillText('🛟 Radeau de secours', 96, 1062);
-  // glace
-  const CS = P.CS, drawCell = (cl, a) => { c.globalAlpha = a; c.fillStyle = '#f2f8fd'; c.beginPath(); c.roundRect(cl.x - CS * .56, cl.y - CS * .48, CS * 1.12, CS * .96, 8); c.fill(); c.globalAlpha = 1; };
-  c.save(); c.translate(0, 12); c.fillStyle = 'rgba(0,20,40,.35)'; P.cells.filter(cl => cl.tb > t).forEach(cl => { c.beginPath(); c.roundRect(cl.x - CS * .56, cl.y - CS * .48, CS * 1.12, CS * .96, 8); c.fill(); }); c.restore();
-  P.cells.filter(cl => cl.tb > t).forEach(cl => drawCell(cl, 1));
-  c.fillStyle = 'rgba(160,200,230,.35)'; P.cells.filter(cl => cl.tb > t).forEach(cl => { c.beginPath(); c.ellipse(cl.x - 8, cl.y - 6, 10, 4, 0, 0, 6.283); c.fill(); });
-  // fissures
-  P.chunks.forEach(ch => { const q = t - (ch.t - 1.5); if (q < 0 || t >= ch.t) return; const k = q / 1.5; c.strokeStyle = `rgba(20,60,100,${.4 + .5 * Math.abs(Math.sin(now / 90))})`; c.lineWidth = 2 + k * 3; ch.forEach(cl => { const ix = cl.x - ch.dx * CS * .5, iy = cl.y - ch.dy * CS * .5; c.beginPath(); c.moveTo(ix - ch.dy * CS * .6, iy + ch.dx * CS * .6); for (let s = 1; s <= 4; s++) c.lineTo(ix - ch.dy * CS * (.6 - s * .3) + (s % 2 ? 6 : -6), iy + ch.dx * CS * (.6 - s * .3)); c.stroke(); }); });
-  // morceaux qui partent
-  P.chunks.forEach(ch => { const q = t - ch.t; if (q < 0 || q > 5) return; const u = Math.min(q, 4), a = 1 - q / 5; c.save(); c.translate(ch.cx + ch.dx * 40 * u, ch.cy + ch.dy * 40 * u + q * 6); c.rotate(ch.rot * Math.min(1, q / 2)); c.translate(-ch.cx, -ch.cy); ch.forEach(cl => drawCell(cl, a)); c.restore(); });
+  c.drawImage(baSea(), 0, 0);
+  // vagues animées
+  c.strokeStyle = 'rgba(255,255,255,.14)'; c.lineWidth = 2;
+  for (let k = 0; k < 26; k++) { const y = 300 + k * 30, ph = now / 1400 + k; c.beginPath(); for (let x = 0; x <= 1600; x += 40) { const yy = y + Math.sin(x / 120 + ph) * 4; x ? c.lineTo(x, yy) : c.moveTo(x, yy); } c.stroke(); }
+  const z = P.zoomAt(t), { CX, CY, CS, SQ } = P, hr = CS / Math.sqrt(3) * 1.07, sq = SQ / .866 * 1.0;
+  c.save(); c.translate(800, 600); c.scale(z, z); c.translate(-CX, -CY);
+  // aileron d'orque qui tourne autour
+  { const a = now / 5200, ox = CX + Math.cos(a) * 690, oy = CY + Math.sin(a) * 400; c.fillStyle = '#1a1f2a'; c.beginPath(); c.moveTo(ox - 14, oy); c.quadraticCurveTo(ox - 2, oy - 40, ox + 10, oy - 44); c.quadraticCurveTo(ox + 4, oy - 20, ox + 14, oy); c.fill(); c.strokeStyle = 'rgba(255,255,255,.5)'; c.lineWidth = 2; c.beginPath(); c.ellipse(ox, oy + 2, 26, 6, 0, 0, 6.283); c.stroke(); }
+  // morceaux détachés qui dérivent et coulent
+  const drawCells = (list, off, alpha, warn) => {
+    c.save(); c.globalAlpha = alpha; c.translate(off.x, off.y);
+    for (const cl of list) { hexPath(c, cl.x, cl.y + 16, hr, sq); c.fillStyle = '#4f97c4'; c.fill(); }
+    for (const cl of list) { hexPath(c, cl.x, cl.y, hr, sq); c.fillStyle = cl.core ? '#f7fbff' : '#eef6fc'; c.fill(); }
+    c.fillStyle = 'rgba(180,215,240,.45)'; for (const cl of list) { const r2 = mulberry32(cl.id * 7 + 1); for (let i = 0; i < 2; i++) { c.beginPath(); c.ellipse(cl.x + (r2() - .5) * 30, cl.y + (r2() - .5) * 16, 6 + r2() * 8, 2 + r2() * 2, 0, 0, 6.283); c.fill(); } }
+    if (warn) { const pulse = .5 + .5 * Math.sin(now / 90); c.fillStyle = `rgba(255,80,60,${.1 + .12 * pulse})`; for (const cl of list) { hexPath(c, cl.x, cl.y, hr, sq); c.fill(); }
+      c.strokeStyle = `rgba(200,30,30,${.6 + .4 * pulse})`; c.lineWidth = 4; c.lineJoin = 'round';
+      for (const cl of list) for (const o of cl.nb) { if (list.includes(o) || o.tb <= t) continue; const mx = (cl.x + o.x) / 2, my = (cl.y + o.y) / 2, px = -(o.y - cl.y) / SQ * .5, py = (o.x - cl.x) * SQ * .5, l = Math.hypot(px, py) || 1, h = hr * .55; c.beginPath(); c.moveTo(mx - px / l * h, my - py / l * h * SQ); c.lineTo(mx + (mulberry32(cl.id + o.id)() - .5) * 6, my + 3); c.lineTo(mx + px / l * h, my + py / l * h * SQ); c.stroke(); } }
+    c.restore();
+  };
+  const live = P.cells.filter(cl => cl.tb > t);
+  for (const h of P.chunks) { if (t < h.t || t > h.t + 2.6) continue; const q = (t - h.t) / 2.6, e = 1 - Math.pow(1 - Math.min(1, q * 1.4), 2); drawCells(h, { x: h.ox * 150 * e, y: h.oy * 90 * e + q * 12 }, Math.max(0, 1 - q), false); }
+  const warnChunks = P.chunks.filter(h => t >= h.t - 3 && t < h.t);
+  drawCells(live.filter(cl => !warnChunks.some(h => h.includes(cl))), { x: 0, y: 0 }, 1, false);
+  warnChunks.forEach(h => drawCells(h, { x: 0, y: 0 }, 1, true));
+  // éclaboussures
+  for (const h of P.chunks) { const q = t - h.t - .2; if (q > 0 && q < 1) splash(c, h.cx + h.ox * 120, h.cy + h.oy * 70, q); }
   // joueurs
-  const items = P.players.map(nom => ({ nom, p: P.posOf(nom, t) })).sort((a, b) => a.p.y - b.p.y);
-  const s = P.players.length > 14 ? .78 : .92;
-  for (const { nom, p } of items) {
-    const inf = P.info[nom];
-    if (p.water) { const k = Math.min(1, (p.q - .6) / .3); splash(c, p.x, p.y, (p.q - .6) / .7); const wi = imgFor(nom); c.fillStyle = '#f6d7b8'; c.beginPath(); c.arc(p.x, p.y - 8, 11, 0, 6.283); c.fill(); if (imgOk(wi)) { c.save(); c.beginPath(); c.arc(p.x, p.y - 8, 11, 0, 6.283); c.clip(); c.drawImage(wi, p.x - 11, p.y - 19, 22, 22); c.restore(); } c.strokeStyle = '#e8322c'; c.lineWidth = 6; c.beginPath(); c.ellipse(p.x, p.y + 2, 18, 7, 0, 0, 6.283); c.stroke(); c.strokeStyle = '#fff'; c.setLineDash([6, 6]); c.stroke(); c.setLineDash([]); c.fillStyle = '#e8322c'; c.beginPath(); c.moveTo(p.x - 10, p.y - 13); c.quadraticCurveTo(p.x, p.y - 30, p.x + 12, p.y - 18); c.lineTo(p.x + 8, p.y - 13); c.fill(); if (P.players.length <= 14) nameTag(c, nom, p.x, p.y - 42, .8); drawOno(c, P.elim.find(e => e.nom === nom).ono, p.x + 30, p.y - 70, p.q - .6); continue; }
-    if (p.raft) { const top = drawPerson(c, p.x, p.y + 18, .7, inf.color, { sit: true, arms: clapping(t, P) ? 1 : 0, wave: now / 200 + inf.raft, sad: true, img: imgFor(nom) }); if (P.players.length <= 14) nameTag(c, nom, p.x, top - 4, .7); continue; }
-    const win = nom === P.winner && t >= P.Tf + .6;
-    const top = drawPerson(c, p.x, p.y, s, inf.color, { step: p.walk ? p.step : 0, bob: p.walk ? Math.abs(Math.sin(p.step)) * 3 : 0, rot: p.wobble, arms: win ? 1 : p.wobble ? .8 : 0, wave: win ? now / 150 : null, img: imgFor(nom) });
-    nameTag(c, nom, p.x, top - 4, s);
+  const list = P.players.filter(p => P.info[p].outT + 1.4 > t).map(p => ({ p, pos: P.posAt(p, t) })).sort((a, b) => a.pos.y - b.pos.y);
+  for (const { p, pos } of list) {
+    const inf = P.info[p], spr = spriteFor(p), K = 1.75, out = t >= inf.outT;
+    if (out) { const q = t - inf.outT, sp = inf.splash; splash(c, sp.x, sp.y, q / 1.2); if (q < 1) { c.font = '26px serif'; c.textAlign = 'center'; c.fillText('🫧', sp.x, sp.y - 10 - q * 20); } if (q < .9) drawOno(c, 'PLOUF !', sp.x, sp.y - 70, q); continue; }
+    const dir = Math.abs(pos.dx || 0) > Math.abs((pos.dy || 0) * 1.6) ? (pos.dx > 0 ? 3 : 1) : ((pos.dy || 0) > 0 ? 2 : 0);
+    const y = pos.y - (pos.h || 0), win = p === P.winner && t >= P.wt + .9;
+    c.fillStyle = inf.color; c.globalAlpha = .55; c.beginPath(); c.ellipse(pos.x, pos.y + 2, 20, 6, 0, 0, 6.283); c.fill(); c.globalAlpha = 1;
+    let top;
+    if (imgOk(spr)) {
+      const k = pos.kind;
+      if (win) top = drawLPC(c, spr, 'jump', 2, Math.floor(now / 110) % 5, pos.x, y - Math.abs(Math.sin(now / 180)) * 6, K);
+      else if (k === 'walk' || k === 'run') top = drawLPC(c, spr, 'walk', dir, 1 + Math.floor(now / (k === 'run' ? 55 : 95)) % 8, pos.x, y, K);
+      else if (k === 'push') top = drawLPC(c, spr, 'thrust', dir, Math.min(7, 3 + Math.floor(pos.q * 5)), pos.x, y, K);
+      else if (k === 'jump' || k === 'jumpfail') top = drawLPC(c, spr, 'jump', dir, Math.min(4, Math.floor(pos.q * 5)), pos.x, y, K);
+      else if (k === 'slide' || k === 'pushed' || k === 'slip' || k === 'slideok' || k === 'drift') { c.save(); c.translate(pos.x, y); c.rotate((k === 'slideok' || k === 'slip' ? Math.sin(now / 60) * .15 : .35 * Math.sign(pos.dx || 1))); top = y + drawLPC(c, spr, k === 'drift' ? 'idle' : 'hurt', 2, k === 'drift' ? 0 : Math.min(2, Math.floor(pos.q * 4)), 0, 0, K); c.restore(); }
+      else if (k === 'dodge') top = drawLPC(c, spr, 'walk', dir, 1 + Math.floor(now / 50) % 8, pos.x, y, K);
+      else top = drawLPC(c, spr, 'idle', 2, Math.floor(now / 600 + inf.color.length) % 2, pos.x, y, K);
+    } else top = drawPerson(c, pos.x, y, 1, inf.color, { img: imgFor(p) });
+    nameTag(c, p, pos.x, top - 12, 1);
+    if (pos.kind === 'slideok' && pos.q > .6) drawOno(c, 'OUF !', pos.x, top - 40, pos.q - .6);
+    if (pos.kind === 'dodge') drawOno(c, 'ESQUIVE !', pos.x, top - 40, pos.q);
+    if (pos.kind === 'slip') drawOno(c, 'RATÉ !', pos.x, top - 40, pos.q);
+    if (pos.kind === 'push' && pos.q > .7) drawOno(c, 'POUSSÉE !', pos.x, top - 40, pos.q - .7);
   }
-  for (const cp of P.coups) { const q = t - (cp.t - .7); if (q >= 0 && q < .7) { const a = P.posOf(cp.from, cp.t - .7), b = P.posOf(cp.to, cp.t); drawProjectile(c, P.info[cp.from].coup.e, a.x, a.y - 50, b.x, b.y - 40, q / .7); } const b = P.posOf(cp.to, t); drawOno(c, 'BAM !', b.x + 30, b.y - 90, t - cp.t); }
+  for (const h of P.chunks) { const q = t - (h.t - 3); if (q >= 0 && q < .9) drawOno(c, 'CRAC !', h.cx, h.cy - 40, q); }
+  c.restore();
+  if (!replay) {
+    const k = P.players.filter(p => P.info[p].outT > t).length;
+    if (t >= P.start - .5) { const txt = t >= P.wt + .9 ? `🏆 ${P.winner} est le dernier debout !` : k === 2 ? '⚔️ DUEL FINAL : plus que 2 sur la glace !' : `🧊 Encore sur la glace : ${k} / ${P.players.length}`;
+      c.font = '800 30px Inter, system-ui, sans-serif'; const w = c.measureText(txt).width + 56; c.fillStyle = k === 2 && t < P.wt + .9 ? 'rgba(163,34,42,.92)' : 'rgba(43,26,16,.85)'; c.beginPath(); c.roundRect(800 - w / 2, 1000, w, 56, 28); c.fill(); c.fillStyle = '#fff8ea'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(txt, 800, 1029); }
+    const kk = smooth(0, .6, t) * (1 - smooth(P.start - .9, P.start - .2, t)); if (kk > 0) buCard(c, P, P.r0, kk, t);
+  }
 }
-function clapping(t, P) { return P.elim.some(e => { const q = t - P.info[e.nom].outT; return q >= 0 && q < 2; }); }
 
 /* ===== Outils : disposition en grille et manches ===== */
 function gridLayout(players, rng, top = 330, h = 690) {
@@ -1886,7 +2000,7 @@ function bigBanner(c, txt, q) { if (q < 0 || q > 1.8) return; const k = Math.min
 /* ===== Sprites LPC (test : coupe de sapin) =====
    Planche LPC standard : 54 lignes de 64 px, puis 4 lignes de 128 px (hache).
    Directions par groupe de 4 lignes : 0 dos, 1 gauche, 2 face, 3 droite. */
-const LPC = { thrust: 4, idle: 22, jump: 26, sit: 30, emote: 34, hurt: 20, axe: 54 };
+const LPC = { thrust: 4, walk: 8, idle: 22, jump: 26, sit: 30, emote: 34, hurt: 20, axe: 54 };
 const SPRITE_TEST = new Image(); SPRITE_TEST.src = 'sprites/bucheron-test.png';
 const spriteFor = nom => SPRITE_TEST;
 function drawLPC(c, img, anim, dir, frame, x, y, k) {
@@ -2151,7 +2265,7 @@ function buCard(c, P, r, k, t) {
   let y = y0 + 70;
   if (r.i === 0) { c.font = '900 34px Inter, system-ui, sans-serif'; c.fillStyle = '#a3222a'; c.fillText(I.kicker, 800, y); y += 74; c.font = '900 84px "Playfair Display", serif'; c.fillStyle = '#2b1a10'; c.fillText(I.title, 800, y); y += 76;
     c.font = '600 30px Inter, system-ui, sans-serif'; c.fillStyle = '#4a2c16'; I.lines.forEach(l => { c.fillText(l, 800, y); y += 44; }); y += 14;
-    c.font = '800 30px Inter, system-ui, sans-serif'; c.fillStyle = '#1f5a3a'; c.fillText(`${r.alive.length} ${I.unit} · ${r.places} places pour la suite`, 800, y); y += 62; }
+    c.font = '800 30px Inter, system-ui, sans-serif'; c.fillStyle = '#1f5a3a'; c.fillText(I.sub || `${r.alive.length} ${I.unit} · ${r.places} places pour la suite`, 800, y); y += 62; }
   else { c.font = '900 92px "Playfair Display", serif'; c.fillStyle = r.final ? '#a3222a' : '#2b1a10'; c.fillText(r.final ? 'FINALE !' : `Manche ${r.i + 1}`, 800, y + 20); y += 112;
     c.font = '600 30px Inter, system-ui, sans-serif'; c.fillStyle = '#4a2c16'; c.fillText(r.final ? I.finale : `${r.alive.length} qualifiés · ${r.places} places pour la suite`, 800, y); y += 70; }
   c.font = '800 26px Inter, system-ui, sans-serif';
