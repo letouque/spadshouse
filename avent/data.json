@@ -390,6 +390,12 @@
           "nom": "Gilet de videur à holster",
           "qte": 1,
           "prix": 0
+        },
+        {
+          "itemId": "47928",
+          "nom": "Pantalon de videur à holster",
+          "qte": 1,
+          "prix": 0
         }
       ]
     },
