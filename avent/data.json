@@ -12,7 +12,7 @@
       "objets": [
         {
           "itemId": "40390",
-          "nom": "",
+          "nom": "Lit enfant magique",
           "qte": 1,
           "prix": 6999998
         }
@@ -27,7 +27,7 @@
       "objets": [
         {
           "itemId": "48096",
-          "nom": "",
+          "nom": "Carotte de la bonne fortune",
           "qte": 1,
           "prix": 3668997
         }
@@ -42,7 +42,7 @@
       "objets": [
         {
           "itemId": "52292",
-          "nom": "",
+          "nom": "L'Étiquette éorzéenne : Ricaner",
           "qte": 1,
           "prix": 689999
         }
@@ -57,7 +57,7 @@
       "objets": [
         {
           "itemId": "52264",
-          "nom": "",
+          "nom": "Sifflet colibri silencieux",
           "qte": 1,
           "prix": 3199998
         }
@@ -72,7 +72,7 @@
       "objets": [
         {
           "itemId": "46834",
-          "nom": "",
+          "nom": "Cor charrette de l'équipe de soutien",
           "qte": 1,
           "prix": 20999899
         }
@@ -87,7 +87,7 @@
       "objets": [
         {
           "itemId": "39490",
-          "nom": "",
+          "nom": "Cor Phaéton",
           "qte": 1,
           "prix": 4399899
         }
@@ -102,7 +102,7 @@
       "objets": [
         {
           "itemId": "32846",
-          "nom": "",
+          "nom": "Clef d'activation de Gabriel v3",
           "qte": 1,
           "prix": 432000
         }
@@ -117,7 +117,7 @@
       "objets": [
         {
           "itemId": "45070",
-          "nom": "",
+          "nom": "Coffre d'arme de rêve",
           "qte": 1,
           "prix": 3000000
         }
@@ -132,7 +132,7 @@
       "objets": [
         {
           "itemId": "45070",
-          "nom": "",
+          "nom": "Coffre d'arme de rêve",
           "qte": 1,
           "prix": 3000000
         }
@@ -147,7 +147,7 @@
       "objets": [
         {
           "itemId": "48096",
-          "nom": "",
+          "nom": "Carotte de la bonne fortune",
           "qte": 1,
           "prix": 3668997
         }
@@ -156,7 +156,7 @@
     {
       "nom": "Lot de néons muraux",
       "desc": "2 néons verticaux, 1 néon horizontal, 1 néon Belhamel et un distributeur",
-      "image": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/051000/051598_hr1.tex",
       "prix": 2816391,
       "itemId": "49847",
       "objets": [
@@ -189,7 +189,7 @@
     {
       "nom": "Monture Belhamel",
       "desc": "",
-      "image": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026038_hr1.tex",
       "prix": 11399999,
       "itemId": "46829",
       "objets": [
@@ -204,7 +204,7 @@
     {
       "nom": "L'Étiquette éorzéenne : Pirouette",
       "desc": "",
-      "image": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026435_hr1.tex",
       "prix": 777773,
       "itemId": "47983",
       "objets": [
@@ -219,7 +219,7 @@
     {
       "nom": "Monture Sourieur cosmique",
       "desc": "",
-      "image": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026014_hr1.tex",
       "prix": 1839999,
       "itemId": "50435",
       "objets": [
@@ -242,7 +242,7 @@
     {
       "nom": "Pelle + Clef d'activation d'arme blindée cosmique 2.0",
       "desc": "",
-      "image": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/058000/058056_hr1.tex",
       "prix": 645214,
       "itemId": "52288",
       "objets": [
@@ -263,7 +263,7 @@
     {
       "nom": "Clef d'activation d'arme blindée cosmique + Clef d'activation de déblayeuse cosmique grise",
       "desc": "",
-      "image": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026014_hr1.tex",
       "prix": 807985,
       "itemId": "50442",
       "objets": [
@@ -284,7 +284,7 @@
     {
       "nom": "Clef d'activation de mécano cosmique de série",
       "desc": "",
-      "image": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026014_hr1.tex",
       "prix": 300000,
       "itemId": "50445",
       "objets": [
@@ -299,7 +299,7 @@
     {
       "nom": "Sifflet dhalmel de l'espace",
       "desc": "",
-      "image": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026039_hr1.tex",
       "prix": 409987,
       "itemId": "46825",
       "objets": [
@@ -314,7 +314,7 @@
     {
       "nom": "Sifflet Pampa de la Luna",
       "desc": "",
-      "image": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026039_hr1.tex",
       "prix": 7000000,
       "itemId": "41494",
       "objets": [
@@ -329,7 +329,7 @@
     {
       "nom": "Sifflet ornithorynque porteur",
       "desc": "",
-      "image": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026039_hr1.tex",
       "prix": 5291589,
       "itemId": "52266",
       "objets": [
