@@ -158,8 +158,15 @@
       "desc": "2 néons verticaux, 1 néon horizontal, 1 néon Belhamel et un distributeur",
       "image": "",
       "prix": 0,
-      "itemId": "",
-      "objets": []
+      "itemId": "49847",
+      "objets": [
+        {
+          "itemId": "49847",
+          "nom": "Néon mural belhamel",
+          "qte": 1,
+          "prix": 0
+        }
+      ]
     },
     {
       "nom": "Monture Belhamel",
