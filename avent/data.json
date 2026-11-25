@@ -100,17 +100,17 @@
       ]
     },
     {
-      "nom": "Lot 7",
+      "nom": "Méthode de coiffure “Carré avec demi-chignon”",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026178_hr1.tex",
-      "prix": 0,
+      "prix": 1749999,
       "itemId": "51747",
       "objets": [
         {
           "itemId": "51747",
           "nom": "Méthode de coiffure “Carré avec demi-chignon”",
           "qte": 1,
-          "prix": 0
+          "prix": 1749999
         }
       ]
     },
@@ -333,7 +333,7 @@
     {
       "nom": "Cosmo-Planche",
       "desc": "",
-      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026082_hr1.tex",
+      "image": "",
       "prix": 1209999,
       "itemId": "47336",
       "objets": [
@@ -449,17 +449,10 @@
     {
       "nom": "Cosmo-Planche",
       "desc": "",
-      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026082_hr1.tex",
-      "prix": 1209999,
-      "itemId": "47336",
-      "objets": [
-        {
-          "itemId": "47336",
-          "nom": "Cosmo-planche",
-          "qte": 1,
-          "prix": 1209999
-        }
-      ]
+      "image": "",
+      "prix": 0,
+      "itemId": "",
+      "objets": []
     }
   ],
   "cadeaux": [
