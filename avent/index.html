@@ -2002,7 +2002,21 @@ function bigBanner(c, txt, q) { if (q < 0 || q > 1.8) return; const k = Math.min
    Directions par groupe de 4 lignes : 0 dos, 1 gauche, 2 face, 3 droite. */
 const LPC = { thrust: 4, walk: 8, idle: 22, jump: 26, sit: 30, emote: 34, hurt: 20, axe: 54 };
 const SPRITE_TEST = new Image(); SPRITE_TEST.src = 'sprites/bucheron-test.png';
-const spriteFor = nom => SPRITE_TEST;
+/* Personnages des membres : pseudo → planches LPC dans sprites/.
+   base = sans arme (tous les jeux) ; hache = avec la hache (coupe de sapin). Sans entrée : personnage par défaut. */
+const SPRITE_FILES = {
+  yuinata: { base: 'yuinata.png', hache: 'yuinata-hache.png' }
+};
+const spriteKey = nom => String(nom || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+const SPRITE_CACHE = {};
+function spriteFor(nom, variant) {
+  const f = SPRITE_FILES[spriteKey(nom)];
+  if (!f) return SPRITE_TEST;
+  const file = (variant === 'hache' ? f.hache : f.base) || f.base || f.hache;
+  if (!SPRITE_CACHE[file]) { const im = new Image(); im.src = 'sprites/' + file; SPRITE_CACHE[file] = im; }
+  const im = SPRITE_CACHE[file];
+  return imgOk(im) ? im : SPRITE_TEST;
+}
 function drawLPC(c, img, anim, dir, frame, x, y, k) {
   // (x, y) = position des pieds ; k = agrandissement
   const big = anim === 'axe', fs = big ? 128 : 64, row = big ? null : LPC[anim] + (anim === 'hurt' ? 0 : dir);
@@ -2208,7 +2222,7 @@ function drawBucheron(c, P, t, R, now, replay, roundAt, hitsAt) {
     const kFall = 'bf' + (replay ? 'r' : '') + r.i + nom;
     if (felled && fq > .8 && !R[kFall]) { R[kFall] = 1; for (let q = 0; q < 26; q++) emit(R, { k: 'dust', x: x + 30 * sc + Math.random() * 110 * sc * r.scale, y: y - Math.random() * 20, vx: (Math.random() - .5) * 120, vy: -Math.random() * 80, life: 0, max: 1.2, r: 6 + Math.random() * 8 }); if (win) confettiBurst(R, x, y - 160, 240); }
     // bûcheron
-    const pz = p.pauses.find(q => t >= q.t && t < q.t + q.d), bx = x - 84 * sc, by = y + 4 * sc, spr = spriteFor(nom);
+    const pz = p.pauses.find(q => t >= q.t && t < q.t + q.d), bx = x - 84 * sc, by = y + 4 * sc, spr = spriteFor(nom, 'hache');
     let top;
     if (imgOk(spr)) {
       const K = 2.3 * sc;
