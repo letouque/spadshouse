@@ -370,32 +370,32 @@
       "nom": "Lot 22",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/056000/056355_hr1.tex",
-      "prix": 0,
+      "prix": 1056001,
       "itemId": "47921",
       "objets": [
         {
           "itemId": "47921",
           "nom": "Mitaines de videur",
           "qte": 1,
-          "prix": 0
+          "prix": 262000
         },
         {
           "itemId": "47923",
           "nom": "Chaussures d'apparat de videur",
           "qte": 1,
-          "prix": 0
+          "prix": 262000
         },
         {
           "itemId": "47919",
           "nom": "Gilet de videur à holster",
           "qte": 1,
-          "prix": 0
+          "prix": 269001
         },
         {
           "itemId": "47928",
           "nom": "Pantalon de videur à holster",
           "qte": 1,
-          "prix": 0
+          "prix": 263000
         }
       ]
     },
