@@ -96,17 +96,10 @@
     {
       "nom": "Clef d'activation de Gabriel v3",
       "desc": "",
-      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026014_hr1.tex",
-      "prix": 431999,
-      "itemId": "32846",
-      "objets": [
-        {
-          "itemId": "32846",
-          "nom": "Clef d'activation de Gabriel v3",
-          "qte": 1,
-          "prix": 431999
-        }
-      ]
+      "image": "",
+      "prix": 0,
+      "itemId": "",
+      "objets": []
     },
     {
       "nom": "Coffre d'arme de rêve",
@@ -157,7 +150,7 @@
       "nom": "Lot de néons muraux",
       "desc": "2 néons verticaux, 1 néon horizontal, 1 néon Belhamel et un distributeur",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/051000/051598_hr1.tex",
-      "prix": 2816892,
+      "prix": 3064789,
       "itemId": "49847",
       "objets": [
         {
@@ -169,7 +162,7 @@
         {
           "itemId": "44120",
           "nom": "Néon mural vertical",
-          "qte": 1,
+          "qte": 2,
           "prix": 247897
         },
         {
@@ -265,10 +258,10 @@
       ]
     },
     {
-      "nom": "Pelle + Clef d'activation d'arme blindée cosmique 2.0",
+      "nom": "Pelle + Clef d'activation de Gabriel v3",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/058000/058056_hr1.tex",
-      "prix": 645214,
+      "prix": 1077213,
       "itemId": "52288",
       "objets": [
         {
@@ -276,6 +269,12 @@
           "nom": "Pelle",
           "qte": 1,
           "prix": 645214
+        },
+        {
+          "itemId": "32846",
+          "nom": "Clef d'activation de Gabriel v3",
+          "qte": 1,
+          "prix": 431999
         }
       ]
     },
