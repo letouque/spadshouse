@@ -331,18 +331,12 @@
       ]
     },
     {
-      "nom": "Cosmo-Planche",
+      "nom": "Jackpot des sous marins",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/053000/053273_hr1.tex",
-      "prix": 1209999,
-      "itemId": "47336",
+      "prix": 0,
+      "itemId": "24908",
       "objets": [
-        {
-          "itemId": "47336",
-          "nom": "Cosmo-planche",
-          "qte": 1,
-          "prix": 1209999
-        },
         {
           "itemId": "24908",
           "nom": "Vieille pièce sale",
