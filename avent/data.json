@@ -379,7 +379,7 @@
       "nom": "Lot de mascottes",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/059000/059947_hr1.tex",
-      "prix": 3536719,
+      "prix": 3553718,
       "itemId": "47965",
       "objets": [
         {
@@ -410,7 +410,7 @@
           "itemId": "49822",
           "nom": "Noscéen à poil court",
           "qte": 1,
-          "prix": 0
+          "prix": 16999
         }
       ]
     },
