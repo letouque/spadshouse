@@ -432,10 +432,17 @@
     {
       "nom": "Lot 25",
       "desc": "",
-      "image": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026082_hr1.tex",
       "prix": 0,
-      "itemId": "",
-      "objets": []
+      "itemId": "47336",
+      "objets": [
+        {
+          "itemId": "47336",
+          "nom": "Cosmo-planche",
+          "qte": 1,
+          "prix": 0
+        }
+      ]
     }
   ],
   "cadeaux": [
