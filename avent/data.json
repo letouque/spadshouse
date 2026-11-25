@@ -34,7 +34,7 @@
       ]
     },
     {
-      "nom": "L'Étiquette éorzéenne : Ricaner",
+      "nom": "L'Étiquette éorzéenne : Ricaner + Sifflet dhalmel de l'espace",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026435_hr1.tex",
       "prix": 694977,
@@ -47,8 +47,8 @@
           "prix": 694977
         },
         {
-          "itemId": "",
-          "nom": "",
+          "itemId": "46825",
+          "nom": "Sifflet dhalmel de l'espace",
           "qte": 1,
           "prix": 0
         }
@@ -335,17 +335,10 @@
     {
       "nom": "Sifflet dhalmel de l'espace",
       "desc": "",
-      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026039_hr1.tex",
-      "prix": 409980,
-      "itemId": "46825",
-      "objets": [
-        {
-          "itemId": "46825",
-          "nom": "Sifflet dhalmel de l'espace",
-          "qte": 1,
-          "prix": 409980
-        }
-      ]
+      "image": "",
+      "prix": 0,
+      "itemId": "",
+      "objets": []
     },
     {
       "nom": "Sifflet Pampa de la Luna",
