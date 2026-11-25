@@ -7,14 +7,14 @@
       "nom": "Lit enfant magique",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/052000/052463_hr1.tex",
-      "prix": 7849999,
+      "prix": 6999998,
       "itemId": "40390",
       "objets": [
         {
           "itemId": "40390",
           "nom": "",
           "qte": 1,
-          "prix": 7849999
+          "prix": 6999998
         }
       ]
     },
@@ -22,14 +22,14 @@
       "nom": "Carotte de la bonne fortune",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/025000/025207_hr1.tex",
-      "prix": 3899999,
+      "prix": 3668997,
       "itemId": "48096",
       "objets": [
         {
           "itemId": "48096",
           "nom": "",
           "qte": 1,
-          "prix": 3899999
+          "prix": 3668997
         }
       ]
     },
@@ -52,14 +52,14 @@
       "nom": "Sifflet colibri silencieux",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/004000/004350_hr1.tex",
-      "prix": 3496988,
+      "prix": 3199998,
       "itemId": "52264",
       "objets": [
         {
           "itemId": "52264",
           "nom": "",
           "qte": 1,
-          "prix": 3496988
+          "prix": 3199998
         }
       ]
     },
@@ -67,14 +67,14 @@
       "nom": "Cor charrette de l'équipe de soutien",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/004000/004323_hr1.tex",
-      "prix": 20997986,
+      "prix": 20999899,
       "itemId": "46834",
       "objets": [
         {
           "itemId": "46834",
           "nom": "",
           "qte": 1,
-          "prix": 20997986
+          "prix": 20999899
         }
       ]
     },
@@ -97,14 +97,14 @@
       "nom": "Clef d'activation de Gabriel v3",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026014_hr1.tex",
-      "prix": 436990,
+      "prix": 432000,
       "itemId": "32846",
       "objets": [
         {
           "itemId": "32846",
           "nom": "",
           "qte": 1,
-          "prix": 436990
+          "prix": 432000
         }
       ]
     },
@@ -112,14 +112,14 @@
       "nom": "Coffre d'arme de rêve",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026557_hr1.tex",
-      "prix": 3049998,
+      "prix": 3000000,
       "itemId": "45070",
       "objets": [
         {
           "itemId": "45070",
           "nom": "",
           "qte": 1,
-          "prix": 3049998
+          "prix": 3000000
         }
       ]
     },
@@ -127,14 +127,14 @@
       "nom": "Coffre d'arme de rêve",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026557_hr1.tex",
-      "prix": 3049998,
+      "prix": 3000000,
       "itemId": "45070",
       "objets": [
         {
           "itemId": "45070",
           "nom": "",
           "qte": 1,
-          "prix": 3049998
+          "prix": 3000000
         }
       ]
     },
@@ -142,14 +142,14 @@
       "nom": "Carotte de la bonne fortune",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/025000/025207_hr1.tex",
-      "prix": 3899999,
+      "prix": 3668997,
       "itemId": "48096",
       "objets": [
         {
           "itemId": "48096",
           "nom": "",
           "qte": 1,
-          "prix": 3899999
+          "prix": 3668997
         }
       ]
     },
@@ -157,32 +157,32 @@
       "nom": "Lot de néons muraux",
       "desc": "2 néons verticaux, 1 néon horizontal, 1 néon Belhamel et un distributeur",
       "image": "",
-      "prix": 0,
+      "prix": 2816391,
       "itemId": "49847",
       "objets": [
         {
           "itemId": "49847",
           "nom": "Néon mural belhamel",
           "qte": 1,
-          "prix": 0
+          "prix": 74999
         },
         {
           "itemId": "44120",
           "nom": "Néon mural vertical",
           "qte": 1,
-          "prix": 0
+          "prix": 247898
         },
         {
           "itemId": "44116",
           "nom": "Distributeur de Solution Neuf",
           "qte": 1,
-          "prix": 0
+          "prix": 296500
         },
         {
           "itemId": "44119",
           "nom": "Néon mural horizontal",
           "qte": 1,
-          "prix": 0
+          "prix": 2196994
         }
       ]
     },
@@ -190,14 +190,14 @@
       "nom": "Monture Belhamel",
       "desc": "",
       "image": "",
-      "prix": 0,
+      "prix": 11399999,
       "itemId": "46829",
       "objets": [
         {
           "itemId": "46829",
           "nom": "Cor belhamel",
           "qte": 1,
-          "prix": 0
+          "prix": 11399999
         }
       ]
     },
@@ -205,14 +205,14 @@
       "nom": "L'Étiquette éorzéenne : Pirouette",
       "desc": "",
       "image": "",
-      "prix": 0,
+      "prix": 777773,
       "itemId": "47983",
       "objets": [
         {
           "itemId": "47983",
           "nom": "L'Étiquette éorzéenne : Pirouette",
           "qte": 1,
-          "prix": 0
+          "prix": 777773
         }
       ]
     },
@@ -220,14 +220,14 @@
       "nom": "Monture Sourieur cosmique",
       "desc": "",
       "image": "",
-      "prix": 0,
+      "prix": 1839999,
       "itemId": "50435",
       "objets": [
         {
           "itemId": "50435",
           "nom": "Clef d'activation de sourieur cosmique",
           "qte": 1,
-          "prix": 0
+          "prix": 1839999
         }
       ]
     },
@@ -243,14 +243,14 @@
       "nom": "Pelle + Clef d'activation d'arme blindée cosmique 2.0",
       "desc": "",
       "image": "",
-      "prix": 0,
+      "prix": 645214,
       "itemId": "52288",
       "objets": [
         {
           "itemId": "52288",
           "nom": "Pelle",
           "qte": 1,
-          "prix": 0
+          "prix": 645214
         },
         {
           "itemId": "52041",
@@ -264,20 +264,20 @@
       "nom": "Clef d'activation d'arme blindée cosmique + Clef d'activation de déblayeuse cosmique grise",
       "desc": "",
       "image": "",
-      "prix": 0,
+      "prix": 807985,
       "itemId": "50442",
       "objets": [
         {
           "itemId": "50442",
           "nom": "Clef d'activation d'arme blindée cosmique",
           "qte": 1,
-          "prix": 0
+          "prix": 417990
         },
         {
           "itemId": "52272",
           "nom": "Clef d'activation de déblayeuse cosmique grise",
           "qte": 1,
-          "prix": 0
+          "prix": 389995
         }
       ]
     },
@@ -285,14 +285,14 @@
       "nom": "Clef d'activation de mécano cosmique de série",
       "desc": "",
       "image": "",
-      "prix": 0,
+      "prix": 300000,
       "itemId": "50445",
       "objets": [
         {
           "itemId": "50445",
           "nom": "Clef d'activation de mécano cosmique de série",
           "qte": 1,
-          "prix": 0
+          "prix": 300000
         }
       ]
     },
@@ -300,14 +300,14 @@
       "nom": "Sifflet dhalmel de l'espace",
       "desc": "",
       "image": "",
-      "prix": 0,
+      "prix": 409987,
       "itemId": "46825",
       "objets": [
         {
           "itemId": "46825",
           "nom": "Sifflet dhalmel de l'espace",
           "qte": 1,
-          "prix": 0
+          "prix": 409987
         }
       ]
     },
@@ -315,14 +315,14 @@
       "nom": "Sifflet Pampa de la Luna",
       "desc": "",
       "image": "",
-      "prix": 0,
+      "prix": 7000000,
       "itemId": "41494",
       "objets": [
         {
           "itemId": "41494",
           "nom": "Sifflet pampa de la luna",
           "qte": 1,
-          "prix": 0
+          "prix": 7000000
         }
       ]
     },
@@ -330,14 +330,14 @@
       "nom": "Sifflet ornithorynque porteur",
       "desc": "",
       "image": "",
-      "prix": 0,
+      "prix": 5291589,
       "itemId": "52266",
       "objets": [
         {
           "itemId": "52266",
           "nom": "Sifflet ornithorynque porteur",
           "qte": 1,
-          "prix": 0
+          "prix": 5291589
         }
       ]
     },
