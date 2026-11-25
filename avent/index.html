@@ -2005,7 +2005,8 @@ const SPRITE_TEST = new Image(); SPRITE_TEST.src = 'sprites/bucheron-test.png';
 /* Personnages des membres : pseudo → planches LPC dans sprites/.
    base = sans arme (tous les jeux) ; hache = avec la hache (coupe de sapin). Sans entrée : personnage par défaut. */
 const SPRITE_FILES = {
-  yuinata: { base: 'yuinata.png', hache: 'yuinata-hache.png' }
+  yuinata: { base: 'yuinata.png', hache: 'yuinata-hache.png' },
+  eleiyn: { base: 'eleiyn.png', hache: 'eleiyn-hache.png' }
 };
 const spriteKey = nom => String(nom || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 const SPRITE_CACHE = {};
