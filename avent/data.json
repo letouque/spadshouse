@@ -400,17 +400,17 @@
       ]
     },
     {
-      "nom": "Lot 23",
+      "nom": "Domaine Ténébreux",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026073_hr1.tex",
-      "prix": 0,
+      "prix": 13000000,
       "itemId": "44500",
       "objets": [
         {
           "itemId": "44500",
           "nom": "Domaine ténébreux",
           "qte": 1,
-          "prix": 0
+          "prix": 13000000
         }
       ]
     },
