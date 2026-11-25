@@ -103,7 +103,7 @@
       "nom": "Méthode de coiffure “Carré avec demi-chignon”",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026178_hr1.tex",
-      "prix": 1749999,
+      "prix": 2464540,
       "itemId": "51747",
       "objets": [
         {
@@ -116,25 +116,25 @@
           "itemId": "33706",
           "nom": "Méthode de coiffure “Queue-de-cheval sur le côté”",
           "qte": 1,
-          "prix": 0
+          "prix": 55543
         },
         {
           "itemId": "31407",
           "nom": "Méthode de coiffure “Vartan”",
           "qte": 1,
-          "prix": 0
+          "prix": 199999
         },
         {
           "itemId": "52440",
           "nom": "Méthode de coiffure “Chignon tressé”",
           "qte": 1,
-          "prix": 0
+          "prix": 408999
         },
         {
           "itemId": "24233",
           "nom": "Méthode de coiffure “Tresse bandeau”",
           "qte": 1,
-          "prix": 0
+          "prix": 50000
         }
       ]
     },
@@ -355,12 +355,19 @@
       ]
     },
     {
-      "nom": "Jackpot de Noël",
+      "nom": "Cosmo-planche",
       "desc": "",
-      "image": "",
-      "prix": 0,
-      "itemId": "",
-      "objets": []
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026082_hr1.tex",
+      "prix": 1209999,
+      "itemId": "47336",
+      "objets": [
+        {
+          "itemId": "47336",
+          "nom": "Cosmo-planche",
+          "qte": 1,
+          "prix": 1209999
+        }
+      ]
     },
     {
       "nom": "Sifflet dhalmel de l'espace",
@@ -466,7 +473,7 @@
     {
       "nom": "Jackpot de Noël",
       "desc": "",
-      "image": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/053000/053273_hr1.tex",
       "prix": 0,
       "itemId": "",
       "objets": []
