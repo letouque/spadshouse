@@ -369,10 +369,17 @@
     {
       "nom": "Lot 22",
       "desc": "",
-      "image": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/056000/056355_hr1.tex",
       "prix": 0,
-      "itemId": "",
-      "objets": []
+      "itemId": "47921",
+      "objets": [
+        {
+          "itemId": "47921",
+          "nom": "Mitaines de videur",
+          "qte": 1,
+          "prix": 0
+        }
+      ]
     },
     {
       "nom": "Lot 23",
