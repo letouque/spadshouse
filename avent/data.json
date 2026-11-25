@@ -255,6 +255,12 @@
           "nom": "Bujin kiribakama de Shishû",
           "qte": 1,
           "prix": 0
+        },
+        {
+          "itemId": "40444",
+          "nom": "Obutozôri de Shishû",
+          "qte": 1,
+          "prix": 0
         }
       ]
     },
