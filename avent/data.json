@@ -234,10 +234,17 @@
     {
       "nom": "Tenue Shishû",
       "desc": "Tenue complète",
-      "image": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/056000/056580_hr1.tex",
       "prix": 0,
-      "itemId": "",
-      "objets": []
+      "itemId": "40441",
+      "objets": [
+        {
+          "itemId": "40441",
+          "nom": "Bujin eboshi de Shishû",
+          "qte": 1,
+          "prix": 0
+        }
+      ]
     },
     {
       "nom": "Pelle + Clef d'activation d'arme blindée cosmique 2.0",
