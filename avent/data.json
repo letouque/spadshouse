@@ -378,10 +378,17 @@
     {
       "nom": "Lot de mascottes",
       "desc": "",
-      "image": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/059000/059947_hr1.tex",
       "prix": 0,
-      "itemId": "",
-      "objets": []
+      "itemId": "47965",
+      "objets": [
+        {
+          "itemId": "47965",
+          "nom": "Bébé chat-pardeur",
+          "qte": 1,
+          "prix": 0
+        }
+      ]
     },
     {
       "nom": "Sifflet Pampa de la Luna",
