@@ -268,7 +268,7 @@
       "nom": "Pelle + Clef d'activation d'arme blindée cosmique 2.0",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/058000/058056_hr1.tex",
-      "prix": 945214,
+      "prix": 645214,
       "itemId": "52288",
       "objets": [
         {
@@ -276,12 +276,6 @@
           "nom": "Pelle",
           "qte": 1,
           "prix": 645214
-        },
-        {
-          "itemId": "52041",
-          "nom": "Carte arme blindée cosmique 2.0",
-          "qte": 1,
-          "prix": 300000
         }
       ]
     },
@@ -289,7 +283,7 @@
       "nom": "Lot de montures cosmiques",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026014_hr1.tex",
-      "prix": 808984,
+      "prix": 1197983,
       "itemId": "50442",
       "objets": [
         {
@@ -307,6 +301,12 @@
         {
           "itemId": "50445",
           "nom": "Clef d'activation de mécano cosmique de série",
+          "qte": 1,
+          "prix": 388999
+        },
+        {
+          "itemId": "52041",
+          "nom": "Carte arme blindée cosmique 2.0",
           "qte": 1,
           "prix": 0
         }
