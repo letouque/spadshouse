@@ -396,6 +396,12 @@
           "nom": "Pantalon de videur à holster",
           "qte": 1,
           "prix": 263000
+        },
+        {
+          "itemId": "",
+          "nom": "",
+          "qte": 1,
+          "prix": 0
         }
       ]
     },
