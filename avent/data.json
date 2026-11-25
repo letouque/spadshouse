@@ -144,7 +144,15 @@
       ]
     },
     {
-      "nom": "Lot 11",
+      "nom": "Lot de néons muraux",
+      "desc": "2 néons verticaux, 1 néon horizontal, 1 néon Belhamel et un distributeur",
+      "image": "",
+      "prix": 0,
+      "itemId": "",
+      "objets": []
+    },
+    {
+      "nom": "Monture Belhamel",
       "desc": "",
       "image": "",
       "prix": 0,
@@ -152,7 +160,7 @@
       "objets": []
     },
     {
-      "nom": "Lot 12",
+      "nom": "L'Étiquette éorzéenne : Pirouette",
       "desc": "",
       "image": "",
       "prix": 0,
@@ -160,7 +168,7 @@
       "objets": []
     },
     {
-      "nom": "Lot 13",
+      "nom": "Monture Sourieur cosmique",
       "desc": "",
       "image": "",
       "prix": 0,
@@ -168,7 +176,15 @@
       "objets": []
     },
     {
-      "nom": "Lot 14",
+      "nom": "Tenue Shishû",
+      "desc": "Tenue complète",
+      "image": "",
+      "prix": 0,
+      "itemId": "",
+      "objets": []
+    },
+    {
+      "nom": "Pelle + Clef d'activation d'arme blindée cosmique 2.0",
       "desc": "",
       "image": "",
       "prix": 0,
@@ -176,7 +192,7 @@
       "objets": []
     },
     {
-      "nom": "Lot 15",
+      "nom": "Clef d'activation d'arme blindée cosmique + Clef d'activation de déblayeuse cosmique grise",
       "desc": "",
       "image": "",
       "prix": 0,
@@ -184,7 +200,7 @@
       "objets": []
     },
     {
-      "nom": "Lot 16",
+      "nom": "Clef d'activation de mécano cosmique de série",
       "desc": "",
       "image": "",
       "prix": 0,
@@ -192,7 +208,7 @@
       "objets": []
     },
     {
-      "nom": "Lot 17",
+      "nom": "Sifflet dhalmel de l'espace",
       "desc": "",
       "image": "",
       "prix": 0,
@@ -200,7 +216,7 @@
       "objets": []
     },
     {
-      "nom": "Lot 18",
+      "nom": "Sifflet Pampa de la Luna",
       "desc": "",
       "image": "",
       "prix": 0,
@@ -208,23 +224,7 @@
       "objets": []
     },
     {
-      "nom": "Lot 19",
-      "desc": "",
-      "image": "",
-      "prix": 0,
-      "itemId": "",
-      "objets": []
-    },
-    {
-      "nom": "Lot 20",
-      "desc": "",
-      "image": "",
-      "prix": 0,
-      "itemId": "",
-      "objets": []
-    },
-    {
-      "nom": "Lot 21",
+      "nom": "Sifflet ornithorynque porteur",
       "desc": "",
       "image": "",
       "prix": 0,
