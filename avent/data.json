@@ -405,6 +405,12 @@
           "nom": "Berger des Braves",
           "qte": 1,
           "prix": 79800
+        },
+        {
+          "itemId": "49822",
+          "nom": "Noscéen à poil court",
+          "qte": 1,
+          "prix": 0
         }
       ]
     },
