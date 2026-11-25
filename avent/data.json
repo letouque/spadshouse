@@ -251,6 +251,12 @@
           "nom": "Pelle",
           "qte": 1,
           "prix": 0
+        },
+        {
+          "itemId": "52041",
+          "nom": "Carte arme blindée cosmique 2.0",
+          "qte": 1,
+          "prix": 0
         }
       ]
     },
