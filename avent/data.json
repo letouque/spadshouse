@@ -123,6 +123,12 @@
           "nom": "Méthode de coiffure “Vartan”",
           "qte": 1,
           "prix": 0
+        },
+        {
+          "itemId": "52440",
+          "nom": "Méthode de coiffure “Chignon tressé”",
+          "qte": 1,
+          "prix": 0
         }
       ]
     },
