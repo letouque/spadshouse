@@ -244,8 +244,15 @@
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": "",
-      "objets": []
+      "itemId": "52288",
+      "objets": [
+        {
+          "itemId": "52288",
+          "nom": "Pelle",
+          "qte": 1,
+          "prix": 0
+        }
+      ]
     },
     {
       "nom": "Clef d'activation d'arme blindée cosmique + Clef d'activation de déblayeuse cosmique grise",
