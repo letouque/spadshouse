@@ -37,7 +37,7 @@
       "nom": "L'Étiquette éorzéenne : Ricaner + Sifflet dhalmel de l'espace",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026435_hr1.tex",
-      "prix": 694977,
+      "prix": 1104957,
       "itemId": "52292",
       "objets": [
         {
@@ -50,7 +50,7 @@
           "itemId": "46825",
           "nom": "Sifflet dhalmel de l'espace",
           "qte": 1,
-          "prix": 0
+          "prix": 409980
         }
       ]
     },
