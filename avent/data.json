@@ -286,8 +286,15 @@
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": "",
-      "objets": []
+      "itemId": "50445",
+      "objets": [
+        {
+          "itemId": "50445",
+          "nom": "Clef d'activation de mécano cosmique de série",
+          "qte": 1,
+          "prix": 0
+        }
+      ]
     },
     {
       "nom": "Sifflet dhalmel de l'espace",
