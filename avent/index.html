@@ -1547,131 +1547,217 @@ function auroraSky(c, now, h) {
   for (let k = 0; k < 3; k++) { const col = ['rgba(90,255,170,', 'rgba(150,110,255,', 'rgba(80,220,255,'][k]; c.beginPath(); for (let x = 0; x <= 1600; x += 40) { const y = h * .45 + Math.sin(x / 210 + now / 2600 + k * 2) * 40 + Math.sin(x / 90 + now / 1700 + k) * 14 - k * 22; x ? c.lineTo(x, y) : c.moveTo(x, y); } c.lineTo(1600, h); c.lineTo(0, h); c.closePath(); const gg = c.createLinearGradient(0, h * .2, 0, h); gg.addColorStop(0, col + '0)'); gg.addColorStop(.35, col + '.28)'); gg.addColorStop(1, col + '0)'); c.fillStyle = gg; c.fill(); }
 }
 
-/* ===== Pêche sur glace ===== */
-const FISH = { gag: [['🥾', 'Vieille botte'], ['🧦', 'Chaussette perdue'], ['🥫', 'Boîte de conserve'], ['🧤', 'Moufle trempée']], small: [['🐟', 'Hareng'], ['🐠', 'Poisson-clown des neiges'], ['🦀', 'Crabe grognon'], ['🐡', 'Poisson-globe']], mid: [['🐟', 'Brochet'], ['🦑', 'Calamar'], ['🦞', 'Homard royal'], ['🐙', 'Poulpe']], big: [['🦈', 'Requin des glaces'], ['🐬', 'Dauphin égaré'], ['🐢', 'Tortue géante']], legend: [['🐋', 'Léviathan miniature'], ['🥖', 'Poisson-baguette légendaire'], ['🎄', 'Sapin de Noël entier'], ['💰', 'Coffre au trésor'], ['🐉', 'Dragon des glaces']] };
+/* ===== Pêche sur glace =====
+   Course au poids : le premier à atteindre l'objectif (10 kg, 15 kg en finale) est qualifié.
+   Seuls incidents : le fil casse, le pêcheur ne remonte rien, ou il fatigue.
+   Seuls les joueurs encore en jeu restent à l'écran, et le zoom s'adapte à leur nombre. */
+const PE_OBJ = 10, PE_OBJ_FINALE = 15;
+const PE_FISH = [[0, '🐟', 'Hareng'], [1, '🐠', 'Perche des neiges'], [1.6, '🐟', 'Truite arc-en-ciel'], [2.3, '🐡', 'Lotte des glaces'], [3, '🦈', 'Brochet géant'], [4.2, '🐋', 'Esturgeon légendaire']];
+const peFish = w => { let f = PE_FISH[0]; for (const x of PE_FISH) if (w >= x[0]) f = x; return f; };
+const fmtKg1 = v => v.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+function peSchedule(rng, start, fin, weights, accidents) {
+  // Enchaîne lancer → attente → touche → remontée. Chaque événement a un « moment » (fin de remontée).
+  const evs = weights.map(w => ({ type: 'prise', w }));
+  accidents.forEach(a => evs.splice(1 + Math.floor(rng() * Math.max(1, evs.length - 1)), 0, { type: a }));
+  const FIX = { prise: 1.7, casse: 1.7, rien: 1.7, fatigue: 0 }, POST = { prise: .8, casse: 2.3, rien: 1.1, fatigue: 2.1 };
+  evs.forEach(e => e.wait = e.type === 'fatigue' ? 0 : 1 + rng() * 2.2);
+  const fixed = evs.reduce((s, e, i) => s + FIX[e.type] + (i < evs.length - 1 ? POST[e.type] : 0), 0), waits = evs.reduce((s, e) => s + e.wait, 0);
+  const f = Math.max(.25, (fin - start - fixed) / Math.max(.1, waits));
+  let cur = start, cum = 0;
+  evs.forEach(e => { e.t0 = cur; cur += e.wait * f + FIX[e.type]; e.t = cur; e.post = POST[e.type]; if (e.type === 'prise') { cum += e.w; e.cum = cum; } cur += e.post; });
+  const last = evs[evs.length - 1]; if (last.type === 'prise') { const dlt = fin - last.t; last.t = fin; last.t0 += dlt; }
+  return evs;
+}
+function pePoids(rng, n, total, bigLast) {
+  const w = Array.from({ length: n }, () => .6 + rng() * 1.9);
+  if (bigLast) w[n - 1] = 3.6 + rng() * 1.2;
+  const s = w.reduce((a, b) => a + b, 0); return w.map(x => Math.round(x * total / s * 10) / 10);
+}
 function planPeche(d, pool, winner) {
   const rng = mkRng(d, 'peche'), players = pool.includes(winner) ? pool.slice() : [...pool, winner];
   players.sort((a, b) => a.localeCompare(b, 'fr'));
   const n = players.length, info = {};
-  players.forEach((nom, i) => info[nom] = { nom, color: playerColor(i), coup: coupDe(nom), out: 0, outT: 1e9 });
-  // disposition des trous
-  const cols = Math.min(8, Math.ceil(Math.sqrt(n * 2.2))), rows = Math.ceil(n / cols), sx = 1440 / cols, sy = Math.min(230, 700 / rows), sc = Math.min(1, sy / 170);
-  const spots = shuffleR(rng, players.slice());
-  spots.forEach((nom, i) => { const r = Math.floor(i / cols), cc = i % cols, inRow = Math.min(cols, n - r * cols); info[nom].hx = 800 + (cc - (inRow - 1) / 2) * sx + 30 * sc; info[nom].hy = 330 + Math.max(0, (690 - rows * sy) / 2) + sy * (r + .62); });
-  // manches
-  const k1 = n > 4 ? Math.max(4, Math.ceil(n / 2)) : n, k2 = Math.min(3, k1);
+  players.forEach((nom, i) => info[nom] = { nom, color: playerColor(i), outR: 0 });
+  const sizes = roundSizes(n), rounds = [], ticker = [], say = (t, txt) => ticker.push({ t, txt });
+  let alive = players.slice(), t = 0;
   const others = shuffleR(rng, players.filter(x => x !== winner));
-  const s1 = [winner, ...others.slice(0, k1 - 1)], s2 = [winner, ...others.slice(0, k2 - 1)];
-  const R = n > 4 ? [{ a: 2.5, b: 22, alive: players, keep: s1 }, { a: 25, b: 41, alive: s1, keep: s2 }, { a: 44, b: 62, alive: s2, keep: s2, final: true }] : [{ a: 2.5, b: 20, alive: players, keep: s2 }, { a: 23, b: 42, alive: s2, keep: s2, final: true }];
-  const catches = [], cum = Object.fromEntries(players.map(p => [p, 0])), ticker = [], say = (t, txt) => ticker.push({ t, txt });
-  const pick = arr => arr[Math.floor(rng() * arr.length)];
-  const itemFor = w => w < 1.2 ? pick(FISH.gag) : w < 5 ? pick(FISH.small) : w < 15 ? pick(FISH.mid) : w < 45 ? pick(FISH.big) : pick(FISH.legend);
-  const addCatches = (nom, total, a, b, nb) => {
-    const parts = nb === 1 ? [total] : (() => { const x = .25 + rng() * .5; return [total * x, total * (1 - x)]; })();
-    let t = a + .5 + rng() * ((b - a) / nb - 2);
-    parts.forEach(w => { w = Math.round(w * 10) / 10; const it = itemFor(w); catches.push({ nom, t, w, e: it[0], label: it[1] }); t = Math.min(b - .6, t + 3.5 + rng() * ((b - a) / nb - 2)); });
-  };
-  R.forEach((r, ri) => {
-    say(r.a, r.final ? `🎣 FINALE : ${r.alive.join(', ')} … la plus grosse prise gagne !` : `🎣 Manche ${ri + 1} : ${r.alive.length} pêcheurs, ${r.keep.length} places pour la suite !`);
-    if (r.final) {
-      const othersF = r.alive.filter(x => x !== winner); let maxO = 0;
-      othersF.forEach((nom, k) => { const g = k === 0 && othersF.length > 1 && rng() < .5 ? 0 : 12 + rng() * 26; if (g === 0) catches.push({ nom, t: r.a + 3 + rng() * 5, miss: 'snap' }); else addCatches(nom, g, r.a + 1, r.b - 7, 1); cum[nom] += g; maxO = Math.max(maxO, cum[nom]); });
-      const g = Math.max(maxO - cum[winner] + 25 + rng() * 40, 55 + rng() * 70), wt = r.b - 3;
-      const it = pick(FISH.legend); catches.push({ nom: winner, t: wt, w: Math.round(g * 10) / 10, e: it[0], label: it[1], legend: true }); cum[winner] += g;
-      say(wt - 3.2, `😮 La canne de ${winner} plie dangereusement…`);
-      say(wt + .2, `${it[0]} INCROYABLE !!! ${winner} remonte un ${it[1]} de ${fmtKg(g)} !`);
-      r.wt = wt;
-    } else {
-      const lose = r.alive.filter(x => !r.keep.includes(x)); let maxL = 0;
-      lose.forEach(nom => { const g = .4 + rng() * (ri === 0 ? 3.3 : 5); addCatches(nom, g, r.a, r.b, rng() < .5 ? 1 : 2); cum[nom] += g; maxL = Math.max(maxL, cum[nom]); });
-      r.keep.forEach(nom => { const g = Math.max(maxL - cum[nom] + .8 + rng() * 4, (ri === 0 ? 4.2 : 6) + rng() * 6); addCatches(nom, g, r.a, r.b, rng() < .6 ? 2 : 1); cum[nom] += g; });
-      lose.forEach(nom => { info[nom].out = ri + 1; info[nom].outT = r.b + .5; });
-      say(r.b + .3, `🪣 ${lose.length} pêcheur${lose.length > 1 ? 's rangent leur canne' : ' range sa canne'} ! ${r.keep.length} qualifiés.`);
-    }
-    // ratés et coups spéciaux
-    const nm = r.final ? 0 : Math.min(3, Math.floor(r.alive.length / 3));
-    for (let k = 0; k < nm; k++) { const nom = pick(r.alive), t = r.a + 1 + rng() * (r.b - r.a - 3); if (catches.some(c2 => c2.nom === nom && Math.abs(c2.t - t) < 2.5)) continue;
-      if (ri >= 1 && r.alive.length > 1 && rng() < .7) { const from = pick(r.alive.filter(x => x !== nom)); catches.push({ nom, t, miss: 'coup', from }); say(t - .7, `${info[from].coup.e} ${from} lance « ${info[from].coup.n} » dans le trou de ${nom} : le poisson s'enfuit !`); }
-      else catches.push({ nom, t, miss: rng() < .5 ? 'snap' : 'flee' }); }
+  const plan = [...sizes.map(k => ({ keep: [winner, ...others.slice(0, k - 1)] })), { keep: [winner], final: true }];
+  plan.forEach((pr, ri) => {
+    const final = !!pr.final, a = t, start = a + (ri === 0 ? 7.5 : 5.5), L = buLayout(alive, rng), obj = final ? PE_OBJ_FINALE : PE_OBJ;
+    const surv = alive.filter(x => pr.keep.includes(x)), lose = alive.filter(x => !pr.keep.includes(x));
+    const order = final ? [winner] : shuffleR(rng, surv.slice()), fin = {};
+    order.forEach((nom, k) => fin[nom] = start + (final ? 26 : 21) + k * (1 + rng() * .8));
+    const last = Math.max(...Object.values(fin)), end = last + (final ? 4.5 : 3);
+    const P = {};
+    alive.forEach(nom => {
+      let evs;
+      if (fin[nom]) {
+        const m = final ? 7 + Math.floor(rng() * 2) : 5 + Math.floor(rng() * 2);
+        let ws = pePoids(rng, m, obj * (1.03 + rng() * .08), final);
+        const pre = ws.slice(0, -1).reduce((x, y) => x + y, 0); if (pre >= obj) ws[m - 2] = Math.max(.6, Math.round((ws[m - 2] - (pre - obj) - .4) * 10) / 10);
+        const acc = final && nom === winner ? (rng() < .5 ? ['rien'] : []) : rng() < .4 ? [['casse', 'rien', 'fatigue'][Math.floor(rng() * 3)]] : [];
+        evs = peSchedule(rng, start, fin[nom], ws, acc);
+      } else {
+        const m = final ? 6 + Math.floor(rng() * 2) : 4 + Math.floor(rng() * 2);
+        const ws = pePoids(rng, m, obj * (final ? .72 + rng() * .2 : .45 + rng() * .45), false);
+        const acc = shuffleR(rng, ['casse', 'rien', 'fatigue']).slice(0, 1 + (rng() < .55 ? 1 : 0));
+        evs = peSchedule(rng, start, (final ? last : end - 1.8) - rng() * 1.2, ws, acc);
+      }
+      P[nom] = { evs, fall: fin[nom] || null, obj };
+      evs.forEach(e => {
+        if (e.type === 'casse') say(e.t, `✂️ Le fil de ${nom} casse ! Le poisson s'échappe…`);
+        if (e.type === 'rien') say(e.t, `🪝 ${nom} remonte sa ligne… rien du tout !`);
+        if (e.type === 'fatigue') say(e.t0, `😮‍💨 ${nom} a les bras engourdis et souffle un peu…`);
+        if (e.type === 'prise' && e.w >= 3) say(e.t, `${peFish(e.w)[1]} Énorme ! ${nom} sort un ${peFish(e.w)[2].toLowerCase()} de ${fmtKg1(e.w)} kg !`);
+      });
+    });
+    say(start - 1.2, final ? `🎣 FINALE : ${alive.join(', ')} — premier à ${obj} kg !` : `🎣 Manche ${ri + 1} : ${alive.length} pêcheurs, ${pr.keep.length} places · premier à ${obj} kg qualifié`);
+    order.forEach((nom, k) => say(fin[nom], final ? `🏆 ${winner} atteint ${obj} kg et remporte la pêche !` : `🎉 ${nom} atteint ${obj} kg · qualifié${k === 0 ? ' en premier' : ''} !`));
+    if (!final) say(end - 1.5, `🧊 Éliminé${lose.length > 1 ? 's' : ''} : ${lose.join(', ')}`);
+    if (ri === 0) say(0, `🎣 Bienvenue à la pêche sur glace ! ${alive.length} pêcheurs, un seul vainqueur…`);
+    lose.forEach(nom => { info[nom].outR = ri + 1; info[nom].outT = end; });
+    rounds.push({ i: ri, final, a, start, end, scale: 1, alive: alive.slice(), keep: pr.keep, P, L, obj, wf: fin[winner], places: final ? 1 : pr.keep.length, falls: Object.values(fin).sort((u, v) => u - v) });
+    alive = surv; t = end;
   });
-  catches.sort((a, b) => a.t - b.t);
-  catches.filter(c2 => !c2.miss && c2.w >= 15 && !c2.legend).forEach(c2 => say(c2.t + .2, `${c2.e} ${c2.nom} sort un ${c2.label} de ${fmtKg(c2.w)} !`));
-  ticker.sort((a, b) => a.t - b.t);
-  const fin = R[R.length - 1], wt = fin.wt;
-  const bubbles = gameBubbles(rng, players, Object.assign((k, nb) => R[0].a + 2 + k * (wt - 8) / nb + rng() * 2, { alive: (nom, t) => info[nom].outT > t + 4 }));
-  const cumAt = (nom, t) => catches.reduce((s, c2) => s + (c2.nom === nom && !c2.miss && c2.t <= t ? c2.w : 0), 0);
-  const roundAt = t => R.find(r => t < r.b + 2) || fin;
-  const P = {
-    d, title: GAMES.peche, panelTitle: 'Classement', bg: '#1a2c4a', players, info, catches, bubbles, ticker, winner, sc,
-    slowA: wt - 1, slowB: wt + .9, Tend: wt + 3.6, replayA: wt - 1.8, replayB: wt + 1.4, replayText: `${winner} et sa prise légendaire !`,
-    podium: [...players].sort((a, b) => (b === winner) - (a === winner) || cum[b] - cum[a]).slice(0, 3).map(nm => info[nm]),
+  ticker.sort((x, y) => x.t - y.t);
+  const fr = rounds[rounds.length - 1], wt = fr.wf;
+  const roundAt = tt => rounds.find(r => tt < r.end) || fr;
+  const kgAt = (r, nom, tt) => { const p = r.P[nom]; if (!p) return 0; let c = 0; for (const e of p.evs) if (e.type === 'prise' && e.t <= tt) c = e.cum; return c; };
+  const bubbles = gameBubbles(rng, players, Object.assign((k, nb) => 9 + k * (wt - 14) / nb + rng() * 2, { alive: (nom, tt) => !info[nom].outT || info[nom].outT > tt + 4 }));
+  const Pl = {
+    d, title: GAMES.peche, panelTitle: 'Pêcheurs', bg: '#16233d', players, info, rounds, ticker, bubbles, winner,
+    intro: { kicker: '🎣 ÉPREUVE DU JOUR 🎣', title: 'La pêche sur glace', lines: [`Le premier à ${PE_OBJ} kg de poissons est qualifié`, `Gare au fil qui casse… et aux lignes vides !`], unit: 'pêcheurs', finale: `Objectif ${PE_OBJ_FINALE} kg · le premier remporte la pêche !`, hudFinal: [`🏆 Une seule place : le premier à ${PE_OBJ_FINALE} kg gagne !`, '🏆 Le vainqueur est connu !'] },
+    slowA: wt - 1.2, slowB: wt + 1.2, Tend: fr.end, replayA: wt - 2, replayB: wt + 1.6, replayText: `${winner} remonte la prise de la victoire !`,
+    podium: [winner, ...fr.alive.filter(x => x !== winner).sort((a, b) => kgAt(fr, b, wt) - kgAt(fr, a, wt)), ...(rounds.length > 1 ? rounds[rounds.length - 2].alive.filter(x => !fr.alive.includes(x)) : [])].slice(0, 3).map(nm => info[nm]),
     podTitle: `🏆 Podium de la pêche sur glace · ${d} décembre`,
-    focus: () => ({ x: info[winner].hx - 20, y: info[winner].hy - 70 }),
-    status: t => { const r = roundAt(t), i = R.indexOf(r); return t >= wt ? { txt: '🏆 PRISE RECORD !', hot: true } : r.final ? { txt: 'FINALE', hot: true } : { txt: `MANCHE ${i + 1}/${R.length - 1}` }; },
-    anchor: (nom, t) => ({ x: info[nom].hx - 46 * sc, y: info[nom].hy - 96 * sc }),
-    panel: t => players.map(nm => ({ nom: nm, color: info[nm].color, out: info[nm].outT < t, win: nm === winner && t >= wt, sub: fmtKg(cumAt(nm, t)), v: cumAt(nm, t) })).sort((a, b) => (a.out - b.out) || (b.v - a.v) || a.nom.localeCompare(b.nom, 'fr')),
-    shake: t => (t >= wt && t < wt + .4 ? 10 : 0),
-    draw: (c, t, Rr, now, replay) => drawPeche(c, P, t, Rr, now, replay),
-    sound: (t, Rr, replay, now) => {
+    focus: () => { const p = fr.L.pos[winner]; return { x: p.x, y: p.y - 120 * fr.L.sc }; },
+    status: tt => { const r = roundAt(tt); return tt >= wt ? { txt: '🏆 VICTOIRE !', hot: true } : r.final ? { txt: 'FINALE', hot: true } : { txt: `MANCHE ${r.i + 1}/${rounds.length - 1}` }; },
+    anchor: (nom, tt) => { const r = roundAt(tt), p = r.L.pos[nom]; return p ? { x: p.x - 50 * r.L.sc, y: p.y - 150 * r.L.sc } : null; },
+    panel: tt => { const r = roundAt(tt); return players.map(nm => { const o = !!(info[nm].outT && info[nm].outT <= tt), kg = r.P[nm] ? kgAt(r, nm, tt) : 0, q = r.P[nm] && r.P[nm].fall && tt >= r.P[nm].fall; return { nom: nm, color: info[nm].color, out: o, win: nm === winner && tt >= wt, sub: o ? `éliminé · manche ${info[nm].outR}` : q ? `🎉 ${fmtKg1(kg)} kg · qualifié !` : `${fmtKg1(kg)} / ${r.obj} kg`, v: o ? -1 : q ? 100 - r.P[nm].fall : kg }; }).sort((a, b) => (a.out - b.out) || (b.v - a.v) || a.nom.localeCompare(b.nom, 'fr')); },
+    shake: () => 0,
+    draw: (c, tt, R, now, replay) => drawPeche(c, Pl, tt, R, now, replay, roundAt, kgAt),
+    sound: (tt, R, replay, now) => {
       if (replay) return;
-      for (const c2 of catches) { if (!c2.s0 && t >= c2.t - 1.1) { c2.s0 = 1; tone(1200, 0, .05, 'sine', .05); } if (!c2.s1 && t >= c2.t) { c2.s1 = 1; if (c2.miss === 'snap') { tone(1500, 0, .08, 'sawtooth', .07); tone(300, .08, .25, 'triangle', .06); } else if (c2.miss) { boing(); } else { plouf(); if (c2.legend) { jingle(); crowd(); confettiBurst(Rr, info[c2.nom].hx, info[c2.nom].hy - 60, 240); } else tone(660 + Math.min(600, c2.w * 20), .05, .15, 'triangle', .08); } }
-        if (c2.miss === 'coup' && !c2.sw && t >= c2.t - .8) { c2.sw = 1; whoosh(); } }
-      R.forEach((r, i) => { if (!Rr['pr' + i] && t >= r.a) { Rr['pr' + i] = 1; beep(true); } });
-      if (t >= wt && t < wt + 4 && now - (Rr.lastFw || 0) > 420) { Rr.lastFw = now; burst(Rr, 200 + Math.random() * 1200, 160 + Math.random() * 120); }
+      const r = roundAt(tt);
+      for (const nm in r.P) r.P[nm].evs.forEach((e, i) => {
+        const k = 'pe' + r.i + nm + i;
+        if (!R[k + 'b'] && e.type !== 'fatigue' && tt >= e.t - 1.7) { R[k + 'b'] = 1; if (now - (R.lastBite || 0) > 120) { R.lastBite = now; tone(880, 0, .05, 'square', .03); } }
+        if (!R[k] && tt >= e.t) { R[k] = 1; if (e.type === 'prise') { plouf(); tone(600 + e.w * 80, .05, .12, 'triangle', .06); } else if (e.type === 'casse') { tone(1400, 0, .08, 'square', .05); tone(300, .08, .3, 'sawtooth', .04); } else if (e.type === 'rien') tone(220, 0, .25, 'triangle', .05); }
+      });
+      for (const nm in r.P) { const f = r.P[nm].fall; if (f && !R['q' + r.i + nm] && tt >= f) { R['q' + r.i + nm] = 1; if (nm === winner && r.final) setTimeout(() => { jingle(); crowd(); }, 400); else tone(1047, .1, .25, 'triangle', .07); } }
+      rounds.forEach(rr => { if (!R['rb' + rr.i] && tt >= rr.a) { R['rb' + rr.i] = 1; beep(true); } });
+      if (tt >= wt + .6 && tt < wt + 4.2 && now - (R.lastFw || 0) > 420) { R.lastFw = now; burst(R, 200 + Math.random() * 1200, 140 + Math.random() * 180); }
     }
   };
-  return P;
+  return Pl;
 }
-function drawPeche(c, P, t, R, now, replay) {
-  auroraSky(c, now, 260);
-  const g = c.createLinearGradient(0, 240, 0, 1080); g.addColorStop(0, '#b9d0e6'); g.addColorStop(1, '#8eaccb'); c.fillStyle = g; c.fillRect(0, 240, 1600, 840);
-  c.fillStyle = '#e8f1fa'; c.beginPath(); c.moveTo(0, 262); for (let x = 0; x <= 1600; x += 80) c.lineTo(x, 250 + Math.sin(x / 130) * 10); c.lineTo(1600, 280); c.lineTo(0, 280); c.fill();
-  if (!R.cracks) { const rng = mulberry32(21); R.cracks = Array.from({ length: 50 }, () => { let x = rng() * 1600, y = 280 + rng() * 800; const pts = [[x, y]]; for (let k = 0; k < 5; k++) { x += (rng() - .5) * 70; y += (rng() - .5) * 40; pts.push([x, y]); } return pts; }); }
-  c.strokeStyle = 'rgba(255,255,255,.45)'; c.lineWidth = 1.5; R.cracks.forEach(pts => { c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.stroke(); });
-  // cabanes + pingouins
-  [[90, 330], [1510, 350], [70, 980], [1530, 990]].forEach(([x, y], i) => { c.fillStyle = 'rgba(0,0,0,.18)'; c.fillRect(x - 36, y + 26, 80, 10); c.fillStyle = ['#c8242f', '#2f5a8a', '#1f7a4c', '#8a5a35'][i]; c.fillRect(x - 36, y - 20, 72, 46); c.fillStyle = '#fff'; c.beginPath(); c.moveTo(x - 46, y - 18); c.lineTo(x, y - 52); c.lineTo(x + 46, y - 18); c.fill(); c.fillStyle = '#4a2c16'; c.fillRect(x - 10, y, 20, 26); });
-  for (let k = 0; k < 4; k++) { const px = ((now / 40 + k * 420) % 1800) - 100, py = 300 + k * 6; c.fillStyle = '#1f2633'; c.beginPath(); c.ellipse(px, py, 7, 11, 0, 0, 6.283); c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.ellipse(px + 1, py + 2, 4.5, 8, 0, 0, 6.283); c.fill(); c.fillStyle = '#f2a33c'; c.beginPath(); c.moveTo(px + 4, py - 7); c.lineTo(px + 11, py - 6); c.lineTo(px + 4, py - 4); c.fill(); }
-  const sc = P.sc, wt = P.catches.find(c2 => c2.legend).t;
-  for (const nom of [...P.players].sort((a, b) => P.info[a].hy - P.info[b].hy)) {
-    const inf = P.info[nom], hx = inf.hx, hy = inf.hy, out = inf.outT < t;
-    const mine = P.catches.filter(c2 => c2.nom === nom), cur = mine.find(c2 => t >= c2.t - 1.2 && t < c2.t + .9);
-    c.globalAlpha = out ? .55 : 1;
-    // trou
-    c.fillStyle = '#dbe8f4'; c.beginPath(); c.ellipse(hx, hy, 34 * sc, 14 * sc, 0, 0, 6.283); c.fill();
-    c.fillStyle = '#123456'; c.beginPath(); c.ellipse(hx, hy, 26 * sc, 10 * sc, 0, 0, 6.283); c.fill();
-    c.fillStyle = 'rgba(120,180,230,.5)'; c.beginPath(); c.ellipse(hx - 6 * sc, hy - 2 * sc, 10 * sc, 3 * sc, 0, 0, 6.283); c.fill();
-    // pêcheur assis
-    const px = hx - 58 * sc, py = hy + 4 * sc;
-    c.fillStyle = '#7a4a2a'; c.fillRect(px - 12 * sc, py - 8 * sc, 24 * sc, 8 * sc);
-    const pulling = cur && !cur.miss && t >= cur.t - .3 && t < cur.t + .3;
-    const top = drawPerson(c, px, py - 6 * sc, sc, inf.color, { sit: true, arms: pulling ? .9 : .35, sad: out || (cur && cur.miss && t > cur.t), img: imgFor(nom) });
-    // canne + ligne + bouchon
-    if (!out) {
-      const hxh = px + 16 * sc, hyh = py - 34 * sc, bend = pulling ? 1 : cur && t > cur.t - 1.2 && t < cur.t ? .3 : 0;
-      const tipx = hx + 4 * sc, tipy = hy - (70 - bend * 26) * sc;
-      c.strokeStyle = '#5b3a22'; c.lineWidth = 3.5 * sc; c.beginPath(); c.moveTo(hxh, hyh); c.quadraticCurveTo(hx - 10 * sc, hy - (90 - bend * 50) * sc, tipx, tipy); c.stroke();
-      let by = hy - 2 * sc; if (cur && t < cur.t) { const k = (t - (cur.t - 1.2)) / 1.2; by += Math.sin(now / 60) * 4 * k * sc + k * 5 * sc; }
-      c.strokeStyle = 'rgba(255,255,255,.9)'; c.lineWidth = 1; c.beginPath(); c.moveTo(tipx, tipy); c.lineTo(hx + 2 * sc, by); c.stroke();
-      c.fillStyle = '#e8322c'; c.beginPath(); c.arc(hx + 2 * sc, by, 4 * sc, Math.PI, 0); c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.arc(hx + 2 * sc, by, 4 * sc, 0, Math.PI); c.fill();
+
+/* --- Décor : lac gelé au crépuscule (partie fixe dessinée une fois) --- */
+function peLake() {
+  if (peLake.cv) return peLake.cv;
+  const cv = document.createElement('canvas'); cv.width = 1600; cv.height = 1080; const c = cv.getContext('2d'), rng = mulberry32(77);
+  // montagnes et forêt de la rive
+  [['#3a4f78', 300, 150], ['#2e4066', 340, 100]].forEach(([col, base, amp], k) => { c.fillStyle = col; c.beginPath(); c.moveTo(0, base); for (let x = 0; x <= 1600; x += 70) c.lineTo(x, base - Math.abs(Math.sin(x / (230 + k * 80) + k * 3)) * amp - rng() * 18); c.lineTo(1600, 420); c.lineTo(0, 420); c.fill(); c.fillStyle = 'rgba(255,255,255,.55)'; });
+  const trees = Array.from({ length: 120 }, () => [rng() * 1640 - 20, 360 + rng() * 34, 34 + rng() * 46]).sort((p, q) => p[1] - q[1]);
+  trees.forEach(([x, y, h]) => drawTree(c, mulberry32(x | 0), x, y, h, 0, true));
+  c.fillStyle = 'rgba(40,60,100,.35)'; c.fillRect(0, 300, 1600, 100);
+  // rive enneigée
+  c.fillStyle = '#dfe8f3'; c.beginPath(); c.moveTo(0, 392); for (let x = 0; x <= 1600; x += 40) c.lineTo(x, 392 + Math.sin(x / 90) * 6 + rng() * 4); c.lineTo(1600, 430); c.lineTo(0, 430); c.fill();
+  // glace
+  let g = c.createLinearGradient(0, 420, 0, 1080); g.addColorStop(0, '#a9c4de'); g.addColorStop(.5, '#c9dcee'); g.addColorStop(1, '#dce8f4'); c.fillStyle = g; c.fillRect(0, 420, 1600, 660);
+  g = c.createLinearGradient(0, 420, 0, 640); g.addColorStop(0, 'rgba(120,200,255,.35)'); g.addColorStop(1, 'rgba(120,200,255,0)'); c.fillStyle = g; c.fillRect(0, 420, 1600, 220); // reflet des aurores
+  c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 1.5;
+  for (let k = 0; k < 45; k++) { let x = rng() * 1600, y = 440 + rng() * 620; c.beginPath(); c.moveTo(x, y); for (let s = 0; s < 4; s++) { x += (rng() - .5) * 90; y += (rng() - .3) * 30; c.lineTo(x, y); } c.stroke(); }
+  c.fillStyle = 'rgba(255,255,255,.35)'; for (let k = 0; k < 30; k++) { c.beginPath(); c.ellipse(rng() * 1600, 460 + rng() * 600, 60 + rng() * 140, 6 + rng() * 8, 0, 0, 6.283); c.fill(); }
+  // cabanes de pêche et lanternes sur les bords
+  const hut = (x, y, s, col) => { c.save(); c.translate(x, y); c.scale(s, s); c.fillStyle = 'rgba(30,50,80,.25)'; c.beginPath(); c.ellipse(6, 4, 60, 10, 0, 0, 6.283); c.fill(); c.fillStyle = col; c.fillRect(-44, -70, 88, 70); c.fillStyle = 'rgba(0,0,0,.15)'; for (let i = 0; i < 6; i++) c.fillRect(-44 + i * 15, -70, 2, 70); c.fillStyle = '#f4f7fb'; c.beginPath(); c.moveTo(-54, -66); c.lineTo(0, -108); c.lineTo(54, -66); c.closePath(); c.fill(); c.fillStyle = '#4a2c16'; c.fillRect(-12, -40, 24, 40); c.fillStyle = '#ffd36b'; c.fillRect(18, -52, 16, 14); c.fillStyle = 'rgba(255,211,107,.25)'; c.beginPath(); c.arc(26, -45, 30, 0, 6.283); c.fill(); c.fillStyle = '#5b3a22'; c.fillRect(30, -130, 8, 30); c.restore(); };
+  hut(80, 560, 1, '#b8303a'); hut(1520, 600, 1.05, '#2a7049'); hut(60, 860, 1.25, '#2f5a8a'); hut(1545, 930, 1.3, '#b07f25');
+  const lamp = (x, y) => { c.fillStyle = '#3a2a20'; c.fillRect(x - 2, y - 60, 4, 60); c.fillStyle = 'rgba(255,200,90,.3)'; c.beginPath(); c.arc(x, y - 64, 26, 0, 6.283); c.fill(); c.fillStyle = '#ffd36b'; c.fillRect(x - 6, y - 72, 12, 14); };
+  [[170, 520], [1420, 540], [190, 980], [1410, 1010]].forEach(([x, y]) => lamp(x, y));
+  [[-20, 470, 230], [1620, 480, 240]].forEach(([x, y, h]) => drawTree(c, mulberry32(x | 0), x, y, h, 0, true));
+  return (peLake.cv = cv);
+}
+function peGauge(c, x, y, k, kg, obj, done) {
+  const r = 24 * k, p = Math.min(1, kg / obj), hot = p >= .75 && !done;
+  c.save(); c.translate(x, y);
+  c.fillStyle = 'rgba(16,28,52,.88)'; c.beginPath(); c.arc(0, 0, r, 0, 6.283); c.fill();
+  c.strokeStyle = 'rgba(255,255,255,.18)'; c.lineWidth = 5 * k; c.beginPath(); c.arc(0, 0, r - 4 * k, 0, 6.283); c.stroke();
+  c.strokeStyle = done ? '#7fe07f' : hot ? '#ff9a4f' : '#7fd0ff'; c.beginPath(); c.arc(0, 0, r - 4 * k, -Math.PI / 2, -Math.PI / 2 + p * 6.283); c.stroke();
+  c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#fff8ea';
+  if (done) { c.font = `${20 * k}px serif`; c.fillText('🎉', 0, 1); }
+  else { c.font = `800 ${14 * k}px Inter, system-ui, sans-serif`; c.fillText(fmtKg1(kg), 0, -3 * k); c.font = `700 ${8 * k}px Inter, system-ui, sans-serif`; c.fillStyle = 'rgba(255,248,234,.7)'; c.fillText(`/${obj} kg`, 0, 9 * k); }
+  c.restore();
+}
+function drawPeche(c, P, t, R, now, replay, roundAt, kgAt) {
+  auroraSky(c, now, 420);
+  c.fillStyle = 'rgba(255,255,255,.8)'; for (let i = 0; i < 70; i++) { const r2 = mulberry32(i * 13), tw = .5 + .5 * Math.sin(now / 500 + i); c.globalAlpha = .3 + .6 * tw; c.fillRect(r2() * 1600, r2() * 230, 2, 2); } c.globalAlpha = 1;
+  c.drawImage(peLake(), 0, 300, 1600, 780, 0, 300, 1600, 780);
+  const r = roundAt(t), sc = r.L.sc * (r.final ? 1.1 : 1);
+  const list = r.alive.slice().sort((a, b) => r.L.pos[a].y - r.L.pos[b].y);
+  for (const nom of list) {
+    const inf = P.info[nom], pos = r.L.pos[nom], p = r.P[nom];
+    const loser = !r.keep.includes(nom) && !r.final, fade = loser ? 1 - smooth(r.end - 1.1, r.end - .2, t) : 1;
+    if (fade <= 0) continue;
+    c.save(); c.globalAlpha = fade;
+    const hx = pos.x + 52 * sc, hy = pos.y - 4 * sc, bx = pos.x - 46 * sc, by = pos.y + 2 * sc;
+    const kg = kgAt(r, nom, t), qual = p.fall && t >= p.fall, win = nom === P.winner && r.final && qual;
+    // trou dans la glace
+    c.fillStyle = 'rgba(255,255,255,.9)'; c.beginPath(); c.ellipse(hx, hy, 40 * sc, 15 * sc, 0, 0, 6.283); c.fill();
+    const wg = c.createRadialGradient(hx, hy, 2, hx, hy, 32 * sc); wg.addColorStop(0, '#0d2a4a'); wg.addColorStop(1, '#1d4f7a'); c.fillStyle = wg; c.beginPath(); c.ellipse(hx, hy, 31 * sc, 10 * sc, 0, 0, 6.283); c.fill();
+    c.strokeStyle = 'rgba(160,215,255,.5)'; c.lineWidth = 1.5; const rip = (now / 900) % 1; c.beginPath(); c.ellipse(hx, hy, 10 * sc + rip * 18 * sc, (10 * sc + rip * 18 * sc) * .32, 0, 0, 6.283); c.stroke();
+    // seau de prises : un poisson de plus à chaque prise
+    const caught = p.evs.filter(e => e.type === 'prise' && e.t <= t);
+    c.fillStyle = '#8a96a8'; c.beginPath(); c.moveTo(bx - 52 * sc, by - 22 * sc); c.lineTo(bx - 28 * sc, by - 22 * sc); c.lineTo(bx - 31 * sc, by); c.lineTo(bx - 49 * sc, by); c.closePath(); c.fill();
+    c.font = `${11 * sc}px serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
+    caught.slice(-4).forEach((e, i) => c.fillText(peFish(e.w)[1], bx - 40 * sc + (i % 2 ? 5 : -5) * sc, by - 25 * sc - i * 5 * sc));
+    // état du pêcheur
+    const cur = p.evs.find(e => t >= e.t0 && t < e.t + e.post), spr = spriteFor(nom), K = 2.3 * sc;
+    let phase = 'attente', q = 0;
+    if (t < r.start) phase = 'pret';
+    else if (qual) phase = win ? 'gagne' : 'qualifie';
+    else if (cur) { if (cur.type === 'fatigue') phase = 'fatigue'; else if (t >= cur.t) { phase = cur.type; q = t - cur.t; } else if (t >= cur.t - 1.3) { phase = 'remonte'; q = (t - (cur.t - 1.3)) / 1.3; } else if (t >= cur.t - 1.7) phase = 'touche'; }
+    else if (loser && t > r.end - 1.8) phase = 'fini';
+    c.fillStyle = inf.color; c.globalAlpha = .6 * fade; c.beginPath(); c.ellipse(bx, by + 1, 24 * sc, 7 * sc, 0, 0, 6.283); c.fill(); c.globalAlpha = fade;
+    let top;
+    if (imgOk(spr)) {
+      if (phase === 'gagne') top = drawLPC(c, spr, 'jump', 2, Math.floor(now / 110) % 5, bx, by - Math.abs(Math.sin(now / 180)) * 6 * sc, K);
+      else if (phase === 'qualifie' || phase === 'prise' && q < .7) top = drawLPC(c, spr, 'emote', 2, Math.min(2, Math.floor((phase === 'prise' ? q : t - p.fall) * 5)), bx, by, K);
+      else if (phase === 'casse' && q < 1.1) top = drawLPC(c, spr, 'hurt', 0, Math.min(5, Math.floor(q * 7)), bx, by, K);
+      else if (phase === 'fatigue' || phase === 'fini') top = drawLPC(c, spr, 'sit', 2, 0, bx, by, K);
+      else if (phase === 'remonte') top = drawLPC(c, spr, 'thrust', 3, Math.floor(now / 90) % 8, bx, by, K);
+      else top = drawLPC(c, spr, 'idle', 3, Math.floor(now / 600) % 2, bx, by, K);
+    } else top = drawPerson(c, bx, by, sc, inf.color, { arms: phase === 'remonte' ? 1 : .5, img: imgFor(nom) });
+    // canne à pêche et ligne
+    const rodOn = !['fatigue', 'fini', 'gagne', 'qualifie'].includes(phase) && !(phase === 'casse' && q < 1.1) && !(phase === 'prise' && q < .7);
+    if (rodOn) {
+      const handX = bx + 12 * sc, handY = by - 30 * K / 2.3 * 1.0 - 34 * sc + 30 * sc;
+      const bend = phase === 'remonte' ? .35 + .1 * Math.sin(now / 50) : phase === 'touche' ? .25 : 0;
+      const tipX = hx - 6 * sc, tipY = hy - 78 * sc + bend * 40 * sc;
+      c.strokeStyle = '#5b3a22'; c.lineWidth = 3.5 * sc; c.beginPath(); c.moveTo(handX, handY); c.quadraticCurveTo(handX + 40 * sc, handY - 50 * sc + bend * 30 * sc, tipX, tipY); c.stroke();
+      const bob = phase === 'touche' ? 6 * sc * Math.abs(Math.sin(now / 60)) : phase === 'remonte' ? -q * 30 * sc : Math.sin(now / 400 + pos.x) * 1.5 * sc;
+      const lineEnd = hy + bob;
+      if (phase !== 'casse') { c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(tipX, tipY); c.lineTo(hx, lineEnd - 4 * sc); c.stroke(); c.fillStyle = '#e8322c'; c.beginPath(); c.arc(hx, lineEnd - 4 * sc, 4 * sc, Math.PI, 0); c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.arc(hx, lineEnd - 4 * sc, 4 * sc, 0, Math.PI); c.fill(); }
+      else { c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(tipX, tipY); c.quadraticCurveTo(tipX + 20 * sc, tipY + 10 * sc, tipX + 14 * sc, tipY + 30 * sc); c.stroke(); }
+      if (phase === 'touche') { c.font = `900 ${30 * sc}px Inter, system-ui, sans-serif`; c.fillStyle = '#ffd36b'; c.strokeStyle = '#2b1a10'; c.lineWidth = 4; c.textAlign = 'center'; c.strokeText('!', hx, hy - 40 * sc); c.fillText('!', hx, hy - 40 * sc); }
+      if (phase === 'remonte') { c.strokeStyle = 'rgba(200,235,255,.8)'; c.lineWidth = 2; c.beginPath(); c.ellipse(hx, hy, 14 * sc + q * 10 * sc, 5 * sc, 0, 0, 6.283); c.stroke(); }
     }
-    // tas de prises
-    const done = mine.filter(c2 => !c2.miss && c2.t + .7 <= t && !c2.legend);
-    c.font = `${22 * sc}px serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
-    done.slice(-4).forEach((c2, k) => c.fillText(c2.e, hx + (42 + k * 14) * sc, hy + (6 - k * 4) * sc));
-    nameTag(c, nom, px, top - 4, sc);
-    c.globalAlpha = 1;
-    // animations de prise
-    for (const c2 of mine) {
-      const q = t - c2.t;
-      if (c2.miss) { if (q >= 0 && q < .9) { c.font = `${30 * sc}px serif`; c.fillText(c2.miss === 'snap' ? '💢' : c2.miss === 'coup' ? P.info[c2.from].coup.e : '💨', hx + 30 * sc, hy - 70 * sc - q * 30); } if (c2.miss === 'coup') { const qq = t - (c2.t - .8); if (qq >= 0 && qq < .7) { const a = P.info[c2.from]; drawProjectile(c, a.coup.e, a.hx - 58 * sc, a.hy - 60 * sc, hx, hy, qq / .7); } drawOno(c, 'PLOUF !', hx + 40, hy - 80, q); }
-        else if (q >= 0 && q < 1.2) { c.font = '800 16px Inter, system-ui, sans-serif'; c.fillStyle = '#c8242f'; c.fillText(c2.miss === 'snap' ? 'La ligne casse !' : 'Il s\'enfuit !', hx, hy - 110 * sc - q * 10); } continue; }
-      if (q >= 0 && q < .8) { const k = q / .8, big = c2.legend ? 3.4 : 1 + Math.min(1.2, c2.w / 25), x = hx + (40 * sc) * k, y = hy - Math.sin(k * Math.PI) * (c2.legend ? 230 : 110) * sc - k * 10;
-        c.save(); c.translate(x, y); c.rotate(Math.sin(now / 80) * .3); c.font = `${30 * big * sc}px serif`; c.fillText(c2.e, 0, 0); c.restore(); splash(c, hx, hy, q / .6); }
-      if (c2.legend && q >= .8) { c.save(); c.translate(hx + 40 * sc, hy - 40 * sc); c.scale(1 + .05 * Math.sin(now / 150), 1 + .05 * Math.sin(now / 150)); c.font = `${96 * sc}px serif`; c.fillText(c2.e, 0, 0); c.restore(); }
-      if (q >= 0 && q < 1.8) { const k = q / 1.8; c.globalAlpha = 1 - k * k; c.font = `900 ${(c2.legend ? 40 : 22) * Math.max(.8, sc)}px Inter, system-ui, sans-serif`; c.lineWidth = 5; c.strokeStyle = '#2b1a10'; const txt = `+${fmtKg(c2.w)}`; c.strokeText(txt, hx, hy - 120 * sc - k * 40); c.fillStyle = c2.legend ? '#ffd36b' : '#fff8ea'; c.fillText(txt, hx, hy - 120 * sc - k * 40); c.globalAlpha = 1; }
+    // la prise qui jaillit du trou
+    if (cur && cur.type === 'prise' && t >= cur.t && t < cur.t + cur.post + .2 || (cur && cur.type === 'casse' && t >= cur.t && t < cur.t + 1.2) || (cur && cur.type === 'rien' && t >= cur.t && t < cur.t + 1.1)) {
+      const qq = t - cur.t, e = cur;
+      if (e.type === 'prise') { const f = peFish(e.w), big = e.w >= 3, k2 = Math.min(1, qq / .5), fx = hx + (bx - hx) * k2 * .9, fy = hy - Math.sin(k2 * Math.PI) * 120 * sc - k2 * 20 * sc, fs = (big ? 54 : 36) * sc * (r.final && e === p.evs[p.evs.length - 1] ? 1.4 : 1);
+        c.save(); c.translate(fx, fy); c.rotate(Math.sin(now / 60) * .3); c.font = `${fs}px serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(f[1], 0, 0); c.restore();
+        if (qq < 1) { c.font = `800 ${(big ? 26 : 20) * sc}px Inter, system-ui, sans-serif`; c.textAlign = 'center'; c.lineWidth = 5; c.strokeStyle = '#16233d'; const tx = hx, ty = hy - 58 * sc - qq * 18 * sc; c.textAlign = 'center'; c.strokeText(`+${fmtKg1(e.w)} kg`, tx, ty); c.fillStyle = big ? '#ffd36b' : '#bff0ff'; c.fillText(`+${fmtKg1(e.w)} kg`, tx, ty); if (big) { c.font = `700 ${15 * sc}px Inter, system-ui, sans-serif`; c.strokeText(f[2], tx, ty + 24 * sc); c.fillStyle = '#fff8ea'; c.fillText(f[2], tx, ty + 24 * sc); } c.textAlign = 'center'; }
+        const kS = 'ps' + (replay ? 'r' : '') + r.i + nom + e.t; if (!R[kS]) { R[kS] = 1; for (let i = 0; i < 10; i++) emit(R, { k: 'dust', x: hx + (Math.random() - .5) * 30 * sc, y: hy, vx: (Math.random() - .5) * 90, vy: -60 - Math.random() * 120, life: 0, max: .7, r: 3 + Math.random() * 3 }); if (win || (r.final && nom === P.winner && e === p.evs[p.evs.length - 1])) confettiBurst(R, hx, hy - 120, 240); }
+      } else if (e.type === 'casse') { c.font = `${34 * sc}px serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.globalAlpha = fade * Math.max(0, 1 - qq / 1.1); c.fillText('🐟', hx + qq * 30 * sc, hy - 30 * sc + qq * qq * 40 * sc); c.globalAlpha = fade; drawOno(c, 'CRAC ! LE FIL CASSE', hx, hy - 120 * sc, qq); }
+      else { c.font = `${26 * sc}px serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('🪝', hx - 10 * sc, hy - 70 * sc); drawOno(c, 'RIEN…', hx, hy - 120 * sc, qq); }
     }
+    if (phase === 'fatigue') { const qf = t - cur.t0; c.font = `${24 * sc}px serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; for (let i = 0; i < 3; i++) { const qq = (qf * 1.3 + i / 3) % 1; c.globalAlpha = fade * (1 - qq); c.fillText('💧', bx + (i - 1) * 16 * sc, top + 10 * sc + qq * 40 * sc); } c.globalAlpha = fade; drawOno(c, 'PFFF…', bx, top - 46 * sc, qf); }
+    nameTag(c, nom, bx, top - 12 * sc, sc);
+    peGauge(c, hx + 4 * sc, hy - 128 * sc, sc * (r.final ? 1.25 : 1), kg, r.obj, qual);
+    if (!qual && kg >= r.obj * .75) { c.font = `800 ${13 * sc}px Inter, system-ui, sans-serif`; c.textAlign = 'center'; c.fillStyle = '#ff9a4f'; c.globalAlpha = fade * (.6 + .4 * Math.sin(now / 120)); c.fillText('PRESQUE !', hx + 4 * sc, hy - 128 * sc - 34 * sc * (r.final ? 1.25 : 1)); c.globalAlpha = fade; }
+    c.restore();
   }
-  if (!replay) [...new Set(P.ticker.filter(m => /^🎣/.test(m.txt)).map(m => m.t))].forEach((ta, i, arr) => { const q = t - ta; if (q >= 0 && q < 1.8) { const k = Math.min(1, q / .3) * (q > 1.4 ? 1 - (q - 1.4) / .4 : 1); c.save(); c.globalAlpha = k; c.translate(800, 560); c.scale(.8 + .2 * k, .8 + .2 * k); c.font = '900 92px "Playfair Display", serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineWidth = 10; c.strokeStyle = '#2b1a10'; const txt = i === arr.length - 1 ? 'FINALE !' : `MANCHE ${i + 1}`; c.strokeText(txt, 0, 0); c.fillStyle = '#ffd36b'; c.fillText(txt, 0, 0); c.restore(); } });
+  if (!replay) roundHud(c, P, r, t);
 }
 
 /* ===== La banquise ===== */
@@ -1800,7 +1886,7 @@ function bigBanner(c, txt, q) { if (q < 0 || q > 1.8) return; const k = Math.min
 /* ===== Sprites LPC (test : coupe de sapin) =====
    Planche LPC standard : 54 lignes de 64 px, puis 4 lignes de 128 px (hache).
    Directions par groupe de 4 lignes : 0 dos, 1 gauche, 2 face, 3 droite. */
-const LPC = { idle: 22, jump: 26, sit: 30, emote: 34, hurt: 20, axe: 54 };
+const LPC = { thrust: 4, idle: 22, jump: 26, sit: 30, emote: 34, hurt: 20, axe: 54 };
 const SPRITE_TEST = new Image(); SPRITE_TEST.src = 'sprites/bucheron-test.png';
 const spriteFor = nom => SPRITE_TEST;
 function drawLPC(c, img, anim, dir, frame, x, y, k) {
@@ -1890,6 +1976,7 @@ function planBucheron(d, pool, winner) {
   const posOf = (r, nom) => r.L.pos[nom];
   const Pl = {
     d, title: GAMES.bucheron, panelTitle: 'Bûcherons', bg: '#cfdceb', players, info, rounds, ticker, bubbles, winner,
+    intro: { kicker: '🪓 ÉPREUVE DU JOUR 🪓', title: 'La coupe de sapin', lines: [`${BU_COUPS} coups de hache pour abattre son sapin · il tangue au ${BU_TANGUE}e`, 'Les premiers sapins à terre sont qualifiés !'], unit: 'bûcherons', finale: 'Des sapins géants · le premier à terre remporte la coupe !', hudFinal: ['🏆 Une seule place : le premier sapin à terre gagne !', '🏆 Le vainqueur est connu !'] },
     slowA: wt - .9, slowB: wt + 1.2, Tend: fr.end, replayA: wt - 1.8, replayB: wt + 1.6, replayText: `${winner} abat le sapin géant !`,
     podium: [winner, ...fr.alive.filter(x => x !== winner).sort((a, b) => hitsAt(fr, b, wt) - hitsAt(fr, a, wt)), ...(rounds.length > 1 ? rounds[rounds.length - 2].alive.filter(x => !fr.alive.includes(x)) : [])].slice(0, 3).map(nm => info[nm]),
     podTitle: `🏆 Podium de la coupe de sapin · ${d} décembre`,
@@ -2039,32 +2126,34 @@ function drawBucheron(c, P, t, R, now, replay, roundAt, hitsAt) {
     if (!felled && hits >= BU_TANGUE && !pz) { c.font = `800 ${13 * sc}px Inter, system-ui, sans-serif`; c.textAlign = 'center'; c.fillStyle = '#c4232c'; c.globalAlpha = fade * (.6 + .4 * Math.sin(now / 120)); c.fillText('ÇA TANGUE !', x, y - 196 * sc * r.scale - 34 * sc * (r.final ? 1.25 : 1)); c.globalAlpha = fade; }
     c.restore();
   }
-  if (!replay) {
-    // indicateur : qualifiés et places restantes
-    if (t >= r.start - .5) {
-      const q = r.falls.filter(f => f <= t).length, left = Math.max(0, r.places - q);
-      const txt = r.final ? (q ? '🏆 Le vainqueur est connu !' : '🏆 Une seule place : le premier sapin à terre gagne !') : `🌲 Qualifiés : ${q} / ${r.places}      🎟️ Places restantes : ${left}`;
-      c.font = '800 30px Inter, system-ui, sans-serif'; const w = c.measureText(txt).width + 56;
-      c.fillStyle = left === 0 && !r.final ? 'rgba(31,90,58,.92)' : 'rgba(43,26,16,.85)'; c.beginPath(); c.roundRect(800 - w / 2, 1000, w, 56, 28); c.fill();
-      c.fillStyle = '#fff8ea'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(txt, 800, 1029);
-    }
-    // carte de présentation (avant la manche 1) et de transition (avant chaque manche et la finale)
-    const k = smooth(r.a, r.a + .6, t) * (1 - smooth(r.start - .9, r.start - .2, t));
-    if (k > 0) buCard(c, P, r, k, t);
+  if (!replay) roundHud(c, P, r, t);
+}
+// Indicateur « qualifiés / places restantes » et cartes de présentation / transition, communs aux épreuves
+function roundHud(c, P, r, t) {
+  const I = P.intro;
+  if (t >= r.start - .5) {
+    const q = r.falls.filter(f => f <= t).length, left = Math.max(0, r.places - q);
+    const txt = r.final ? I.hudFinal[q ? 1 : 0] : `✅ Qualifiés : ${q} / ${r.places}      🎟️ Places restantes : ${left}`;
+    c.font = '800 30px Inter, system-ui, sans-serif'; const w = c.measureText(txt).width + 56;
+    c.fillStyle = left === 0 && !r.final ? 'rgba(31,90,58,.92)' : 'rgba(43,26,16,.85)'; c.beginPath(); c.roundRect(800 - w / 2, 1000, w, 56, 28); c.fill();
+    c.fillStyle = '#fff8ea'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(txt, 800, 1029);
   }
+  const k = smooth(r.a, r.a + .6, t) * (1 - smooth(r.start - .9, r.start - .2, t));
+  if (k > 0) buCard(c, P, r, k, t);
 }
 function buCard(c, P, r, k, t) {
+  const I = P.intro;
   c.save(); c.globalAlpha = k;
   c.fillStyle = 'rgba(20,12,6,.55)'; c.fillRect(0, 0, 1600, 1080);
   const w = 1100, h = r.i === 0 ? 560 : 470, x0 = 800 - w / 2, y0 = 540 - h / 2 + (1 - k) * 40;
   c.fillStyle = '#f6ead2'; c.strokeStyle = '#d9a441'; c.lineWidth = 8; c.beginPath(); c.roundRect(x0, y0, w, h, 28); c.fill(); c.stroke();
   c.textAlign = 'center'; c.textBaseline = 'middle';
   let y = y0 + 70;
-  if (r.i === 0) { c.font = '900 34px Inter, system-ui, sans-serif'; c.fillStyle = '#a3222a'; c.fillText('🪓 ÉPREUVE DU JOUR 🪓', 800, y); y += 74; c.font = '900 84px "Playfair Display", serif'; c.fillStyle = '#2b1a10'; c.fillText('La coupe de sapin', 800, y); y += 76;
-    c.font = '600 30px Inter, system-ui, sans-serif'; c.fillStyle = '#4a2c16'; c.fillText(`${BU_COUPS} coups de hache pour abattre son sapin · il tangue au ${BU_TANGUE}e`, 800, y); y += 44; c.fillText('Les premiers sapins à terre sont qualifiés !', 800, y); y += 58;
-    c.font = '800 30px Inter, system-ui, sans-serif'; c.fillStyle = '#1f5a3a'; c.fillText(`${r.alive.length} bûcherons · ${r.places} places pour la suite`, 800, y); y += 62; }
+  if (r.i === 0) { c.font = '900 34px Inter, system-ui, sans-serif'; c.fillStyle = '#a3222a'; c.fillText(I.kicker, 800, y); y += 74; c.font = '900 84px "Playfair Display", serif'; c.fillStyle = '#2b1a10'; c.fillText(I.title, 800, y); y += 76;
+    c.font = '600 30px Inter, system-ui, sans-serif'; c.fillStyle = '#4a2c16'; I.lines.forEach(l => { c.fillText(l, 800, y); y += 44; }); y += 14;
+    c.font = '800 30px Inter, system-ui, sans-serif'; c.fillStyle = '#1f5a3a'; c.fillText(`${r.alive.length} ${I.unit} · ${r.places} places pour la suite`, 800, y); y += 62; }
   else { c.font = '900 92px "Playfair Display", serif'; c.fillStyle = r.final ? '#a3222a' : '#2b1a10'; c.fillText(r.final ? 'FINALE !' : `Manche ${r.i + 1}`, 800, y + 20); y += 112;
-    c.font = '600 30px Inter, system-ui, sans-serif'; c.fillStyle = '#4a2c16'; c.fillText(r.final ? 'Des sapins géants · le premier à terre remporte la coupe !' : `${r.alive.length} qualifiés · ${r.places} places pour la suite`, 800, y); y += 70; }
+    c.font = '600 30px Inter, system-ui, sans-serif'; c.fillStyle = '#4a2c16'; c.fillText(r.final ? I.finale : `${r.alive.length} qualifiés · ${r.places} places pour la suite`, 800, y); y += 70; }
   c.font = '800 26px Inter, system-ui, sans-serif';
   const chips = r.alive.map(n => ({ n, w: c.measureText(n).width + 44 })), lines = [[]]; let lw = 0;
   chips.forEach(ch => { if (lw + ch.w > w - 80 && lines[lines.length - 1].length) { lines.push([]); lw = 0; } lines[lines.length - 1].push(ch); lw += ch.w + 12; });
