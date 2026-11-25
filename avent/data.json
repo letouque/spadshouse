@@ -221,8 +221,15 @@
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": "",
-      "objets": []
+      "itemId": "50435",
+      "objets": [
+        {
+          "itemId": "50435",
+          "nom": "Clef d'activation de sourieur cosmique",
+          "qte": 1,
+          "prix": 0
+        }
+      ]
     },
     {
       "nom": "Tenue Shishû",
