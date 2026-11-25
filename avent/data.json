@@ -331,8 +331,15 @@
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": "",
-      "objets": []
+      "itemId": "52266",
+      "objets": [
+        {
+          "itemId": "52266",
+          "nom": "Sifflet ornithorynque porteur",
+          "qte": 1,
+          "prix": 0
+        }
+      ]
     },
     {
       "nom": "Lot 22",
