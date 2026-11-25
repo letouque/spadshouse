@@ -111,6 +111,18 @@
           "nom": "Méthode de coiffure “Carré avec demi-chignon”",
           "qte": 1,
           "prix": 1749999
+        },
+        {
+          "itemId": "33706",
+          "nom": "Méthode de coiffure “Queue-de-cheval sur le côté”",
+          "qte": 1,
+          "prix": 0
+        },
+        {
+          "itemId": "31407",
+          "nom": "Méthode de coiffure “Vartan”",
+          "qte": 1,
+          "prix": 0
         }
       ]
     },
