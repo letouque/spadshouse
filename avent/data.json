@@ -301,8 +301,15 @@
       "desc": "",
       "image": "",
       "prix": 0,
-      "itemId": "",
-      "objets": []
+      "itemId": "46825",
+      "objets": [
+        {
+          "itemId": "46825",
+          "nom": "Sifflet dhalmel de l'espace",
+          "qte": 1,
+          "prix": 0
+        }
+      ]
     },
     {
       "nom": "Sifflet Pampa de la Luna",
