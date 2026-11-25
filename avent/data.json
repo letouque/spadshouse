@@ -234,7 +234,7 @@
     {
       "nom": "Tenue Shishû",
       "desc": "Tenue complète",
-      "image": "",
+      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/042000/042961_hr1.tex",
       "prix": 1799991,
       "itemId": "40441",
       "objets": [
@@ -261,6 +261,12 @@
           "nom": "Obutozôri de Shishû",
           "qte": 1,
           "prix": 664997
+        },
+        {
+          "itemId": "45525",
+          "nom": "Tenue de bujin de Shishû",
+          "qte": 1,
+          "prix": 0
         }
       ]
     },
