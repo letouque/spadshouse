@@ -399,6 +399,12 @@
           "nom": "Lamantin prismatique",
           "qte": 1,
           "prix": 1287000
+        },
+        {
+          "itemId": "49821",
+          "nom": "Berger des Braves",
+          "qte": 1,
+          "prix": 0
         }
       ]
     },
