@@ -2457,6 +2457,7 @@ async function enterAdmin(tk) {
   $('#adminbar').hidden = false;
   data = await loadData(); // relecture authentifiée (sha à jour)
   buildAdminStatic(); render(); toast('Mode admin activé');
+  fillFromIds(); // complète images et noms d'objets manquants
 }
 $('#loginForm').addEventListener('submit', async e => {
   e.preventDefault();
@@ -2617,6 +2618,7 @@ function buildLots() {
       if (f === 'itemId') l.objets[+k].nom = '';
       if (!l.objets.some(x => x.itemId || x.prix)) { l.objets = []; l.prix = 0; l.itemId = ''; } else syncLot(l);
     });
+    if (f === 'itemId' && /^\d+$/.test(inp.value.trim())) fillFromIds(+i);
     const l = data.lots[+i], foot = inp.closest('.objets').querySelector('.ofoot span');
     foot.textContent = `Valeur du lot : ${fmt(+l.prix || 0)} gils${l.objets.length > 1 ? ` (${l.objets.length} objets)` : ''}`;
     updateLotSum();
@@ -2644,16 +2646,43 @@ function buildLots() {
   L.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { mutate(d => { d.lots[+b.dataset.rm].image = ''; }); buildLots(); });
 }
 
+// Icône officielle d'un objet (XIVAPI) : sert d'image au lot quand il n'en a pas
+const iconUrl = ic => ic && (ic.path_hr1 || ic.path) ? `https://v2.xivapi.com/api/asset?format=png&path=${ic.path_hr1 || ic.path}` : '';
+async function itemInfo(id) {
+  const r = await fetch(`https://v2.xivapi.com/api/sheet/Item/${id}?fields=Name,Icon&language=fr`);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const f = (await r.json()).fields || {};
+  return { nom: f.Name || '', icone: iconUrl(f.Icon) };
+}
+// Complète les noms d'objets et les images manquantes à partir des ID
+async function fillFromIds(only) {
+  const todo = [];
+  data.lots.forEach((l, i) => { if (only != null && i !== only) return; l.objets.forEach((o, k) => { if (/^\d+$/.test(o.itemId) && (!o.nom || (!l.image && k === 0))) todo.push([i, k, o.itemId]); }); });
+  if (!todo.length) return 0;
+  const infos = {};
+  await Promise.all([...new Set(todo.map(t => t[2]))].map(async id => { try { infos[id] = await itemInfo(id); } catch (e) {} }));
+  const useful = todo.filter(([i, k, id]) => { const inf = infos[id], l = data.lots[i], o = l.objets[k]; return inf && o && o.itemId === id && ((!o.nom && inf.nom) || (!l.image && inf.icone)); });
+  if (!useful.length) return 0;
+  let n = 0;
+  mutate(d => useful.forEach(([i, k, id]) => {
+    const inf = infos[id], l = d.lots[i], o = l.objets[k];
+    if (!o.nom && inf.nom) { o.nom = inf.nom; n++; }
+    if (!l.image && inf.icone) { l.image = inf.icone; n++; }
+  }));
+  buildLots();
+  return n;
+}
+
 // Recherche d'objets FF14 par nom (XIVAPI, en français), depuis le navigateur
 async function searchItems(q, box, i) {
   box.hidden = false; box.innerHTML = '<div class="msg">Recherche…</div>';
   const safe = q.replace(/"/g, '');
-  const url = `https://v2.xivapi.com/api/search?sheets=Item&fields=Name&language=fr&limit=15&query=${encodeURIComponent(`Name@fr~"${safe}"`)}`;
+  const url = `https://v2.xivapi.com/api/search?sheets=Item&fields=Name,Icon&language=fr&limit=15&query=${encodeURIComponent(`Name@fr~"${safe}"`)}`;
   try {
     const r = await fetch(url); if (!r.ok) throw new Error('HTTP ' + r.status);
     const res = ((await r.json()).results || []).filter(x => x.fields && x.fields.Name);
     if (!res.length) { box.innerHTML = '<div class="msg">Aucun objet trouvé. Essaie un mot plus court.</div>'; return; }
-    box.innerHTML = res.map(x => `<button type="button" data-id="${x.row_id}" data-n="${esc(x.fields.Name)}"><span>${esc(x.fields.Name)}</span><span style="opacity:.6">${x.row_id}</span></button>`).join('');
+    box.innerHTML = res.map(x => `<button type="button" data-id="${x.row_id}" data-n="${esc(x.fields.Name)}" data-ic="${esc(iconUrl(x.fields.Icon))}"><span>${esc(x.fields.Name)}</span><span style="opacity:.6">${x.row_id}</span></button>`).join('');
     box.querySelectorAll('button').forEach(b => {
       b.onclick = () => {
         mutate(d => {
@@ -2661,6 +2690,7 @@ async function searchItems(q, box, i) {
           let o = l.objets.find(x => !x.itemId && !x.prix);
           if (!o) { o = { itemId: '', nom: '', qte: 1, prix: 0 }; l.objets.push(o); }
           o.itemId = b.dataset.id; o.nom = b.dataset.n; syncLot(l);
+          if (!l.image && b.dataset.ic) l.image = b.dataset.ic;
         });
         buildLots(); toast(`${b.dataset.n} ajouté au lot ${i + 1} — pense à « Mettre à jour les prix »`, 3500);
       };
@@ -2672,6 +2702,7 @@ async function searchItems(q, box, i) {
 }
 
 $('#univBtn').onclick = async () => {
+  fillFromIds();
   const ids = [...new Set(data.lots.flatMap(l => l.objets.map(x => x.itemId)).filter(x => /^\d+$/.test(x)))];
   if (!ids.length) { toast('Aucun ID objet renseigné'); return; }
   $('#univState').textContent = 'Chargement…';
