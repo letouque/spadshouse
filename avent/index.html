@@ -260,6 +260,13 @@ th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;opacity:.7}
 .objets input{width:100%;padding:4px 6px;font-size:.82rem}
 .objets a{text-decoration:none;font-size:.85rem;text-align:center}
 .objets .ofoot{display:flex;justify-content:space-between;align-items:center;margin-top:5px;font-weight:800}
+.objets .onom{grid-column:1/-1;font-size:.75rem;opacity:.75;margin:-2px 0 2px 4px}
+.osearch{position:relative;margin-bottom:6px}
+.osearch input{width:100%;padding:5px 8px}
+.ores{position:absolute;left:0;right:0;top:100%;z-index:5;background:#fffaf0;border:1.5px solid var(--gold);border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,.25);max-height:240px;overflow:auto}
+.ores button{display:flex;justify-content:space-between;gap:8px;width:100%;text-align:left;border:0;background:none;padding:6px 9px;font:inherit;font-size:.82rem;cursor:pointer;color:var(--ink)}
+.ores button:hover,.ores button:focus{background:#f3e3bf}
+.ores .msg{padding:7px 9px;font-size:.8rem;opacity:.75}
 .objets .add{border:0;background:none;color:var(--green);font-weight:800;cursor:pointer;padding:2px 0;font:inherit;font-size:.8rem}
 .lotrow .rm{font-size:.75rem;border:0;background:none;color:var(--red);cursor:pointer;padding:2px 0;font-weight:700}
 .toast{position:fixed;z-index:70;left:50%;bottom:24px;transform:translateX(-50%) translateY(30px);opacity:0;background:var(--green-d);color:var(--cream);padding:10px 18px;border-radius:10px;font-weight:700;transition:.3s;pointer-events:none;max-width:90vw;text-align:center}
@@ -519,7 +526,7 @@ function normalize(d) {
     if (typeof l === 'string') return { nom: l, desc: '', image: '' };
     const o = Object.assign({ nom: `Lot ${i + 1}`, desc: '', image: '', prix: 0, itemId: '' }, l || {});
     if (!Array.isArray(o.objets)) o.objets = (o.itemId || +o.prix) ? [{ itemId: String(o.itemId || ''), qte: 1, prix: +o.prix || 0 }] : [];
-    o.objets = o.objets.map(x => ({ itemId: String(x.itemId || '').trim(), qte: Math.max(1, Math.round(+x.qte || 1)), prix: Math.max(0, Math.round(+x.prix || 0)) }));
+    o.objets = o.objets.map(x => ({ itemId: String(x.itemId || '').trim(), nom: x.nom || '', qte: Math.max(1, Math.round(+x.qte || 1)), prix: Math.max(0, Math.round(+x.prix || 0)) }));
     syncLot(o);
     return o;
   });
@@ -2588,13 +2595,14 @@ function buildLots() {
       <div><input type="text" value="${esc(l.nom)}" data-nom="${i}" aria-label="Nom du lot ${i + 1}" placeholder="Nom du lot">
         <textarea data-desc="${i}" placeholder="Description (optionnelle)" aria-label="Description du lot ${i + 1}">${esc(l.desc)}</textarea>
         <div class="objets">
+          <div class="osearch"><input type="search" data-os="${i}" placeholder="🔍 Chercher un objet par son nom (ex. Sifflet…)" aria-label="Chercher un objet pour le lot ${i + 1}" autocomplete="off"><div class="ores" hidden></div></div>
           <div class="oh"><span>ID objet</span><span>Qté</span><span>Prix unit. (gils)</span><span></span><span></span></div>
           ${(l.objets.length ? l.objets : [{ itemId: '', qte: 1, prix: 0 }]).map((x, k) => `<div class="orow">
             <input type="text" inputmode="numeric" value="${esc(x.itemId)}" data-o="${i}:${k}:itemId" aria-label="ID objet ${k + 1} du lot ${i + 1}">
             <input type="number" min="1" value="${x.qte}" data-o="${i}:${k}:qte" aria-label="Quantité">
             <input type="number" min="0" step="1000" value="${x.prix}" data-o="${i}:${k}:prix" aria-label="Prix unitaire">
             ${/^\d+$/.test(x.itemId) ? `<a href="https://universalis.app/market/${esc(x.itemId)}" target="_blank" rel="noopener" title="Voir sur Universalis">↗</a>` : '<span></span>'}
-            <button class="x" data-orm="${i}:${k}" title="Retirer cet objet">×</button></div>`).join('')}
+            <button class="x" data-orm="${i}:${k}" title="Retirer cet objet">×</button>${x.nom ? `<div class="onom">${esc(x.nom)}</div>` : ''}</div>`).join('')}
           <div class="ofoot"><button class="add" data-oadd="${i}">+ objet</button><span>Valeur du lot : ${fmt(+l.prix || 0)} gils${l.objets.length > 1 ? ` (${l.objets.length} objets)` : ''}</span></div>
         </div></div>
     </div>`).join('');
@@ -2604,16 +2612,23 @@ function buildLots() {
     const [i, k, f] = inp.dataset.o.split(':');
     mutate(d => {
       const l = d.lots[+i];
-      while (l.objets.length <= +k) l.objets.push({ itemId: '', qte: 1, prix: 0 });
+      while (l.objets.length <= +k) l.objets.push({ itemId: '', nom: '', qte: 1, prix: 0 });
       l.objets[+k][f] = f === 'itemId' ? inp.value.trim() : Math.max(f === 'qte' ? 1 : 0, Math.round(+inp.value || 0));
+      if (f === 'itemId') l.objets[+k].nom = '';
       if (!l.objets.some(x => x.itemId || x.prix)) { l.objets = []; l.prix = 0; l.itemId = ''; } else syncLot(l);
     });
     const l = data.lots[+i], foot = inp.closest('.objets').querySelector('.ofoot span');
     foot.textContent = `Valeur du lot : ${fmt(+l.prix || 0)} gils${l.objets.length > 1 ? ` (${l.objets.length} objets)` : ''}`;
     updateLotSum();
   });
+  L.querySelectorAll('[data-os]').forEach(inp => {
+    const box = inp.nextElementSibling, i = +inp.dataset.os; let t = null;
+    inp.oninput = () => { clearTimeout(t); const q = inp.value.trim(); if (q.length < 3) { box.hidden = true; return; } t = setTimeout(() => searchItems(q, box, i), 350); };
+    inp.onkeydown = e => { if (e.key === 'Escape') { box.hidden = true; inp.value = ''; } if (e.key === 'ArrowDown') { const b = box.querySelector('button'); if (b) { e.preventDefault(); b.focus(); } } };
+    inp.onblur = () => setTimeout(() => { if (!box.contains(document.activeElement)) box.hidden = true; }, 200);
+  });
   L.querySelectorAll('[data-oadd]').forEach(b => b.onclick = () => {
-    mutate(d => { const l = d.lots[+b.dataset.oadd]; if (!l.objets.length) l.objets.push({ itemId: '', qte: 1, prix: 0 }); l.objets.push({ itemId: '', qte: 1, prix: 0 }); });
+    mutate(d => { const l = d.lots[+b.dataset.oadd]; if (!l.objets.length) l.objets.push({ itemId: '', nom: '', qte: 1, prix: 0 }); l.objets.push({ itemId: '', nom: '', qte: 1, prix: 0 }); });
     buildLots();
   });
   L.querySelectorAll('[data-orm]').forEach(b => b.onclick = () => {
@@ -2627,6 +2642,33 @@ function buildLots() {
     th.onclick = go; th.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } };
   });
   L.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { mutate(d => { d.lots[+b.dataset.rm].image = ''; }); buildLots(); });
+}
+
+// Recherche d'objets FF14 par nom (XIVAPI, en français), depuis le navigateur
+async function searchItems(q, box, i) {
+  box.hidden = false; box.innerHTML = '<div class="msg">Recherche…</div>';
+  const safe = q.replace(/"/g, '');
+  const url = `https://v2.xivapi.com/api/search?sheets=Item&fields=Name&language=fr&limit=15&query=${encodeURIComponent(`Name@fr~"${safe}"`)}`;
+  try {
+    const r = await fetch(url); if (!r.ok) throw new Error('HTTP ' + r.status);
+    const res = ((await r.json()).results || []).filter(x => x.fields && x.fields.Name);
+    if (!res.length) { box.innerHTML = '<div class="msg">Aucun objet trouvé. Essaie un mot plus court.</div>'; return; }
+    box.innerHTML = res.map(x => `<button type="button" data-id="${x.row_id}" data-n="${esc(x.fields.Name)}"><span>${esc(x.fields.Name)}</span><span style="opacity:.6">${x.row_id}</span></button>`).join('');
+    box.querySelectorAll('button').forEach(b => {
+      b.onclick = () => {
+        mutate(d => {
+          const l = d.lots[i];
+          let o = l.objets.find(x => !x.itemId && !x.prix);
+          if (!o) { o = { itemId: '', nom: '', qte: 1, prix: 0 }; l.objets.push(o); }
+          o.itemId = b.dataset.id; o.nom = b.dataset.n; syncLot(l);
+        });
+        buildLots(); toast(`${b.dataset.n} ajouté au lot ${i + 1} — pense à « Mettre à jour les prix »`, 3500);
+      };
+      b.onkeydown = e => { if (e.key === 'ArrowDown' && b.nextElementSibling) { e.preventDefault(); b.nextElementSibling.focus(); } if (e.key === 'ArrowUp') { e.preventDefault(); (b.previousElementSibling || box.previousElementSibling).focus(); } };
+    });
+  } catch (e) {
+    box.innerHTML = `<div class="msg">Recherche indisponible (${esc(e.message)}). Cherche l'objet sur <a href="https://universalis.app/" target="_blank" rel="noopener">Universalis</a> : l'ID est le nombre à la fin de l'adresse.</div>`;
+  }
 }
 
 $('#univBtn').onclick = async () => {
