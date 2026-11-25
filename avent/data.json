@@ -379,7 +379,7 @@
       "nom": "Lot de mascottes",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/059000/059947_hr1.tex",
-      "prix": 3456919,
+      "prix": 3536719,
       "itemId": "47965",
       "objets": [
         {
@@ -404,7 +404,7 @@
           "itemId": "49821",
           "nom": "Berger des Braves",
           "qte": 1,
-          "prix": 0
+          "prix": 79800
         }
       ]
     },
