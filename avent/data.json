@@ -303,23 +303,22 @@
           "nom": "Clef d'activation de déblayeuse cosmique grise",
           "qte": 1,
           "prix": 389995
-        }
-      ]
-    },
-    {
-      "nom": "Clef d'activation de mécano cosmique de série",
-      "desc": "",
-      "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026014_hr1.tex",
-      "prix": 388999,
-      "itemId": "50445",
-      "objets": [
+        },
         {
           "itemId": "50445",
           "nom": "Clef d'activation de mécano cosmique de série",
           "qte": 1,
-          "prix": 388999
+          "prix": 0
         }
       ]
+    },
+    {
+      "nom": "Lot 18",
+      "desc": "",
+      "image": "",
+      "prix": 0,
+      "itemId": "",
+      "objets": []
     },
     {
       "nom": "Sifflet dhalmel de l'espace",
@@ -430,17 +429,17 @@
       ]
     },
     {
-      "nom": "Lot 25",
+      "nom": "Cosmo-Planche",
       "desc": "",
       "image": "https://v2.xivapi.com/api/asset?format=png&path=ui/icon/026000/026082_hr1.tex",
-      "prix": 0,
+      "prix": 1209999,
       "itemId": "47336",
       "objets": [
         {
           "itemId": "47336",
           "nom": "Cosmo-planche",
           "qte": 1,
-          "prix": 0
+          "prix": 1209999
         }
       ]
     }
