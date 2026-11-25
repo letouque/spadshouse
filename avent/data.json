@@ -177,6 +177,12 @@
           "nom": "Distributeur de Solution Neuf",
           "qte": 1,
           "prix": 0
+        },
+        {
+          "itemId": "",
+          "nom": "",
+          "qte": 1,
+          "prix": 0
         }
       ]
     },
